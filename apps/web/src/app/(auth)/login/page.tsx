@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { Input, Button, Card } from '@vargani/ui';
+import { Role } from '@vargani/types';
 import { apiRequest } from '../../../lib/api-client';
 import { Sparkles, Phone, KeyRound, ArrowRight, UserCheck } from 'lucide-react';
 import { getT } from '../../../lib/i18n';
