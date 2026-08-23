@@ -4,7 +4,10 @@ import { pool } from './client';
 
 export async function runMigrations() {
   console.log('Running database migrations...');
-  const schemaPath = path.join(__dirname, 'schema.sql');
+  let schemaPath = path.join(__dirname, 'schema.sql');
+  if (!fs.existsSync(schemaPath)) {
+    schemaPath = path.join(__dirname, '../src/schema.sql');
+  }
   const sql = fs.readFileSync(schemaPath, 'utf8');
 
   const client = await pool.connect();
