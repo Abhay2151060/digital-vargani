@@ -10,22 +10,12 @@ import {
   Smartphone,
   HeartHandshake,
   ArrowRight,
-  Zap,
-  Lock,
   Share2,
   Users,
   CheckCircle2,
   ChevronRight,
-  TrendingUp,
-  Receipt,
   QrCode,
-  IndianRupee,
-  Wallet,
-  Star,
-  BadgeCheck,
-  Building2,
-  Check,
-  Play
+  BadgeCheck
 } from 'lucide-react';
 import { Button } from '@vargani/ui';
 import Link from 'next/link';
