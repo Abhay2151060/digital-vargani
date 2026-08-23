@@ -1,6 +1,9 @@
 import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
+// Explicitly load root .env file
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL || 'postgresql://vargani_user:vargani_password@localhost:5432/vargani_db';
