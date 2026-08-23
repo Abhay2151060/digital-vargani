@@ -5,7 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Header } from '../../../components/Header';
 import { OfflineBanner } from '../../../components/OfflineBanner';
 import { Card, Button } from '@vargani/ui';
-import { apiRequest } from '../../../lib/api-client';
+import { apiRequest, downloadFile } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { TreasurerOverview, Role } from '@vargani/types';
 import Link from 'next/link';
@@ -24,6 +24,8 @@ export default function TreasurerDashboardPage() {
 
   const [overview, setOverview] = useState<TreasurerOverview | null>(null);
   const [, setIsLoading] = useState(true);
+  const [isExportingDonations, setIsExportingDonations] = useState(false);
+  const [isExportingExpenses, setIsExportingExpenses] = useState(false);
 
   const fetchOverview = () => {
     if (activeMandal && token) {
@@ -38,14 +40,28 @@ export default function TreasurerDashboardPage() {
     fetchOverview();
   }, [activeMandal, token]);
 
-  const handleExportDonations = () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    window.open(`${apiBase}/reports/donations/csv`, '_blank');
+  const handleExportDonations = async () => {
+    try {
+      setIsExportingDonations(true);
+      await downloadFile('/reports/donations/csv', `donations-${Date.now()}.csv`, token);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Export failed');
+    } finally {
+      setIsExportingDonations(false);
+    }
   };
 
-  const handleExportExpenses = () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    window.open(`${apiBase}/reports/expenses/csv`, '_blank');
+  const handleExportExpenses = async () => {
+    try {
+      setIsExportingExpenses(true);
+      await downloadFile('/reports/expenses/csv', `expenses-${Date.now()}.csv`, token);
+    } catch (err: any) {
+      console.error(err);
+      alert(err.message || 'Export failed');
+    } finally {
+      setIsExportingExpenses(false);
+    }
   };
 
   return (
@@ -96,19 +112,21 @@ export default function TreasurerDashboardPage() {
               variant="outline"
               size="sm"
               onClick={handleExportDonations}
+              disabled={isExportingDonations}
               className="text-xs h-8 gap-1"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-              <span>वर्गणी CSV</span>
+              <span>{isExportingDonations ? 'डाउनलोड होत आहे...' : 'वर्गणी CSV'}</span>
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportExpenses}
+              disabled={isExportingExpenses}
               className="text-xs h-8 gap-1"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-red-600" />
-              <span>खर्च CSV</span>
+              <span>{isExportingExpenses ? 'डाउनलोड होत आहे...' : 'खर्च CSV'}</span>
             </Button>
             <Link href={`/mandal/${activeMandal?.slug}/transparency`} target="_blank">
               <Button variant="ghost" size="sm" className="text-xs h-8 gap-1">
