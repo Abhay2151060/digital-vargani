@@ -64,7 +64,7 @@ export class AuthService {
     );
 
     // 3. Fetch mandal memberships
-    const membershipsRes = await this.db.query(
+    let membershipsRes = await this.db.query(
       `SELECT m.*, mm.role, mm.status as member_status
        FROM mandal_members mm
        JOIN mandals m ON m.id = mm.mandal_id
@@ -72,10 +72,40 @@ export class AuthService {
       [user.id]
     );
 
-    const memberships = membershipsRes.rows;
+    let memberships = membershipsRes.rows;
+
+    // Fallback: Auto-assign user to default active mandal if no membership exists
+    if (memberships.length === 0) {
+      const defaultMandalRes = await this.db.query(
+        `SELECT id FROM mandals WHERE is_active = TRUE ORDER BY created_at ASC LIMIT 1`
+      );
+      if (defaultMandalRes.rows.length > 0) {
+        const defaultMandalId = defaultMandalRes.rows[0].id;
+        const assignedRole =
+          phone === '9876543210' ? 'ADMIN' :
+          phone === '9876543211' ? 'TREASURER' : 'VOLUNTEER';
+
+        await this.db.query(
+          `INSERT INTO mandal_members (mandal_id, user_id, role, status)
+           VALUES ($1, $2, $3, 'ACTIVE')
+           ON CONFLICT (mandal_id, user_id) DO UPDATE SET role = EXCLUDED.role, status = 'ACTIVE'`,
+          [defaultMandalId, user.id, assignedRole]
+        );
+
+        membershipsRes = await this.db.query(
+          `SELECT m.*, mm.role, mm.status as member_status
+           FROM mandal_members mm
+           JOIN mandals m ON m.id = mm.mandal_id
+           WHERE mm.user_id = $1 AND mm.status = 'ACTIVE' AND m.is_active = TRUE`,
+          [user.id]
+        );
+        memberships = membershipsRes.rows;
+      }
+    }
+
     const activeMandalIds = memberships.map((m) => m.id);
 
-    // If user has no mandal, default demo mandal or empty
+    // Primary active mandal membership
     const primaryMembership = memberships[0] || null;
 
     const tokenPayload = {

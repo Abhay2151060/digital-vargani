@@ -69,7 +69,14 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await login(phone, otp, fullName || undefined);
-      router.push('/');
+      const userRole = localStorage.getItem('vargani_role');
+      if (userRole === Role.VOLUNTEER) {
+        router.replace('/collect');
+      } else if (userRole === Role.TREASURER || userRole === Role.ADMIN) {
+        router.replace('/dashboard');
+      } else {
+        router.replace('/collect');
+      }
     } catch (err: any) {
       setError(err.message || 'OTP verification failed');
     } finally {
