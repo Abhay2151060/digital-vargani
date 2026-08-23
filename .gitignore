@@ -43,3 +43,8 @@ coverage/
 scratch/
 temp/
 tmp/
+
+/generated/prisma
+.claude/
+.windsurf/
+skills-lock.json

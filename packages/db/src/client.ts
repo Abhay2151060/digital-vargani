@@ -5,11 +5,18 @@ dotenv.config();
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://vargani_user:vargani_password@localhost:5432/vargani_db';
 
+const isSSLNeeded =
+  process.env.NODE_ENV === 'production' ||
+  connectionString.includes('supabase') ||
+  connectionString.includes('neon') ||
+  connectionString.includes('sslmode=require');
+
 export const pool = new Pool({
   connectionString,
   max: 20,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 10000,
+  ssl: isSSLNeeded ? { rejectUnauthorized: false } : false,
 });
 
 export async function query<T extends QueryResultRow = any>(

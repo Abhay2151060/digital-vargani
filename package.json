@@ -17,6 +17,7 @@
     "db:seed": "npm run --workspace=@vargani/db seed"
   },
   "devDependencies": {
+    "prisma": "^7.9.1",
     "turbo": "^1.13.4",
     "typescript": "^5.4.5"
   }
