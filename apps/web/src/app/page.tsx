@@ -59,7 +59,7 @@ export default function HomePage() {
         </h1>
 
         <p className="mt-4 text-base sm:text-lg text-[#6B6459] max-w-xl">
-          १० सेकंदांत डिजिटल पावती, थेट व्हॉट्सअॅपवर शेअरिंग, रोख हिशोब पडताळणी आणि १००% सार्वजनिक पारदर्शकता.
+          १० सेकंदांत डिजिटल पावती, थेट व्हॉट्सॲप वर शेअरिंग, रोख हिशोब पडताळणी आणि १००% सार्वजनिक पारदर्शकता.
         </p>
 
         <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full sm:w-auto">

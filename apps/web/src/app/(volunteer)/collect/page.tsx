@@ -257,7 +257,7 @@ export default function CollectDonationPage() {
               label={t.donor_phone}
               type="tel"
               maxLength={10}
-              placeholder="9822012345 (व्हॉट्सअॅपसाठी)"
+              placeholder="9822012345 (व्हॉट्सॲप साठी)"
               value={donorPhone}
               onChange={(e) => setDonorPhone(e.target.value.replace(/\D/g, ''))}
               leftIcon={<Phone className="w-4 h-4" />}

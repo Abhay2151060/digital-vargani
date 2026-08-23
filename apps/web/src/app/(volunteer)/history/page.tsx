@@ -148,7 +148,7 @@ export default function VolunteerHistoryPage() {
                           className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition min-h-[36px]"
                         >
                           <Share2 className="w-3.5 h-3.5" />
-                          <span>व्हॉट्सअॅप</span>
+                          <span>व्हॉट्सॲप </span>
                         </button>
                       )}
                     </div>
