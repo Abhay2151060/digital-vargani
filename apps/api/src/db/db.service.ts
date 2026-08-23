@@ -8,6 +8,7 @@ export class DbService implements OnModuleDestroy {
 
   constructor() {
     const connectionString =
+      process.env.DIRECT_URL ||
       process.env.DATABASE_URL ||
       'postgresql://vargani_user:vargani_password@localhost:5432/vargani_db';
 

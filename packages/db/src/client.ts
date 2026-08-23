@@ -3,7 +3,7 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://vargani_user:vargani_password@localhost:5432/vargani_db';
+const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL || 'postgresql://vargani_user:vargani_password@localhost:5432/vargani_db';
 
 const isSSLNeeded =
   process.env.NODE_ENV === 'production' ||
