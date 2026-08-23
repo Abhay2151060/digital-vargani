@@ -1,0 +1,23 @@
+{
+  "name": "digital-vargani",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Digital Vargani - Mandal Fund & Receipt Management Platform",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:setup": "npm run --workspace=@vargani/db setup",
+    "db:migrate": "npm run --workspace=@vargani/db migrate",
+    "db:seed": "npm run --workspace=@vargani/db seed"
+  },
+  "devDependencies": {
+    "turbo": "^1.13.4",
+    "typescript": "^5.4.5"
+  }
+}

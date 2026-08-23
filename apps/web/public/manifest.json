@@ -1,0 +1,16 @@
+{
+  "name": "Digital Vargani - Mandal Management",
+  "short_name": "Digital Vargani",
+  "description": "Festival trust donation collection, multi-lingual receipts & cash reconciliation",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF9F6",
+  "theme_color": "#F97316",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
