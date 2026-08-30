@@ -217,17 +217,27 @@ CREATE INDEX IF NOT EXISTS idx_mandal_members_mandal ON mandal_members(mandal_id
 CREATE INDEX IF NOT EXISTS idx_mandal_members_user ON mandal_members(user_id);
 CREATE INDEX IF NOT EXISTS idx_donations_mandal ON donations(mandal_id);
 CREATE INDEX IF NOT EXISTS idx_donations_volunteer ON donations(volunteer_id);
+CREATE INDEX IF NOT EXISTS idx_donations_reconciliation ON donations(reconciliation_id);
 CREATE INDEX IF NOT EXISTS idx_donations_created_at ON donations(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_donations_unreconciled_cash ON donations(mandal_id, volunteer_id) 
     WHERE payment_mode = 'CASH' AND is_reconciled = FALSE AND is_voided = FALSE;
+CREATE INDEX IF NOT EXISTS idx_donation_corrections_donation ON donation_corrections(donation_id);
+CREATE INDEX IF NOT EXISTS idx_donation_corrections_corrected_by ON donation_corrections(corrected_by);
+CREATE INDEX IF NOT EXISTS idx_cash_reconciliations_volunteer ON cash_reconciliations(volunteer_id);
+CREATE INDEX IF NOT EXISTS idx_cash_reconciliations_treasurer ON cash_reconciliations(treasurer_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_mandal ON expenses(mandal_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_logged_by ON expenses(logged_by);
+CREATE INDEX IF NOT EXISTS idx_expenses_approved_by ON expenses(approved_by);
 CREATE INDEX IF NOT EXISTS idx_expenses_approved ON expenses(mandal_id, status) WHERE status = 'APPROVED' AND is_voided = FALSE;
 CREATE INDEX IF NOT EXISTS idx_audit_logs_mandal ON audit_logs(mandal_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
 
 -- ==============================================================================
 -- ROW-LEVEL SECURITY (RLS) POLICIES
 -- ==============================================================================
 
+ALTER TABLE mandals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE mandal_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE donations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE donation_corrections ENABLE ROW LEVEL SECURITY;
@@ -238,16 +248,31 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Helper function to check if current user has access to mandal
 CREATE OR REPLACE FUNCTION current_mandal_access(target_mandal_id UUID) 
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
 BEGIN
     RETURN (
         current_setting('app.current_mandal_ids', true) IS NOT NULL 
         AND target_mandal_id::TEXT = ANY(string_to_array(current_setting('app.current_mandal_ids', true), ','))
     );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
--- RLS Policies
+-- RLS Policies for Mandals & Users (Allow public read for active mandals / profile auth)
+DROP POLICY IF EXISTS mandals_read_policy ON mandals;
+CREATE POLICY mandals_read_policy ON mandals
+    FOR SELECT
+    USING (is_active = TRUE OR current_mandal_access(id));
+
+DROP POLICY IF EXISTS users_read_policy ON users;
+CREATE POLICY users_read_policy ON users
+    FOR ALL
+    USING (TRUE);
+
+-- RLS Isolation Policies
 DROP POLICY IF EXISTS mandal_members_isolation_policy ON mandal_members;
 CREATE POLICY mandal_members_isolation_policy ON mandal_members
     FOR ALL
@@ -282,3 +307,4 @@ DROP POLICY IF EXISTS audit_logs_isolation_policy ON audit_logs;
 CREATE POLICY audit_logs_isolation_policy ON audit_logs
     FOR ALL
     USING (current_mandal_access(mandal_id));
+
