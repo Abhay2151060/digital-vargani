@@ -11,6 +11,7 @@ import { Input, Button, Card, AmountChips, BottomNav } from '@vargani/ui';
 import { PaymentMode, Language, Role } from '@vargani/types';
 import { getT } from '../../../lib/i18n';
 import { apiRequest } from '../../../lib/api-client';
+import { enqueueOfflineDonation } from '../../../lib/offline-queue';
 import { PlusCircle, Wallet, QrCode, IndianRupee, User, Phone, Home, Sparkles, Receipt, ArrowLeft, Clock, Copy, Check, ShieldCheck, ExternalLink } from 'lucide-react';
 import QRCode from 'qrcode';
 import Link from 'next/link';
