@@ -39,10 +39,13 @@ export class DbService implements OnModuleDestroy {
     const client = await this.pool.connect();
     try {
       if (mandalIds && mandalIds.length > 0) {
-        await client.query(`SELECT set_config('app.current_mandal_ids', $1, false)`, [mandalIds.join(',')]);
+        await client.query(`SELECT set_config('app.current_mandal_ids', $1, true)`, [mandalIds.join(',')]);
       }
       return await client.query<T>(text, params);
     } finally {
+      try {
+        await client.query(`SELECT set_config('app.current_mandal_ids', '', false)`);
+      } catch {}
       client.release();
     }
   }
@@ -65,6 +68,9 @@ export class DbService implements OnModuleDestroy {
       this.logger.error('Transaction rollback due to error:', error);
       throw error;
     } finally {
+      try {
+        await client.query(`SELECT set_config('app.current_mandal_ids', '', false)`);
+      } catch {}
       client.release();
     }
   }

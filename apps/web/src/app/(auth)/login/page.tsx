@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { Input, Button, Card } from '@vargani/ui';
 import { Role } from '@vargani/types';
-import { apiRequest } from '../../../lib/api-client';
-import { Sparkles, Phone, KeyRound, ArrowRight, UserCheck } from 'lucide-react';
+import Link from 'next/link';
+import { Phone, ArrowRight, UserCheck, Home, ArrowLeft } from 'lucide-react';
 import { getT } from '../../../lib/i18n';
 
 export default function LoginPage() {
@@ -16,11 +16,8 @@ export default function LoginPage() {
 
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   React.useEffect(() => {
@@ -33,8 +30,9 @@ export default function LoginPage() {
     }
   }, [user, role, authLoading, router]);
 
-  const handleRequestOtp = async (e?: React.FormEvent) => {
+  const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+
     if (!/^[6-9]\d{9}$/.test(phone)) {
       setError(t.enter_phone);
       return;
@@ -43,57 +41,35 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
     try {
-      const res = await apiRequest<any>('/auth/otp/request', {
-        method: 'POST',
-        body: JSON.stringify({ phone }),
-      });
-      if (res.devOtp) {
-        setDevOtpHint(res.devOtp);
-        setOtp(res.devOtp); // Auto-fill for convenience in dev
-      }
-      setStep('otp');
-    } catch (err: any) {
-      setError(err.message || 'Failed to send OTP');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otp.length !== 6) {
-      setError(t.enter_otp);
-      return;
-    }
-
-    setError(null);
-    setIsLoading(true);
-    try {
-      await login(phone, otp, fullName || undefined);
+      await login(phone, fullName || undefined);
       const userRole = localStorage.getItem('vargani_role');
       if (userRole === Role.VOLUNTEER) {
-        router.replace('/collect');
+        router.replace('/history');
       } else if (userRole === Role.TREASURER || userRole === Role.ADMIN) {
         router.replace('/dashboard');
       } else {
-        router.replace('/collect');
+        router.replace('/history');
       }
     } catch (err: any) {
-      setError(err.message || 'OTP verification failed');
+      setError(err.message || 'लॉगिन अयशस्वी झाले (Login failed)');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleQuickDemoLogin = (demoPhone: string, demoName: string) => {
-    setPhone(demoPhone);
-    setFullName(demoName);
-    setOtp('123456');
-    setStep('otp');
-  };
-
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-[#FAF9F6]">
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-[#FAF9F6] relative">
+      {/* Top Back to Home Button */}
+      <div className="w-full max-w-md flex justify-start mb-4">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6B6459] hover:text-[#C2410C] bg-white hover:bg-[#F3F1EC] px-3 py-1.5 rounded-xl border border-[#E5E1D8] shadow-2xs transition"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#F97316]" />
+          <span>मुख्यपृष्ठ (Home)</span>
+        </Link>
+      </div>
+
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="text-center mb-6" suppressHydrationWarning>
@@ -111,9 +87,7 @@ export default function LoginPage() {
         {/* Login Card */}
         <Card variant="default" padding="lg" className="shadow-lg" suppressHydrationWarning>
           <h2 className="text-lg font-bold text-[#292118] mb-4" suppressHydrationWarning>
-            {step === 'phone'
-              ? (mounted ? t.login_title : 'मंडळ लॉगिन')
-              : 'ओटीपी सत्यापन (Verify OTP)'}
+            {mounted ? t.login_title : 'मंडळ लॉगिन'}
           </h2>
 
           {error && (
@@ -122,110 +96,51 @@ export default function LoginPage() {
             </div>
           )}
 
-          {step === 'phone' ? (
-            <form onSubmit={handleRequestOtp} className="space-y-4">
-              <Input
-                label="मोबाईल नंबर (Mobile Number)"
-                type="tel"
-                maxLength={10}
-                placeholder="उदा. 9822012345"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                leftIcon={<Phone className="w-4 h-4" />}
-                required
-              />
+          <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
+            <Input
+              label="मोबाईल नंबर (Mobile Number)"
+              type="tel"
+              maxLength={10}
+              placeholder="उदा. 9822012345"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+              leftIcon={<Phone className="w-4 h-4" />}
+              required
+            />
 
-              <Input
-                label="पूर्ण नाव (Name) - नवीन युजर्ससाठी"
-                type="text"
-                placeholder="आपले पूर्ण नाव टाका"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                leftIcon={<UserCheck className="w-4 h-4" />}
-              />
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                isLoading={isLoading}
-                className="font-bold gap-2"
-              >
-                <span>{t.get_otp}</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div className="flex justify-between items-center text-xs text-[#6B6459]">
-                <span>ओटीपी पाठवला: <strong>+91 {phone}</strong></span>
-                <button
-                  type="button"
-                  onClick={() => setStep('phone')}
-                  className="text-[#F97316] font-semibold hover:underline"
-                >
-                  बदला (Change)
-                </button>
-              </div>
-
-              <Input
-                label="६ अंकी ओटीपी (Enter 6-digit OTP)"
-                type="text"
-                maxLength={6}
-                placeholder="123456"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                leftIcon={<KeyRound className="w-4 h-4" />}
-                helperText={devOtpHint ? `Dev OTP: ${devOtpHint}` : 'डेव्हलपमेंटसाठी 123456 वापरा'}
-                required
-              />
+            <Input
+              label="पूर्ण नाव (Name) - नवीन युजर्ससाठी"
+              type="text"
+              placeholder="आपले नाव टाका (नवीन असल्यास)"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              leftIcon={<UserCheck className="w-4 h-4" />}
+            />
 
               <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                fullWidth
-                isLoading={isLoading}
-                className="font-bold gap-2"
-              >
-                <span>{t.verify_login}</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </form>
-          )}
-
-          {/* Quick Demo Logins for Pair Programming / Review */}
-          <div className="mt-6 pt-5 border-t border-[#E5E1D8]">
-            <p className="text-xs font-semibold text-[#6B6459] mb-2 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>डेमो लॉगिन (Quick Demo Roles):</span>
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('9876543212', 'Amit Kadam (Volunteer)')}
-                className="p-2 rounded-xl border border-[#E5E1D8] bg-[#F3F1EC] hover:bg-orange-50 hover:border-orange-300 text-[11px] font-semibold text-[#292118] text-center transition"
-              >
-                कार्यकर्ता<br /><span className="text-[9px] text-[#6B6459] font-normal">Volunteer</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('9876543211', 'Rahul Deshmukh (Treasurer)')}
-                className="p-2 rounded-xl border border-[#E5E1D8] bg-[#F3F1EC] hover:bg-orange-50 hover:border-orange-300 text-[11px] font-semibold text-[#292118] text-center transition"
-              >
-                खजिनदार<br /><span className="text-[9px] text-[#6B6459] font-normal">Treasurer</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('9876543210', 'Sachin Patil (Admin)')}
-                className="p-2 rounded-xl border border-[#E5E1D8] bg-[#F3F1EC] hover:bg-orange-50 hover:border-orange-300 text-[11px] font-semibold text-[#292118] text-center transition"
-              >
-                अध्यक्ष/Admin<br /><span className="text-[9px] text-[#6B6459] font-normal">Admin</span>
-              </button>
-            </div>
-          </div>
+              type="submit"
+              variant="primary"
+              size="lg"
+              fullWidth
+              isLoading={isLoading}
+              className="font-bold gap-2 shadow-md shadow-orange-500/20"
+            >
+              <span>{t.login_btn || 'लॉगिन करा'}</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </form>
         </Card>
+
+        {/* Bottom Home Page Navigation Link */}
+        <div className="mt-5 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 text-xs font-bold text-[#6B6459] hover:text-[#C2410C] bg-white hover:bg-[#F3F1EC] px-4 py-2.5 rounded-2xl border border-[#E5E1D8] shadow-2xs transition w-full"
+          >
+            <Home className="w-4 h-4 text-[#F97316]" />
+            <span>होम पेजवर जा (Go to Home Page)</span>
+          </Link>
+        </div>
       </div>
     </div>
   );

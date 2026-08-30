@@ -32,10 +32,10 @@ Project rules, standards and guidelines to build and maintain the application.
 ## 2. WHAT TO AVOID
 
 - **No client-side sequential receipt numbering.** Guaranteed to collide across offline volunteers. Use the server-allocated range pattern instead (see `schema_v2.sql`).
-- **No destructive updates on financial fields** (`amount`, `donor_name`, `payment_mode` on `donations`; `amount` on `expenses`). Breaks the audit trail that the whole transparency feature depends on.
+- **No destructive updates on settled financial records** (`amount`, `donor_name`). For corrections, use `donation_corrections`. For unsettled `PENDING` donations, payment mode transitions (`PENDING → CASH` or `PENDING → UPI`) must occur strictly through transactional endpoint `POST /donations/collect-pending` with full verification tracking.
 - **No paid WhatsApp Business API integration** for MVP — click-to-chat deep links only. Business API adds cost and approval overhead the product doesn't need at this stage; revisit only if volume/scale genuinely demands it.
 - **No storing files (images, PDFs) as database blobs.** Object storage only (R2/S3), referenced by URL.
-- **No trusting client-reported payment status for UPI/bank transfer without a verification path.** Never treat `payment_mode = 'UPI'` as equivalent to confirmed cash-in-hand.
+- **No trusting client-reported payment status for UPI without a verification path.** Never treat `payment_mode = 'UPI'` as equivalent to confirmed cash-in-hand without verification status.
 - **No global/shared state libraries (Redux, MobX, etc.) on the frontend.** The app's state needs (form state, offline queue, server data) are covered by React Hook Form, the offline-queue module, and server components / fetch caching. Avoid the added complexity unless a concrete need arises.
 - **No ORMs that hide raw SQL entirely** (e.g. avoid deep Prisma "magic" for the financial tables) — reconciliation and ledger queries need to be auditable as plain SQL. A lightweight query builder (Kysely) or raw parameterized queries are preferred over full ORM abstraction for the financial modules. ORM use is fine for low-risk tables (mandal profile, member metadata).
 - **No hardcoded language strings in components.** All donor-facing text goes through the i18n layer — receipts and forms must support Marathi/Hindi/Gujarati/English without code changes per language.

@@ -160,6 +160,9 @@ function ReconciliationContent() {
           <Link href="/members" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
             {t.members}
           </Link>
+          <Link href="/reports" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+            {t.reports}
+          </Link>
           {role === Role.ADMIN && (
             <Link href="/settings" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
               {t.settings}

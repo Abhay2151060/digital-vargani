@@ -43,8 +43,8 @@ const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
 };
 
 const PAYMENT_MODE_LABELS: Record<ReceiptLanguage, Record<PaymentMode, string>> = {
-  mr: { CASH: 'रोख (Cash)', UPI: 'यूपीआय (UPI)', BANK_TRANSFER: 'बँक ट्रान्सफर (Bank Transfer)', CHEQUE: 'धनादेश (Cheque)' },
-  en: { CASH: 'Cash', UPI: 'UPI', BANK_TRANSFER: 'Bank transfer', CHEQUE: 'Cheque' },
+  mr: { CASH: 'रोख (Cash)', UPI: 'यूपीआय (UPI)', PENDING: 'प्रलंबित (Pending)' },
+  en: { CASH: 'Cash', UPI: 'UPI', PENDING: 'Pending' },
 };
 
 function getInitials(name: string): string {

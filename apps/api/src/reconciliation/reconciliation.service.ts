@@ -147,7 +147,7 @@ export class ReconciliationService {
          COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE THEN amount ELSE 0 END), 0) as today_collected,
          COALESCE(SUM(CASE WHEN payment_mode = 'CASH' THEN amount ELSE 0 END), 0) as cash_collected,
          COALESCE(SUM(CASE WHEN payment_mode = 'UPI' THEN amount ELSE 0 END), 0) as upi_collected,
-         COALESCE(SUM(CASE WHEN payment_mode = 'BANK_TRANSFER' OR payment_mode = 'CHEQUE' THEN amount ELSE 0 END), 0) as bank_collected,
+         COALESCE(SUM(CASE WHEN payment_mode = 'PENDING' THEN amount ELSE 0 END), 0) as pending_collected,
          COALESCE(SUM(CASE WHEN payment_mode = 'CASH' AND is_reconciled = FALSE THEN amount ELSE 0 END), 0) as cash_in_hand_volunteers,
          COALESCE(SUM(CASE WHEN payment_mode = 'CASH' AND is_reconciled = TRUE THEN amount ELSE 0 END), 0) as cash_reconciled
        FROM donations
@@ -174,6 +174,7 @@ export class ReconciliationService {
          u.full_name as volunteer_name,
          COALESCE(SUM(CASE WHEN d.payment_mode = 'CASH' AND d.created_at::DATE = CURRENT_DATE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as today_cash_collected,
          COALESCE(SUM(CASE WHEN d.payment_mode = 'UPI' AND d.created_at::DATE = CURRENT_DATE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as today_upi_collected,
+         COALESCE(SUM(CASE WHEN d.payment_mode = 'PENDING' AND d.created_at::DATE = CURRENT_DATE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as today_pending_collected,
          COALESCE(SUM(CASE WHEN d.payment_mode = 'CASH' AND d.is_reconciled = FALSE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as total_cash_unreconciled,
          COUNT(d.id) FILTER (WHERE d.is_voided = FALSE) as total_donations_count
        FROM mandal_members mm
@@ -201,7 +202,7 @@ export class ReconciliationService {
       today_total_collected: parseFloat(totals.today_collected),
       total_cash_collected: parseFloat(totals.cash_collected),
       total_upi_collected: parseFloat(totals.upi_collected),
-      total_bank_collected: parseFloat(totals.bank_collected),
+      total_pending_collected: parseFloat(totals.pending_collected),
       total_cash_in_hand_volunteers: parseFloat(totals.cash_in_hand_volunteers),
       total_cash_reconciled: parseFloat(totals.cash_reconciled),
       total_approved_expenses: approvedExpenses,
@@ -212,6 +213,7 @@ export class ReconciliationService {
         volunteer_name: v.volunteer_name,
         today_cash_collected: parseFloat(v.today_cash_collected),
         today_upi_collected: parseFloat(v.today_upi_collected),
+        today_pending_collected: parseFloat(v.today_pending_collected),
         total_cash_unreconciled: parseFloat(v.total_cash_unreconciled),
         total_donations_count: parseInt(v.total_donations_count, 10),
       })),

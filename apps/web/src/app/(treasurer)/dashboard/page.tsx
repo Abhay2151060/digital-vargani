@@ -7,7 +7,7 @@ import { OfflineBanner } from '../../../components/OfflineBanner';
 import { Card, Button } from '@vargani/ui';
 import { apiRequest, downloadFile } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
-import { TreasurerOverview, Role } from '@vargani/types';
+import { TreasurerOverview, Role, Language } from '@vargani/types';
 import Link from 'next/link';
 import {
   IndianRupee,
@@ -97,6 +97,12 @@ export default function TreasurerDashboardPage() {
             >
               {t.members}
             </Link>
+            <Link
+              href="/reports"
+              className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC] hover:text-[#292118]"
+            >
+              {t.reports}
+            </Link>
             {role === Role.ADMIN && (
               <Link
                 href="/settings"
@@ -116,7 +122,7 @@ export default function TreasurerDashboardPage() {
               className="text-xs h-8 gap-1"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{isExportingDonations ? 'डाउनलोड होत आहे...' : 'वर्गणी CSV'}</span>
+              <span>{isExportingDonations ? t.downloading : t.donations_csv}</span>
             </Button>
             <Button
               variant="outline"
@@ -126,11 +132,11 @@ export default function TreasurerDashboardPage() {
               className="text-xs h-8 gap-1"
             >
               <FileSpreadsheet className="w-3.5 h-3.5 text-red-600" />
-              <span>{isExportingExpenses ? 'डाउनलोड होत आहे...' : 'खर्च CSV'}</span>
+              <span>{isExportingExpenses ? t.downloading : t.expenses_csv}</span>
             </Button>
             <Link href={`/mandal/${activeMandal?.slug}/transparency`} target="_blank">
               <Button variant="ghost" size="sm" className="text-xs h-8 gap-1">
-                <span>पारदर्शकता पोर्टल</span>
+                <span>{t.transparency_portal}</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </Button>
             </Link>
@@ -146,13 +152,15 @@ export default function TreasurerDashboardPage() {
               {activeMandal?.name} - {t.dashboard}
             </h2>
             <p className="text-xs text-[#6B6459] mt-0.5">
-              थेट उत्सव जमा, खर्च आणि कार्यकर्त्यांकडील रोख रक्कमेचा हिशोब
+              {language === Language.ENGLISH
+                ? 'Live festival collections, approved expenses, and cash reconciliation.'
+                : 'थेट उत्सव जमा, खर्च आणि कार्यकर्त्यांकडील रोख रक्कमेचा हिशोब'}
             </p>
           </div>
 
           <Link href="/collect">
             <Button variant="primary" size="md" className="font-bold gap-1.5">
-              <span>+ नवीन वर्गणी पावती</span>
+              <span>{t.new_receipt}</span>
             </Button>
           </Link>
         </div>
@@ -239,7 +247,7 @@ export default function TreasurerDashboardPage() {
         {/* Payment Mode Split */}
         <Card variant="default" padding="md" className="shadow-sm">
           <h3 className="text-sm font-bold text-[#292118] mb-3">पेमेंट मोडनुसार वर्गीकरण (Collections Breakdown)</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 bg-[#F3F1EC] rounded-2xl border border-[#E5E1D8]">
               <span className="text-xs font-semibold text-[#6B6459]">रोख वर्गणी (Cash Collection)</span>
               <p className="text-2xl font-bold text-[#292118] mt-1">
@@ -256,6 +264,14 @@ export default function TreasurerDashboardPage() {
                 ₹{overview?.total_upi_collected.toLocaleString('en-IN') || '0'}
               </p>
               <p className="text-xs text-blue-700 mt-1.5 font-medium">थेट मंडळाच्या बँक खात्यात जमा</p>
+            </div>
+
+            <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200">
+              <span className="text-xs font-semibold text-amber-800">येणे वर्गणी (Pending Collection)</span>
+              <p className="text-2xl font-bold text-amber-900 mt-1">
+                ₹{overview?.total_pending_collected?.toLocaleString('en-IN') || '0'}
+              </p>
+              <p className="text-xs text-amber-700 mt-1.5 font-medium">भविष्यात जमा होणे बाकी वर्गणी</p>
             </div>
           </div>
         </Card>

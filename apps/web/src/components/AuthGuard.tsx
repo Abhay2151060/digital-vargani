@@ -28,7 +28,7 @@ export const AuthGuard: React.FC<AuthGuardProps> = ({ children, allowedRoles }) 
           if (role === Role.ADMIN || role === Role.TREASURER) {
             router.replace('/dashboard');
           } else if (role === Role.VOLUNTEER) {
-            router.replace('/collect');
+            router.replace('/history');
           } else {
             router.replace('/login');
           }

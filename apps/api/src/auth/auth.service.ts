@@ -1,33 +1,19 @@
-import { Injectable, Inject, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DbService } from '../db/db.service';
-import { IOtpProvider, OTP_PROVIDER } from './otp-provider.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private db: DbService,
-    private jwtService: JwtService,
-    @Inject(OTP_PROVIDER) private otpProvider: IOtpProvider
+    private jwtService: JwtService
   ) {}
 
-  async requestOtp(phone: string) {
+  async login(phone: string, fullName?: string) {
     if (!/^[6-9]\d{9}$/.test(phone)) {
       throw new BadRequestException({
         code: 'INVALID_PHONE',
         message: 'Please enter a valid 10-digit Indian mobile number',
-      });
-    }
-
-    return await this.otpProvider.sendOtp(phone);
-  }
-
-  async verifyOtp(phone: string, otp: string, fullName?: string) {
-    const verifyRes = await this.otpProvider.verifyOtp(phone, otp);
-    if (!verifyRes.success) {
-      throw new UnauthorizedException({
-        code: 'INVALID_OTP',
-        message: verifyRes.message,
       });
     }
 
@@ -65,7 +51,10 @@ export class AuthService {
 
     // 3. Fetch mandal memberships
     let membershipsRes = await this.db.query(
-      `SELECT m.*, mm.role, mm.status as member_status
+      `SELECT m.id, m.name, m.slug, m.registration_number, m.city, m.area, 
+              m.festival_type, m.receipt_prefix, m.logo_url, m.upi_id, 
+              m.preset_amounts, m.hide_phone_numbers, m.is_active, 
+              mm.role, mm.status as member_status
        FROM mandal_members mm
        JOIN mandals m ON m.id = mm.mandal_id
        WHERE mm.user_id = $1 AND mm.status = 'ACTIVE' AND m.is_active = TRUE`,
@@ -81,9 +70,7 @@ export class AuthService {
       );
       if (defaultMandalRes.rows.length > 0) {
         const defaultMandalId = defaultMandalRes.rows[0].id;
-        const assignedRole =
-          phone === '9876543210' ? 'ADMIN' :
-          phone === '9876543211' ? 'TREASURER' : 'VOLUNTEER';
+        const assignedRole = phone === '8574968596' ? 'ADMIN' : 'VOLUNTEER';
 
         await this.db.query(
           `INSERT INTO mandal_members (mandal_id, user_id, role, status)
@@ -93,7 +80,10 @@ export class AuthService {
         );
 
         membershipsRes = await this.db.query(
-          `SELECT m.*, mm.role, mm.status as member_status
+          `SELECT m.id, m.name, m.slug, m.registration_number, m.city, m.area, 
+                  m.festival_type, m.receipt_prefix, m.logo_url, m.upi_id, 
+                  m.preset_amounts, m.hide_phone_numbers, m.is_active, 
+                  mm.role, mm.status as member_status
            FROM mandal_members mm
            JOIN mandals m ON m.id = mm.mandal_id
            WHERE mm.user_id = $1 AND mm.status = 'ACTIVE' AND m.is_active = TRUE`,
@@ -133,6 +123,21 @@ export class AuthService {
       memberships,
       accessToken,
     };
+  }
+
+  // Legacy wrappers for backward compatibility
+  async requestOtp(phone: string) {
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+      throw new BadRequestException({
+        code: 'INVALID_PHONE',
+        message: 'Please enter a valid 10-digit Indian mobile number',
+      });
+    }
+    return { success: true, message: 'Ready for login' };
+  }
+
+  async verifyOtp(phone: string, _otp?: string, fullName?: string) {
+    return await this.login(phone, fullName);
   }
 
   async switchMandal(userId: string, mandalId: string) {

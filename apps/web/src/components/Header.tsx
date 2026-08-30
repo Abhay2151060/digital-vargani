@@ -11,45 +11,30 @@ export const Header: React.FC = () => {
   const t = getT(language);
 
   const getRoleLabel = (r: Role | null) => {
-    switch (r) {
-      case Role.ADMIN:
-        return 'Admin';
-      case Role.TREASURER:
-        return 'खजिनदार (Treasurer)';
-      case Role.VOLUNTEER:
-        return 'कार्यकर्ता (Volunteer)';
-      default:
-        return '';
+    if (language === Language.ENGLISH) {
+      switch (r) {
+        case Role.ADMIN:
+          return 'Admin';
+        case Role.TREASURER:
+          return 'Treasurer';
+        case Role.VOLUNTEER:
+          return 'Volunteer';
+        default:
+          return '';
+      }
+    } else {
+      switch (r) {
+        case Role.ADMIN:
+          return 'व्यवस्थापक (Admin)';
+        case Role.TREASURER:
+          return 'खजिनदार (Treasurer)';
+        case Role.VOLUNTEER:
+          return 'कार्यकर्ता (Volunteer)';
+        default:
+          return '';
+      }
     }
   };
-
-  const getNavItems = () => {
-    if (role === Role.ADMIN) {
-      return [
-        { label: 'डॅशबोर्ड', href: '/dashboard' },
-        { label: 'खर्च', href: '/expenses' },
-        { label: 'सदस्य', href: '/members' },
-        { label: 'सेटिंग्ज', href: '/settings' },
-      ];
-    }
-    if (role === Role.TREASURER) {
-      return [
-        { label: 'डॅशबोर्ड', href: '/dashboard' },
-        { label: 'जमा जुळवणी', href: '/reconciliation' },
-        { label: 'अहवाल', href: '/reports' },
-      ];
-    }
-    if (role === Role.VOLUNTEER) {
-      return [
-        { label: 'पावती फाडा', href: '/collect' },
-        { label: 'माझे जमा', href: '/totals' },
-        { label: 'इतिहास', href: '/history' },
-      ];
-    }
-    return [];
-  };
-
-  const navItems = getNavItems();
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E5E1D8] shadow-xs">
@@ -85,21 +70,6 @@ export const Header: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Role Navigation Bar for Medium & Desktop Screens */}
-        {navItems.length > 0 && (
-          <nav className="hidden md:flex items-center gap-1 bg-[#F3F1EC] p-1 rounded-xl border border-[#E5E1D8]">
-            {navItems.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold text-[#6B6459] hover:text-[#F97316] hover:bg-white transition"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-        )}
 
         {/* Right Controls */}
         <div className="flex items-center gap-2">

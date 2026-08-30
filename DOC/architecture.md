@@ -56,6 +56,9 @@ Volunteer submits form → API validates + allocates receipt number from the vol
 **Donation entry (offline):**
 Volunteer submits form → written to IndexedDB with `sync_status = PENDING_SYNC` and a locally-generated `client_id` → on reconnect, frontend replays queued entries → API dedupes on `(mandal_id, client_id)` → confirmed entries marked `SYNCED` client-side.
 
+**Pending Donation Collection & Settlement (येणे वर्गणी):**
+User opens Donor Details on `/history` → selects pending record → clicks "वर्गणी जमा करा" → selects **Collect via UPI** (with optional UTR) or **Collect via Cash** → calls `POST /donations/collect-pending` → backend runs atomic transaction updating `payment_mode`, `payment_reference`, `payment_verification_status`, and `updated_at` → returns updated donation → frontend immediately refreshes state and updates receipt for re-sharing.
+
 **Cash reconciliation:**
 Treasurer opens reconciliation tab → API sums unreconciled `CASH` donations for a volunteer (`expected_amount`) → treasurer enters `received_amount` → API computes discrepancy, creates a `cash_reconciliations` row, links covered donations, marks them reconciled.
 
@@ -75,7 +78,7 @@ vargani-platform/
 │   │   │   └── icons/
 │   │   ├── src/
 │   │   │   ├── app/                # Next.js app router
-│   │   │   │   ├── (volunteer)/    # Donation entry flow
+│   │   │   │   ├── (volunteer)/    # Scoped volunteer views (history; /collect & /totals guarded)
 │   │   │   │   ├── (treasurer)/    # Dashboard, reconciliation
 │   │   │   │   ├── (admin)/        # Mandal setup, member management
 │   │   │   │   ├── mandal/[slug]/transparency/  # Public page

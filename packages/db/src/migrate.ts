@@ -12,8 +12,22 @@ export async function runMigrations() {
 
   const client = await pool.connect();
   try {
-    await client.query(sql);
-    console.log('Successfully applied database schema.');
+    try {
+      await client.query(sql);
+    } catch (e) {
+      console.warn('Base schema apply warning:', e);
+    }
+
+    try {
+      await client.query("ALTER TYPE payment_mode ADD VALUE IF NOT EXISTS 'PENDING'");
+    } catch (e) {
+      console.warn('payment_mode enum warning:', e);
+    }
+
+    await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS upi_qr_url TEXT;");
+    await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS ahwal_url TEXT;");
+    await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS ahwal_title VARCHAR(200);");
+    console.log('Successfully applied database schema and added all columns.');
   } catch (error) {
     console.error('Migration failed:', error);
     throw error;

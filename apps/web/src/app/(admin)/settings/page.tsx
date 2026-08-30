@@ -10,7 +10,7 @@ import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { FestivalType, Role, UpdateMandalProfileInput } from '@vargani/types';
 import Link from 'next/link';
-import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, ShieldAlert } from 'lucide-react';
+import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, QrCode, FileText, ExternalLink, FileCheck } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, role, activeMandal, language, updateActiveMandal, isLoading: authLoading } = useAuth();
@@ -18,6 +18,8 @@ export default function SettingsPage() {
   const router = useRouter();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const qrFileInputRef = useRef<HTMLInputElement>(null);
+  const ahwalFileInputRef = useRef<HTMLInputElement>(null);
 
   // Enforce Admin Only Access
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function SettingsPage() {
       if (role === Role.TREASURER) {
         router.replace('/dashboard');
       } else {
-        router.replace('/collect');
+        router.replace('/history');
       }
     }
   }, [role, authLoading, router]);
@@ -38,10 +40,15 @@ export default function SettingsPage() {
   const [receiptPrefix, setReceiptPrefix] = useState('G');
   const [upiId, setUpiId] = useState('');
   const [logoUrl, setLogoUrl] = useState('');
+  const [upiQrUrl, setUpiQrUrl] = useState('');
+  const [ahwalUrl, setAhwalUrl] = useState('');
+  const [ahwalTitle, setAhwalTitle] = useState('वार्षिक अहवाल व जमा-खर्च हिशोब');
   const [presetAmountsStr, setPresetAmountsStr] = useState('101, 251, 501, 1001, 2101, 5001');
   const [hidePhoneNumbers, setHidePhoneNumbers] = useState(true);
 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingQr, setIsUploadingQr] = useState(false);
+  const [isUploadingAhwal, setIsUploadingAhwal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,6 +63,9 @@ export default function SettingsPage() {
       setReceiptPrefix(activeMandal.receipt_prefix || 'G');
       setUpiId(activeMandal.upi_id || '');
       setLogoUrl(activeMandal.logo_url || '');
+      setUpiQrUrl(activeMandal.upi_qr_url || '');
+      setAhwalUrl(activeMandal.ahwal_url || '');
+      setAhwalTitle(activeMandal.ahwal_title || 'वार्षिक अहवाल व जमा-खर्च हिशोब');
       setPresetAmountsStr((activeMandal.preset_amounts || [101, 251, 501, 1001, 2101, 5001]).join(', '));
       setHidePhoneNumbers(activeMandal.hide_phone_numbers ?? true);
     }
@@ -132,6 +142,143 @@ export default function SettingsPage() {
     }
   };
 
+  // QR Code Upload Handler
+  const handleQrFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('कृपया केवळ QR कोड इमेज फाईल (PNG, JPG, JPEG, WEBP) निवडा.');
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      setError('QR कोड इमेज साईज ८ MB पेक्षा कमी असावी.');
+      return;
+    }
+
+    setIsUploadingQr(true);
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_SIZE = 500;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          setUpiQrUrl(canvas.toDataURL('image/png', 0.9));
+        } else {
+          setUpiQrUrl(event.target?.result as string);
+        }
+        setIsUploadingQr(false);
+      };
+      img.onerror = () => {
+        setError('QR कोड लोड करण्यात अडचण आली.');
+        setIsUploadingQr(false);
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      setError('फाईल वाचण्यात अडचण आली.');
+      setIsUploadingQr(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveQr = () => {
+    setUpiQrUrl('');
+    if (qrFileInputRef.current) {
+      qrFileInputRef.current.value = '';
+    }
+  };
+
+  // Ahwal (Report Document / PDF / Image) Upload Handler
+  const handleAhwalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 25 * 1024 * 1024) {
+      setError('अहवाल फाईल साईज २५ MB पेक्षा कमी असावी.');
+      return;
+    }
+
+    setIsUploadingAhwal(true);
+    setError(null);
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (file.type.startsWith('image/')) {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 1600;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            setAhwalUrl(canvas.toDataURL('image/jpeg', 0.85));
+          } else {
+            setAhwalUrl(result);
+          }
+          setIsUploadingAhwal(false);
+        };
+        img.onerror = () => {
+          setAhwalUrl(result);
+          setIsUploadingAhwal(false);
+        };
+        img.src = result;
+      } else {
+        setAhwalUrl(result);
+        setIsUploadingAhwal(false);
+      }
+    };
+    reader.onerror = () => {
+      setError('अहवाल फाईल वाचण्यात अडचण आली.');
+      setIsUploadingAhwal(false);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveAhwal = () => {
+    setAhwalUrl('');
+    if (ahwalFileInputRef.current) {
+      ahwalFileInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -156,6 +303,9 @@ export default function SettingsPage() {
         receipt_prefix: receiptPrefix.trim() || 'G',
         logo_url: logoUrl.trim() || null,
         upi_id: upiId.trim() || null,
+        upi_qr_url: upiQrUrl.trim() || null,
+        ahwal_url: ahwalUrl.trim() || null,
+        ahwal_title: ahwalTitle.trim() || 'वार्षिक अहवाल व जमा-खर्च हिशोब',
         preset_amounts: amounts.length > 0 ? amounts : [101, 251, 501, 1001, 2101, 5001],
         hide_phone_numbers: hidePhoneNumbers,
       };
@@ -165,7 +315,7 @@ export default function SettingsPage() {
         body: JSON.stringify(payload),
       });
 
-      setSuccessMsg('मंडळ माहिती व लोगो यशस्वीरीत्या सेव्ह झाले!');
+      setSuccessMsg('मंडळ माहिती, लोगो, QR कोड व अहवाल यशस्वीरीत्या सेव्ह झाले!');
       updateActiveMandal(updated);
       setTimeout(() => setSuccessMsg(null), 4000);
     } catch (err: any) {
@@ -202,6 +352,9 @@ export default function SettingsPage() {
           </Link>
           <Link href="/members" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
             {t.members}
+          </Link>
+          <Link href="/reports" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+            {t.reports}
           </Link>
           {role === Role.ADMIN && (
             <Link href="/settings" className="px-3 py-1.5 rounded-lg bg-orange-50 text-[#F97316] font-bold border border-orange-200">
@@ -301,6 +454,158 @@ export default function SettingsPage() {
                     </Button>
                   )}
                 </div>
+              </div>
+            </div>
+
+            {/* UPI QR Code Upload Section */}
+            <div className="p-4 bg-[#F8F7F4] rounded-2xl border border-[#E5E1D8] space-y-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  {/* QR Preview Box */}
+                  <div className="relative group w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20 overflow-hidden border-2 border-white shrink-0 bg-white">
+                    {upiQrUrl ? (
+                      <img
+                        src={upiQrUrl}
+                        alt="UPI QR Code Preview"
+                        className="w-full h-full object-contain p-1"
+                      />
+                    ) : (
+                      <QrCode className="w-8 h-8 text-white" />
+                    )}
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-[#292118] flex items-center gap-1.5">
+                      <QrCode className="w-4 h-4 text-blue-600" />
+                      <span>मंडळाचा UPI QR कोड (Payment QR Code)</span>
+                    </h3>
+                    <p className="text-xs text-[#6B6459] mt-0.5">
+                      हा QR कोड पावती पाडताना आणि पारदर्शकता पोर्टलवर भाविकांना दिसेल.
+                    </p>
+                    <span className="inline-block mt-1 text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-md border border-blue-200">
+                      {upiQrUrl ? '✓ अधिकृत QR कोड अपलोड आहे' : '⚠️ QR कोड अपलोड केलेला नाही'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <input
+                    type="file"
+                    ref={qrFileInputRef}
+                    onChange={handleQrFileChange}
+                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                    className="hidden"
+                    id="mandal-qr-input"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => qrFileInputRef.current?.click()}
+                    isLoading={isUploadingQr}
+                    className="font-semibold gap-1.5 flex-1 sm:flex-initial"
+                  >
+                    <Upload className="w-4 h-4 text-blue-600" />
+                    <span>{upiQrUrl ? 'QR कोड बदला (Change)' : 'QR कोड निवडा (Upload QR)'}</span>
+                  </Button>
+
+                  {upiQrUrl && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemoveQr}
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-1"
+                      title="QR कोड काढा"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="hidden sm:inline">काढा</span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Ahwal (Annual / Audit Report) Upload Section */}
+            <div className="p-4 bg-[#F8F7F4] rounded-2xl border border-[#E5E1D8] space-y-3">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white font-bold shadow-md shadow-emerald-500/20 overflow-hidden border-2 border-white shrink-0">
+                    <FileText className="w-8 h-8 text-emerald-100" />
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-[#292118] flex items-center gap-1.5">
+                      <FileCheck className="w-4 h-4 text-emerald-600" />
+                      <span>मंडळाचा अहवाल (Annual / Audit Report)</span>
+                    </h3>
+                    <p className="text-xs text-[#6B6459] mt-0.5">
+                      मंडळाचा वार्षिक जमा-खर्च अहवाल / पत्रक (PDF किंवा इमेज स्वरूपात).
+                    </p>
+                    <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200">
+                      {ahwalUrl ? '✓ अहवाल फाईल अपलोड आहे' : '⚠️ अहवाल अपलोड केलेला नाही'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <input
+                    type="file"
+                    ref={ahwalFileInputRef}
+                    onChange={handleAhwalFileChange}
+                    accept="application/pdf,image/png,image/jpeg,image/jpg"
+                    className="hidden"
+                    id="mandal-ahwal-input"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => ahwalFileInputRef.current?.click()}
+                    isLoading={isUploadingAhwal}
+                    className="font-semibold gap-1.5 flex-1 sm:flex-initial"
+                  >
+                    <Upload className="w-4 h-4 text-emerald-600" />
+                    <span>{ahwalUrl ? 'अहवाल बदला (Change)' : 'अहवाल निवडा (Upload Ahwal)'}</span>
+                  </Button>
+
+                  {ahwalUrl && (
+                    <>
+                      <a
+                        href={ahwalUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-2.5 py-1.5 rounded-lg border border-emerald-300 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-1 min-h-[36px]"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>पहा</span>
+                      </a>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemoveAhwal}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-1"
+                        title="अहवाल काढा"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="hidden sm:inline">काढा</span>
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Ahwal Title Input */}
+              <div className="pt-2 border-t border-[#E5E1D8]/60">
+                <Input
+                  label="अहवाल शीर्षक / वर्णन (Report Title)"
+                  placeholder="उदा. वार्षिक अहवाल व जमा-खर्च हिशोब २०२४-२५"
+                  value={ahwalTitle}
+                  onChange={(e) => setAhwalTitle(e.target.value)}
+                />
               </div>
             </div>
 

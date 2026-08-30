@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { OTP_PROVIDER } from './otp-provider.interface';
-import { MockOtpProvider } from './mock-otp.provider';
 
 @Module({
   imports: [
@@ -13,13 +11,7 @@ import { MockOtpProvider } from './mock-otp.provider';
     }),
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    {
-      provide: OTP_PROVIDER,
-      useClass: MockOtpProvider,
-    },
-  ],
+  providers: [AuthService],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

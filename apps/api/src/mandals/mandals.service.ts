@@ -40,8 +40,9 @@ export class MandalsService {
       `UPDATE mandals 
        SET name = $1, registration_number = $2, city = $3, area = $4, 
            festival_type = $5, receipt_prefix = $6, logo_url = $7, upi_id = $8, 
-           preset_amounts = $9, hide_phone_numbers = $10, updated_at = NOW()
-       WHERE id = $11
+           upi_qr_url = $9, ahwal_url = $10, ahwal_title = $11, preset_amounts = $12, 
+           hide_phone_numbers = $13, updated_at = NOW()
+       WHERE id = $14
        RETURNING *`,
       [
         input.name,
@@ -52,6 +53,9 @@ export class MandalsService {
         input.receipt_prefix,
         input.logo_url,
         input.upi_id,
+        input.upi_qr_url,
+        input.ahwal_url,
+        input.ahwal_title,
         input.preset_amounts,
         input.hide_phone_numbers,
         mandalId,

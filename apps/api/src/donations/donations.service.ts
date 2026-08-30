@@ -5,6 +5,7 @@ import {
   SyncDonationsBatchInput,
   CreateCorrectionInput,
   VoidDonationInput,
+  CollectPendingDonationInput,
   PaymentMode,
   PaymentVerificationStatus,
 } from '@vargani/types';
@@ -386,6 +387,53 @@ export class DonationsService {
          WHERE id = $3
          RETURNING *`,
         [userId, input.reason, donation.id]
+      );
+
+      return res.rows[0];
+    }, [mandalId]);
+  }
+
+  async collectPendingDonation(userId: string, input: CollectPendingDonationInput) {
+    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1`, [input.donation_id]);
+    if (findRes.rowCount === 0) {
+      throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation not found' });
+    }
+    const mandalId = findRes.rows[0].mandal_id;
+
+    return await this.db.withTransaction(async (client) => {
+      const donRes = await client.query(
+        `SELECT * FROM donations WHERE id = $1 FOR UPDATE`,
+        [input.donation_id]
+      );
+      if (donRes.rowCount === 0) {
+        throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation not found' });
+      }
+      const donation = donRes.rows[0];
+
+      if (donation.is_voided) {
+        throw new BadRequestException({ code: 'DONATION_VOIDED', message: 'Cannot collect a voided donation' });
+      }
+
+      if (donation.payment_mode !== PaymentMode.PENDING) {
+        throw new BadRequestException({ code: 'NOT_PENDING', message: 'Donation is not pending collection' });
+      }
+
+      const verificationStatus =
+        input.payment_mode === PaymentMode.CASH
+          ? PaymentVerificationStatus.NOT_REQUIRED
+          : input.payment_reference
+          ? PaymentVerificationStatus.VERIFIED
+          : PaymentVerificationStatus.PENDING_VERIFICATION;
+
+      const res = await client.query(
+        `UPDATE donations 
+         SET payment_mode = $1, 
+             payment_reference = COALESCE($2, payment_reference), 
+             payment_verification_status = $3, 
+             updated_at = NOW()
+         WHERE id = $4
+         RETURNING *`,
+        [input.payment_mode, input.payment_reference || null, verificationStatus, donation.id]
       );
 
       return res.rows[0];

@@ -19,8 +19,7 @@ export enum MemberStatus {
 export enum PaymentMode {
   CASH = 'CASH',
   UPI = 'UPI',
-  BANK_TRANSFER = 'BANK_TRANSFER',
-  CHEQUE = 'CHEQUE',
+  PENDING = 'PENDING',
 }
 
 export enum PaymentVerificationStatus {
@@ -92,6 +91,8 @@ export interface Mandal {
   logo_url?: string | null;
   upi_id?: string | null;
   upi_qr_url?: string | null;
+  ahwal_url?: string | null;
+  ahwal_title?: string | null;
   preset_amounts: number[];
   hide_phone_numbers: boolean;
   is_active: boolean;
@@ -240,6 +241,7 @@ export interface VolunteerTally {
   volunteer_name: string;
   today_cash_collected: number;
   today_upi_collected: number;
+  today_pending_collected: number;
   total_cash_unreconciled: number;
   total_donations_count: number;
 }
@@ -250,7 +252,7 @@ export interface TreasurerOverview {
   today_total_collected: number;
   total_cash_collected: number;
   total_upi_collected: number;
-  total_bank_collected: number;
+  total_pending_collected: number;
   total_cash_in_hand_volunteers: number;
   total_cash_reconciled: number;
   total_approved_expenses: number;
@@ -269,6 +271,10 @@ export interface PublicTransparencyReport {
     area?: string | null;
     festival_type: FestivalType;
     logo_url?: string | null;
+    upi_id?: string | null;
+    upi_qr_url?: string | null;
+    ahwal_url?: string | null;
+    ahwal_title?: string | null;
     hide_phone_numbers: boolean;
   };
   total_collected: number;
@@ -309,15 +315,17 @@ export interface PublicTransparencyReport {
 // ZOD VALIDATION SCHEMAS
 // ==========================================
 
-export const loginOtpRequestSchema = z.object({
+export const loginSchema = z.object({
   phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'),
-});
-export type LoginOtpRequestInput = z.infer<typeof loginOtpRequestSchema>;
-
-export const loginOtpVerifySchema = z.object({
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'),
-  otp: z.string().length(6, 'OTP must be 6 digits'),
   full_name: z.string().min(2, 'Name must be at least 2 characters').optional(),
+});
+export type LoginInput = z.infer<typeof loginSchema>;
+
+// Legacy schema aliases for backward compatibility
+export const loginOtpRequestSchema = loginSchema;
+export type LoginOtpRequestInput = LoginInput;
+export const loginOtpVerifySchema = loginSchema.extend({
+  otp: z.string().optional(),
 });
 export type LoginOtpVerifyInput = z.infer<typeof loginOtpVerifySchema>;
 
@@ -358,6 +366,13 @@ export const voidDonationSchema = z.object({
 });
 export type VoidDonationInput = z.infer<typeof voidDonationSchema>;
 
+export const collectPendingDonationSchema = z.object({
+  donation_id: z.string().uuid(),
+  payment_mode: z.enum([PaymentMode.CASH, PaymentMode.UPI]),
+  payment_reference: z.string().optional(),
+});
+export type CollectPendingDonationInput = z.infer<typeof collectPendingDonationSchema>;
+
 export const createExpenseSchema = z.object({
   mandal_id: z.string().uuid(),
   category: z.nativeEnum(ExpenseCategory),
@@ -392,6 +407,9 @@ export const updateMandalProfileSchema = z.object({
   receipt_prefix: z.string().min(2).max(10),
   logo_url: z.string().optional().nullable().or(z.literal('')),
   upi_id: z.string().optional().nullable().or(z.literal('')),
+  upi_qr_url: z.string().optional().nullable().or(z.literal('')),
+  ahwal_url: z.string().optional().nullable().or(z.literal('')),
+  ahwal_title: z.string().optional().nullable().or(z.literal('')),
   preset_amounts: z.array(z.number().positive()),
   hide_phone_numbers: z.boolean().default(true),
 });

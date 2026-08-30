@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { Header } from '../../../components/Header';
+import { AuthGuard } from '../../../components/AuthGuard';
+import { Role } from '@vargani/types';
 import { OfflineBanner } from '../../../components/OfflineBanner';
 import { Card, Button, BottomNav } from '@vargani/ui';
 import { apiRequest } from '../../../lib/api-client';
@@ -11,7 +13,7 @@ import { getT } from '../../../lib/i18n';
 import { Wallet, IndianRupee, QrCode, PlusCircle, Receipt, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function VolunteerTotalsPage() {
-  const { user, activeMandal, language } = useAuth();
+  const { user, activeMandal, role, language } = useAuth();
   const t = getT(language);
   const router = useRouter();
 
@@ -19,13 +21,13 @@ export default function VolunteerTotalsPage() {
   const [, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (activeMandal && user) {
+    if (activeMandal && user && (role === Role.ADMIN || role === Role.TREASURER)) {
       apiRequest<any[]>(`/donations?volunteerId=${user.id}`)
         .then(setDonations)
         .catch(console.error)
         .finally(() => setIsLoading(false));
     }
-  }, [activeMandal, user]);
+  }, [activeMandal, user, role]);
 
   const todayDonations = donations.filter((d) => {
     const dDate = new Date(d.created_at).toDateString();
@@ -49,7 +51,8 @@ export default function VolunteerTotalsPage() {
     .reduce((sum, d) => sum + parseFloat(d.amount), 0);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF9F6] pb-24">
+    <AuthGuard allowedRoles={[Role.ADMIN, Role.TREASURER]}>
+      <div className="min-h-screen flex flex-col bg-[#FAF9F6] pb-24">
       <Header />
       <OfflineBanner />
 
@@ -145,5 +148,6 @@ export default function VolunteerTotalsPage() {
         }}
       />
     </div>
+    </AuthGuard>
   );
 }

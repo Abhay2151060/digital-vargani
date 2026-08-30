@@ -34,7 +34,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       this.logger.error(`Unhandled Exception: ${exception.message}`, exception.stack);
-      message = exception.message;
       // Check for Payload Too Large
       if ((exception as any).type === 'entity.too.large' || (exception as any).status === 413) {
         status = HttpStatus.PAYLOAD_TOO_LARGE;
@@ -46,6 +45,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
         status = HttpStatus.CONFLICT;
         code = 'DUPLICATE_ENTRY';
         message = 'A record with this identifier already exists.';
+      } else {
+        // In production, do not leak internal database/system errors
+        if (process.env.NODE_ENV === 'production') {
+          message = 'An internal server error occurred. Please try again later.';
+        } else {
+          message = exception.message;
+        }
       }
     }
 

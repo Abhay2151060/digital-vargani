@@ -22,7 +22,7 @@ UI/UX guidelines and visual design system — Digital Vargani / Mandal Fund & Re
 - Design and test against real-world constraints: mid-range Android screens, occasionally cracked/degraded displays, direct sunlight (outdoor pandal collection) — favor high contrast over subtlety.
 
 ### Easy navigation and accessibility
-- Bottom tab navigation for the volunteer flow (max 3–4 tabs: Collect, My Totals, Receipts, Profile) — no hamburger menus burying the core action.
+- Bottom tab navigation for mobile views (History tab for Volunteer role; Collect, Totals, and History tabs for Treasurer/Admin roles) — no hamburger menus burying the core action.
 - Treasurer/Admin views can use a simple top nav or side drawer since they're used in shorter, less frequent, more deliberate sessions.
 - WCAG AA minimum contrast ratios (4.5:1 for body text, 3:1 for large text/UI components) — non-negotiable given outdoor/bright-light usage.
 - All interactive elements have visible focus states and accessible labels (screen-reader support), even though the primary user base is mobile-touch — some admin/treasurer usage may happen on desktop with assistive tech.
@@ -68,11 +68,20 @@ The palette draws on the festival context (Ganeshotsav/Navratri) without leaning
 | Role | Color | Hex | Example use |
 |---|---|---|---|
 | Success | Green | `#16A34A` | Donation synced, reconciliation matched, expense approved |
-| Warning | Amber | `#D97706` | Pending sync, pending approval, pending verification |
+| Warning | Amber | `#D97706` | Pending collection (येणे वर्गणी), pending sync, pending approval |
 | Error | Red | `#DC2626` | Reconciliation discrepancy, sync conflict, failed payment verification |
 | Info | Blue | `#2563EB` | Neutral informational states (e.g. "invite sent") |
 
 All status colors are paired with an icon + text label (never color alone) per the accessibility rule in Section 1.
+
+### Pending Collection & Settle Modal Design
+- **Trigger**: "वर्गणी जमा करा (Collect)" button on any pending donation item.
+- **Header**: "येणे वर्गणी जमा करा (Add Collection)" with amber wallet icon.
+- **Card Summary**: Displays Donor Name, Receipt No, and Amount formatted in large bold typography.
+- **Payment Method Selectors**: High-contrast two-column toggle cards:
+  - 📱 **Collect via UPI (यूपीआय द्वारे)**: Blue accent with QR icon and optional UTR reference input.
+  - 💵 **Collect via Cash (रोख द्वारे)**: Emerald accent with Wallet icon.
+- **Confirm CTA**: Full-width saffron primary button with live loading state indicator.
 
 ### Light & Dark theme support
 - **Light theme is the default and the primary target for MVP** — most usage happens outdoors/in daylight where dark mode has little benefit and can hurt readability.

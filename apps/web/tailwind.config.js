@@ -32,7 +32,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['var(--font-inter)', 'var(--font-noto-devanagari)', 'var(--font-noto-gujarati)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'var(--font-noto-devanagari)', 'system-ui', 'sans-serif'],
       },
     },
   },

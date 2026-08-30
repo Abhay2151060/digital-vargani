@@ -106,6 +106,9 @@ export default function MembersPage() {
           <Link href="/members" className="px-3 py-1.5 rounded-lg bg-orange-50 text-[#F97316] font-bold border border-orange-200">
             {t.members}
           </Link>
+          <Link href="/reports" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+            {t.reports}
+          </Link>
           {role === Role.ADMIN && (
             <Link href="/settings" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
               {t.settings}
@@ -123,15 +126,17 @@ export default function MembersPage() {
             </p>
           </div>
 
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => setIsModalOpen(true)}
-            className="font-bold gap-1.5 self-start"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>नवीन कार्यकर्ता जोडा</span>
-          </Button>
+          {role === Role.ADMIN && (
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => setIsModalOpen(true)}
+              className="font-bold gap-1.5 self-start"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>नवीन कार्यकर्ता जोडा</span>
+            </Button>
+          )}
         </div>
 
         {/* Members Table */}
@@ -152,7 +157,7 @@ export default function MembersPage() {
                   <th className="px-4 py-3">भूमिका (Role)</th>
                   <th className="px-4 py-3">पावती पुस्तक ब्लॉक</th>
                   <th className="px-4 py-3 text-center">स्थिती (Status)</th>
-                  <th className="px-4 py-3 text-center">सक्रिय / निष्क्रिय</th>
+                  {role === Role.ADMIN && <th className="px-4 py-3 text-center">सक्रिय / निष्क्रिय</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E1D8]">
@@ -185,18 +190,20 @@ export default function MembersPage() {
                         <StatusBadge status="neutral" label="Revoked" size="sm" />
                       )}
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <button
-                        onClick={() => handleToggleStatus(m.id, m.status)}
-                        className={`text-xs font-bold px-2.5 py-1 rounded transition ${
-                          m.status === MemberStatus.ACTIVE
-                            ? 'text-red-600 hover:bg-red-50'
-                            : 'text-emerald-600 hover:bg-emerald-50'
-                        }`}
-                      >
-                        {m.status === MemberStatus.ACTIVE ? 'बंद करा (Deactivate)' : 'सक्रिय करा'}
-                      </button>
-                    </td>
+                    {role === Role.ADMIN && (
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => handleToggleStatus(m.id, m.status)}
+                          className={`text-xs font-bold px-2.5 py-1 rounded transition ${
+                            m.status === MemberStatus.ACTIVE
+                              ? 'text-red-600 hover:bg-red-50'
+                              : 'text-emerald-600 hover:bg-emerald-50'
+                          }`}
+                        >
+                          {m.status === MemberStatus.ACTIVE ? 'बंद करा (Deactivate)' : 'सक्रिय करा'}
+                        </button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>

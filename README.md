@@ -18,9 +18,26 @@ This project is built as a **Turborepo** monorepo:
 └── turbo.json        # Turborepo task pipeline configuration
 ```
 
-- **`apps/web`**: Responsive Next.js web portal supporting Admin, Volunteer, and Public views.
-- **`apps/api`**: NestJS backend providing JWT authentication, RBAC authorization, transaction handling, and dashboard reporting.
+- **`apps/web`**: Responsive Next.js web portal supporting Admin, Treasurer, Volunteer, and Public views.
+- **`apps/api`**: NestJS backend providing JWT authentication, strict RBAC authorization (with Volunteer role scoped to History and Admin/Treasurer handling Collection & Reconciliation), transaction handling, and dashboard reporting.
 - **`packages/db`**: Shared Prisma database package handling schema definitions, migrations, and seed scripts.
+
+---
+
+## 🔐 Role-Based Access Control (RBAC)
+
+- **Admin & Treasurer**: Access to Dashboard, Expense Management, Member Administration, Donation Collection (`/collect`), Cash Reconciliation (`/totals` / `/reconciliation`), Pending Collection tracking (`येणे वर्गणी`), and Profile Settings (`/settings`) where the Admin uploads the Mandal Logo, **UPI Payment QR Code (QR कोड)**, and official **Mandal Ahwal (अहवाल - Annual / Audit Report)**.
+- **Volunteer (कार्यकर्ता)**: Scoped access to view complete Mandal donor details & collection history (`/history`), view receipts, share receipts via WhatsApp, and collect pending donations (**"येणे वर्गणी जमा करा"** via **Collect via UPI** or **Collect via Cash**). Direct receipt issuance (`/collect`) and cash totals (`/totals`) permissions are restricted to Treasurers and Admins.
+
+---
+
+## 💰 Payment Modes & Collection Lifecycle
+
+- **Cash (रोख)**: Instant physical cash collection. Reconciled with Treasurer during cash handover.
+- **UPI (यूपीआय)**: Instant digital payment with optional UTR / payment reference verification.
+- **Pending (येणे वर्गणी)**: Promised or pending collection. Can be settled directly from the Volunteer/Treasurer history view via **"वर्गणी जमा करा (Add Collection)"** using:
+  - **Collect via UPI (यूपीआय द्वारे)**
+  - **Collect via Cash (रोख द्वारे)**
 
 ---
 

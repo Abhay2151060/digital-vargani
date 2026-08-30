@@ -10,6 +10,10 @@ import {
   QrCode,
   Users,
   FileCheck,
+  FileText,
+  ExternalLink,
+  Download,
+  CheckCircle2,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -20,6 +24,20 @@ export default function PublicTransparencyPage() {
   const [report, setReport] = useState<PublicTransparencyReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const handleDownloadAhwal = (url: string, title?: string | null) => {
+    try {
+      const link = document.createElement('a');
+      link.href = url;
+      const extension = url.startsWith('data:image/') ? 'png' : 'pdf';
+      link.download = `${title || 'mandal-ahwal'}-${slug}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      window.open(url, '_blank');
+    }
+  };
 
   useEffect(() => {
     if (slug) {
@@ -158,6 +176,96 @@ export default function PublicTransparencyPage() {
               )}
             </div>
           </Card>
+        </div>
+
+        {/* Mandal Ahwal (Annual Report) & UPI QR Code Section */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Ahwal Card */}
+          <div className="bg-gradient-to-br from-[#0F766E] to-[#115E59] text-white rounded-3xl p-5 shadow-md flex flex-col justify-between space-y-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3.5">
+                <div className="w-13 h-13 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white shrink-0 border border-white/20">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full inline-block">
+                    मंडळाचा अधिकृत अहवाल
+                  </span>
+                  <h3 className="text-base font-extrabold mt-1">
+                    {mandal.ahwal_title || 'वार्षिक अहवाल व जमा-खर्च हिशोब'}
+                  </h3>
+                  <p className="text-xs text-teal-100 mt-0.5">
+                    {mandal.ahwal_url
+                      ? 'मंडळाचे अधिकृत ऑडिट अहवाल पत्रक'
+                      : 'डिजिटल हिशोब खालील पत्रकात उपलब्ध आहे.'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {mandal.ahwal_url ? (
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadAhwal(mandal.ahwal_url!, mandal.ahwal_title)}
+                  className="py-2.5 px-3 rounded-xl bg-white text-teal-900 hover:bg-teal-50 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm transition"
+                >
+                  <Download className="w-4 h-4 text-teal-700 shrink-0" />
+                  <span>अहवाल डाउनलोड करा</span>
+                </button>
+
+                <a
+                  href={mandal.ahwal_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="py-2.5 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-black flex items-center justify-center gap-1.5 border border-white/30 transition"
+                >
+                  <ExternalLink className="w-4 h-4 shrink-0" />
+                  <span>अहवाल पहा</span>
+                </a>
+              </div>
+            ) : (
+              <div className="pt-2">
+                <div className="py-2 px-3 rounded-xl bg-white/10 border border-white/20 text-xs text-teal-100 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-teal-300 shrink-0" />
+                  <span>स्वाक्षरी अहवाल प्रशासकाद्वारे लवकरच जोडला जाईल</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* UPI QR Donation Card */}
+          <div className="bg-white rounded-3xl p-5 border border-[#E5E1D8] shadow-sm flex items-center justify-between gap-4">
+            <div>
+              <span className="text-[10px] font-extrabold text-[#C2410C] uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
+                डिजिटल देणगी (Donate Online)
+              </span>
+              <h3 className="text-base font-extrabold text-[#292118] mt-1">मंडळास देणगी द्या</h3>
+              <p className="text-xs text-[#6B6459] mt-0.5">
+                UPI QR स्कॅन करून थेट मंडळाच्या खात्यात वर्गणी जमा करा.
+              </p>
+              {mandal.upi_id && (
+                <p className="text-xs font-bold text-blue-700 mt-2 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100 inline-block">
+                  UPI ID: {mandal.upi_id}
+                </p>
+              )}
+            </div>
+
+            {mandal.upi_qr_url ? (
+              <div className="w-24 h-24 rounded-2xl border-2 border-[#F97316] p-1 bg-white shadow-sm shrink-0 flex items-center justify-center">
+                <img
+                  src={mandal.upi_qr_url}
+                  alt="Mandal Donation UPI QR"
+                  className="w-full h-full object-contain rounded-xl"
+                />
+              </div>
+            ) : (
+              <div className="w-20 h-20 rounded-2xl bg-orange-50 border border-orange-200 flex flex-col items-center justify-center text-[#F97316] shrink-0 p-2 text-center">
+                <QrCode className="w-7 h-7" />
+                <span className="text-[9px] font-bold mt-1">QR कोड</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Public Donor Roll */}

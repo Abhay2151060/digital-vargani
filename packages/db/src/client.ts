@@ -30,10 +30,14 @@ export async function query<T extends QueryResultRow = any>(
   const client = await pool.connect();
   try {
     if (mandalIds && mandalIds.length > 0) {
-      await client.query(`SET LOCAL app.current_mandal_ids = '${mandalIds.join(',')}'`);
+      await client.query(`SELECT set_config('app.current_mandal_ids', $1, true)`, [mandalIds.join(',')]);
     }
     return await client.query<T>(text, params);
   } finally {
+    // Reset session configuration to prevent connection pool leakage
+    try {
+      await client.query(`SELECT set_config('app.current_mandal_ids', '', false)`);
+    } catch {}
     client.release();
   }
 }
@@ -46,7 +50,7 @@ export async function withTransaction<T>(
   try {
     await client.query('BEGIN');
     if (mandalIds && mandalIds.length > 0) {
-      await client.query(`SET LOCAL app.current_mandal_ids = '${mandalIds.join(',')}'`);
+      await client.query(`SELECT set_config('app.current_mandal_ids', $1, true)`, [mandalIds.join(',')]);
     }
     const result = await callback(client);
     await client.query('COMMIT');
@@ -55,6 +59,9 @@ export async function withTransaction<T>(
     await client.query('ROLLBACK');
     throw error;
   } finally {
+    try {
+      await client.query(`SELECT set_config('app.current_mandal_ids', '', false)`);
+    } catch {}
     client.release();
   }
 }

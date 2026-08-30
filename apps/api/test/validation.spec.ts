@@ -1,5 +1,5 @@
 import {
-  loginOtpRequestSchema,
+  loginSchema,
   createDonationSchema,
   createExpenseSchema,
   createReconciliationSchema,
@@ -9,14 +9,14 @@ import {
 } from '@vargani/types';
 
 describe('Validation Schemas (Zod)', () => {
-  describe('loginOtpRequestSchema', () => {
+  describe('loginSchema', () => {
     it('should validate valid Indian mobile numbers', () => {
-      const valid = loginOtpRequestSchema.safeParse({ phone: '9822012345' });
+      const valid = loginSchema.safeParse({ phone: '9822012345' });
       expect(valid.success).toBe(true);
     });
 
     it('should reject landlines or invalid mobile prefixes', () => {
-      const invalid = loginOtpRequestSchema.safeParse({ phone: '0202543123' });
+      const invalid = loginSchema.safeParse({ phone: '0202543123' });
       expect(invalid.success).toBe(false);
     });
   });

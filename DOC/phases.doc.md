@@ -21,9 +21,9 @@ Breakdown of the project into manageable phases — Digital Vargani / Mandal Fun
 
 ## PHASE 2: DASHBOARD
 
-- **Dashboard layout:** Persona-specific layouts — Volunteer (collection-first, minimal chrome), Treasurer (stats + reconciliation access), Admin (mandal settings + member management).
+- **Dashboard layout:** Persona-specific layouts — Volunteer (history view), Treasurer (stats, collection + reconciliation access), Admin (mandal settings + member management).
 - **Overview cards/stats:**
-  - Volunteer: today's collections, personal cash-in-hand.
+  - Volunteer: personal collection history (`/history`). Access to `/collect` and `/totals` is restricted to Treasurer and Admin.
   - Treasurer: total collected today vs. festival total, cash vs. UPI/bank split, live cash-in-hand per volunteer.
   - Admin: active volunteer count, pending expense approvals, pending member invites.
 - **Navigation setup:** Route groups by role (`(volunteer)`, `(treasurer)`, `(admin)`) as defined in `architecture.md`; bottom-tab nav on mobile for volunteer flow (fastest thumb-reach for the 10-second entry target).
@@ -47,23 +47,25 @@ Main entities: **Donations**, **Expenses**, **Mandal Members**, **Mandal Profile
   - Expense list/detail.
   - Mandal profile view.
 - **Update:**
+  - Pending donation collection & settlement: convert `PENDING` donations into `CASH` or `UPI` via `POST /donations/collect-pending`.
   - Donation corrections go through the `donation_corrections` append-only pattern — never a direct field edit (see `rules.md`, Section 2).
   - Expense edits allowed only while `status = PENDING`; once `APPROVED`/`REJECTED`, further changes require a new entry + admin note.
   - Mandal profile and member role/status updates (admin only).
 - **Delete:**
   - No hard deletes on donations/expenses — `is_voided` soft-delete with `voided_by`/`voided_reason` instead, preserving the audit trail.
   - Member removal sets `status = REVOKED`, not a row delete.
-- **Form validation:** Zod (frontend) + class-validator DTOs (backend), shared shape — required donor name, valid amount (`> 0`), valid payment mode, phone format check when WhatsApp receipt is requested.
-- **List & detail views:** Paginated donation/expense lists per mandal, receipt detail view with QR + WhatsApp share action.
-- **Search, filter & sort:** Filter donations by date range, payment mode, volunteer, reconciliation status; filter expenses by category/status; sort by date or amount.
+- **Form validation:** Zod (frontend) + class-validator DTOs (backend), shared shape — required donor name, valid amount (`> 0`), valid payment mode (`CASH`, `UPI`, `PENDING`), phone format check when WhatsApp receipt is requested.
+- **List & detail views:** Paginated donation/expense lists per mandal, receipt detail view with QR + WhatsApp share action, and "वर्गणी जमा करा" action on pending donations.
+- **Search, filter & sort:** Filter donations by date range, payment mode (Cash/UPI/Pending), volunteer, reconciliation status; filter expenses by category/status; sort by date or amount.
 
-**Exit criteria:** A volunteer can create a donation offline or online; a treasurer/admin can view, filter, correct (via the append-only pattern), and void records without ever losing the audit trail.
+**Exit criteria:** A volunteer can create a donation offline or online, view full donor details, and settle pending collections; a treasurer/admin can view, filter, correct (via the append-only pattern), and void records without ever losing the audit trail.
 
 ---
 
 ## PHASE 4: ADDITIONAL FEATURES
 
 - **Business logic & rules:**
+  - Pending collection (येणे वर्गणी) settlement workflow: `PENDING → CASH` (ready for cash reconciliation) or `PENDING → UPI` (with payment reference).
   - Cash reconciliation workflow (expected vs. received, discrepancy flagging + resolution).
   - Expense approval workflow (`PENDING → APPROVED/REJECTED`, only approved expenses count toward the public balance sheet).
   - Server-allocated receipt number ranges to prevent offline collisions.

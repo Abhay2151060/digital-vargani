@@ -4,14 +4,15 @@ import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { CreateDonationInput, SyncDonationsBatchInput, CreateCorrectionInput, VoidDonationInput, Role } from '@vargani/types';
+import { CreateDonationInput, SyncDonationsBatchInput, CreateCorrectionInput, VoidDonationInput, CollectPendingDonationInput, Role } from '@vargani/types';
 
 @Controller('donations')
 export class DonationsController {
   constructor(private donationsService: DonationsService) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.TREASURER, Role.ADMIN)
   async createDonation(
     @CurrentUser('userId') volunteerId: string,
     @CurrentUser('mandalId') mandalId: string,
@@ -30,7 +31,8 @@ export class DonationsController {
   }
 
   @Post('sync-batch')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.TREASURER, Role.ADMIN)
   async syncBatch(
     @CurrentUser('userId') volunteerId: string,
     @CurrentUser('mandalId') mandalId: string,
@@ -48,7 +50,8 @@ export class DonationsController {
   }
 
   @Get('my-allocation')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.TREASURER, Role.ADMIN)
   async getMyAllocation(
     @CurrentUser('userId') volunteerId: string,
     @CurrentUser('mandalId') mandalId: string
@@ -64,12 +67,19 @@ export class DonationsController {
     @CurrentUser('role') role: Role,
     @CurrentUser('userId') userId: string,
     @Query('volunteerId') volunteerId?: string,
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string
   ) {
-    // Role-based scoping: VOLUNTEER can only view their own recorded donations
-    const targetVolunteerId = role === Role.VOLUNTEER ? userId : volunteerId;
-    const list = await this.donationsService.listDonations(mandalId, { volunteerId: targetVolunteerId, limit, offset });
+    // IDOR Defense: If caller is a VOLUNTEER, restrict strictly to their own donations
+    const effectiveVolunteerId = role === Role.VOLUNTEER ? userId : volunteerId;
+    const parsedLimit = Math.min(Math.max(parseInt(limit || '100', 10) || 100, 1), 100);
+    const parsedOffset = Math.max(parseInt(offset || '0', 10) || 0, 0);
+
+    const list = await this.donationsService.listDonations(mandalId, {
+      volunteerId: effectiveVolunteerId,
+      limit: parsedLimit,
+      offset: parsedOffset,
+    });
     return { success: true, code: 'DONATIONS_FETCHED', data: list };
   }
 
@@ -92,9 +102,15 @@ export class DonationsController {
   @UseGuards(AuthGuard)
   async getDonation(
     @CurrentUser('mandalId') mandalId: string,
+    @CurrentUser('role') role: Role,
+    @CurrentUser('userId') userId: string,
     @Param('id') donationId: string
   ) {
     const donation = await this.donationsService.getDonationById(mandalId, donationId);
+    // If volunteer, only allow viewing if they recorded it
+    if (role === Role.VOLUNTEER && donation.volunteer_id !== userId) {
+      return { success: false, code: 'FORBIDDEN', message: 'You can only view your own donation records' };
+    }
     return { success: true, code: 'DONATION_FETCHED', data: donation };
   }
 
@@ -126,6 +142,21 @@ export class DonationsController {
       success: true,
       code: 'DONATION_VOIDED',
       message: 'Donation marked as voided',
+      data: donation,
+    };
+  }
+
+  @Post('collect-pending')
+  @UseGuards(AuthGuard)
+  async collectPendingDonation(
+    @CurrentUser('userId') userId: string,
+    @Body() body: CollectPendingDonationInput
+  ) {
+    const donation = await this.donationsService.collectPendingDonation(userId, body);
+    return {
+      success: true,
+      code: 'PENDING_DONATION_COLLECTED',
+      message: 'Pending donation recorded as collected',
       data: donation,
     };
   }

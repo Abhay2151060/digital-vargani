@@ -28,8 +28,8 @@ A responsive, mobile-first web platform (PWA-compatible) for festival trusts and
 | Persona | Who they are | What they need |
 |---|---|---|
 | **Mandal Admin / President** | Runs the mandal, owns the festival budget and public reputation | Full control over mandal setup, volunteer access, and expense approval; confidence that the transparency report reflects reality |
-| **Treasurer (खजिनदार)** | Manages the money day-to-day, often the most tech-comfortable member | Real-time cash-in-hand visibility per volunteer, a fast reconciliation workflow, exportable reports for audit |
-| **Volunteer (कार्यकर्ता)** | Collects door-to-door or street-side donations, often for hours at a stretch | The fastest possible entry flow, working phone in hand, even with no signal; no burden of installing an app |
+| **Treasurer (खजिनदार)** | Manages the money day-to-day, often the most tech-comfortable member | Real-time cash-in-hand visibility per volunteer, fast donation collection, reconciliation workflow, exportable reports for audit |
+| **Volunteer (कार्यकर्ता)** | Field team member / representative | Access to personal collection history (`/history`); collection creation (`/collect`) and totals management (`/totals`) are handled by Treasurer & Admin roles |
 | **Donor / Public** | Gives cash or UPI on the spot, wants proof and, increasingly, transparency | A receipt they can trust and verify, in their own language, and — if they choose — visibility into how the mandal spent the money |
 
 **Shared context across personas:** low tolerance for friction (festival collection happens in short, high-volume bursts), variable smartphone/network conditions, and a strong cultural expectation of trust and accountability around community funds.
@@ -39,16 +39,26 @@ A responsive, mobile-first web platform (PWA-compatible) for festival trusts and
 ## 3. FEATURES
 
 ### Mandal setup & access
-- Mandal profile: name, registration number, city/area, festival type, custom receipt prefix, logo, UPI ID/QR
+- Mandal profile: name, registration number, city/area, festival type, custom receipt prefix, logo
+- **Admin Uploads**:
+  - **UPI Payment QR Code (QR कोड)**: Admin uploads official UPI QR code image used on collection forms and public donation views.
+  - **Mandal Ahwal (अहवाल)**: Admin uploads official Annual Report & Audit statement (PDF/Image) with custom title for public view.
 - One phone number can belong to multiple mandals and switch between them
 - Passwordless OTP login (mobile number + 6-digit code)
 - Admin-generated invite links to add volunteers/treasurers by phone number
 - Active/inactive toggle per volunteer
 
-### Fast donation collection (volunteer flow)
-- Minimal form: donor name, phone, amount (quick-select chips + custom), payment mode (cash/UPI/bank/cheque), optional flat/wing for society drives, receipt language
+### Fast donation collection (Treasurer & Admin flow)
+- Minimal form: donor name, phone, amount (quick-select chips + custom), payment mode (cash/UPI/pending), optional flat/wing for society drives, receipt language
 - Offline-first entry with local caching, syncing automatically when connectivity returns
 - Under-10-second entry target on any mobile browser
+
+### Pending Collection & Settlement (येणे वर्गणी)
+- Ability to record promised or pending donations (`payment_mode = PENDING`) with full donor details.
+- Dedicated "वर्गणी जमा करा (Add Collection)" action on pending records with one-tap settlement:
+  - **Collect via UPI (यूपीआय द्वारे)**: Converts pending donation to UPI with optional UTR / payment reference.
+  - **Collect via Cash (रोख द्वारे)**: Converts pending donation to Cash for cash reconciliation.
+- Instant receipt update and WhatsApp share upon settlement.
 
 ### Digital receipts
 - Branded receipt with mandal logo, deity/slogan line, unique receipt ID, timestamp, donor details, amount in words and numbers, and a verification QR code
@@ -56,7 +66,8 @@ A responsive, mobile-first web platform (PWA-compatible) for festival trusts and
 - Downloadable PDF/image receipt as a fallback for donors without WhatsApp
 
 ### Treasurer dashboard & reconciliation
-- Live totals: collected today vs. total festival collection, split by payment mode
+- Live totals: collected today vs. total festival collection, split by payment mode (Cash, UPI, Pending)
+- Real-time breakdown card for **येणे वर्गणी (Pending Collection)**
 - Live cash-in-hand per volunteer
 - Handover workflow: volunteer submits cash, treasurer confirms received amount, system flags and tracks any discrepancy through to resolution
 
@@ -68,6 +79,8 @@ A responsive, mobile-first web platform (PWA-compatible) for festival trusts and
 
 ### Public transparency portal
 - Shareable public page per mandal (`/mandal/{slug}/transparency`)
+- **Official Ahwal (अहवाल)**: Publicly viewable and downloadable official Mandal Annual Report & Audit statement.
+- **Online Donation UPI QR Code**: Publicly displayed Mandal QR code and UPI ID for direct devotee contributions.
 - Donation and expense breakdown charts
 - Donor roll with an option to hide phone numbers
 - Audited status badge signed by president/treasurer

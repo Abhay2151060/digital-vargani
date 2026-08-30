@@ -5,13 +5,12 @@
 :root {
   --font-inter: 'Inter', sans-serif;
   --font-noto-devanagari: 'Noto Sans Devanagari', sans-serif;
-  --font-noto-gujarati: 'Noto Sans Gujarati', sans-serif;
 }
 
 body {
   background-color: #FAF9F6;
   color: #292118;
-  font-family: var(--font-inter), var(--font-noto-devanagari), var(--font-noto-gujarati), system-ui, sans-serif;
+  font-family: var(--font-inter), var(--font-noto-devanagari), system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }

@@ -28,7 +28,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoading && user && role) {
       if (role === Role.VOLUNTEER) {
-        router.replace('/collect');
+        router.replace('/history');
       } else if (role === Role.TREASURER || role === Role.ADMIN) {
         router.replace('/dashboard');
       }
@@ -137,7 +137,7 @@ export default function HomePage() {
                   className="font-bold text-sm px-6 py-4 bg-white border-[#E5E1D8] text-[#292118] hover:bg-[#F3F1EC] gap-2 rounded-2xl shadow-2xs min-h-[54px]"
                 >
                   <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <span>डेमो पारदर्शकता पोर्टल</span>
+                  <span>पारदर्शकता पोर्टल</span>
                 </Button>
               </Link>
             </div>
@@ -234,7 +234,7 @@ export default function HomePage() {
                     className="bg-emerald-50 text-emerald-800 border-emerald-200 font-bold gap-2 hover:bg-emerald-100 text-xs py-2.5 rounded-xl"
                   >
                     <Share2 className="w-4 h-4 text-emerald-600" />
-                    <span>व्हॉट्सॲप पावती डेमो पहा</span>
+                    <span>डिजिटल पावती नमुना पहा</span>
                   </Button>
                 </Link>
               </div>
@@ -289,7 +289,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Demo Roles Section */}
+        {/* Mandal Roles Section */}
         <div className="mt-20 bg-gradient-to-br from-[#292118] via-[#1C1917] to-[#292118] text-white p-8 sm:p-10 rounded-3xl shadow-2xl text-left relative overflow-hidden">
           <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-orange-500/15 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -297,37 +297,31 @@ export default function HomePage() {
             <div className="max-w-xl">
               <div className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-full mb-3">
                 <Users className="w-3.5 h-3.5" />
-                <span>त्वरित डेमो अनुभव (Quick Demo)</span>
+                <span>मंडळ व्यवस्थापन व भूमिका (Mandal Roles)</span>
               </div>
               <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
-                तुमच्या भूमिकेनुसार सिस्टीम टेस्ट करा
+                प्रत्येक भूमिकेसाठी स्वतंत्र व सुरक्षित पोर्टल
               </h2>
               <p className="text-xs sm:text-sm text-[#A8A29E] mt-2 leading-relaxed">
-                कार्याध्यक्ष, खजिनदार किंवा कार्यकर्ता – एका क्लिकवर कोणतीही पासवर्ड न टाकता डेमो लॉगिन करा.
+                कार्याध्यक्ष, खजिनदार आणि कार्यकर्ता – प्रत्येकासाठी समर्पित डॅशबोर्ड, अधिकार व्यवस्थापन व सुरक्षित कारभार.
               </p>
 
-              {/* Quick Role Options */}
+              {/* Role Cards */}
               <div className="grid grid-cols-3 gap-2.5 mt-6">
-                <Link href="/login">
-                  <div className="bg-white/10 hover:bg-white/20 border border-white/15 p-3 rounded-2xl transition cursor-pointer text-center">
-                    <div className="text-base font-extrabold text-white">कार्यकर्ता</div>
-                    <div className="text-[10px] text-orange-300 font-semibold mt-0.5">Volunteer</div>
-                  </div>
-                </Link>
+                <div className="bg-white/10 border border-white/15 p-3 rounded-2xl text-center">
+                  <div className="text-base font-extrabold text-white">कार्यकर्ता</div>
+                  <div className="text-[10px] text-orange-300 font-semibold mt-0.5">Volunteer</div>
+                </div>
 
-                <Link href="/login">
-                  <div className="bg-white/10 hover:bg-white/20 border border-white/15 p-3 rounded-2xl transition cursor-pointer text-center">
-                    <div className="text-base font-extrabold text-white">खजिनदार</div>
-                    <div className="text-[10px] text-emerald-300 font-semibold mt-0.5">Treasurer</div>
-                  </div>
-                </Link>
+                <div className="bg-white/10 border border-white/15 p-3 rounded-2xl text-center">
+                  <div className="text-base font-extrabold text-white">खजिनदार</div>
+                  <div className="text-[10px] text-emerald-300 font-semibold mt-0.5">Treasurer</div>
+                </div>
 
-                <Link href="/login">
-                  <div className="bg-white/10 hover:bg-white/20 border border-white/15 p-3 rounded-2xl transition cursor-pointer text-center">
-                    <div className="text-base font-extrabold text-white">अध्यक्ष</div>
-                    <div className="text-[10px] text-blue-300 font-semibold mt-0.5">Admin</div>
-                  </div>
-                </Link>
+                <div className="bg-white/10 border border-white/15 p-3 rounded-2xl text-center">
+                  <div className="text-base font-extrabold text-white">अध्यक्ष</div>
+                  <div className="text-[10px] text-blue-300 font-semibold mt-0.5">Admin</div>
+                </div>
               </div>
             </div>
 
@@ -338,7 +332,7 @@ export default function HomePage() {
                   size="lg"
                   className="font-black text-base px-8 py-4 bg-gradient-to-r from-[#C2410C] to-[#F97316] hover:from-[#9A3412] hover:to-[#EA580C] shadow-xl shadow-orange-500/30 rounded-2xl w-full sm:w-auto"
                 >
-                  <span>डेमो लॉगिन सुरू करा</span>
+                  <span>मंडळ लॉगिन करा</span>
                   <ChevronRight className="w-5 h-5 ml-1" />
                 </Button>
               </Link>

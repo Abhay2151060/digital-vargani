@@ -1,7 +1,7 @@
 import React from 'react';
 
 export type ReceiptLanguage = 'mr' | 'hi' | 'gu' | 'en';
-export type PaymentMode = 'CASH' | 'UPI' | 'BANK_TRANSFER' | 'CHEQUE';
+export type PaymentMode = 'CASH' | 'UPI' | 'PENDING';
 
 export interface ReceiptData {
   mandalName: string;
@@ -55,10 +55,10 @@ const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
 };
 
 const PAYMENT_MODE_LABELS: Record<ReceiptLanguage, Record<PaymentMode, string>> = {
-  en: { CASH: 'Cash', UPI: 'UPI', BANK_TRANSFER: 'Bank transfer', CHEQUE: 'Cheque' },
-  mr: { CASH: 'रोख', UPI: 'यूपीआय', BANK_TRANSFER: 'बँक ट्रान्सफर', CHEQUE: 'धनादेश' },
-  hi: { CASH: 'नकद', UPI: 'यूपीआई', BANK_TRANSFER: 'बैंक ट्रांसफर', CHEQUE: 'चेक' },
-  gu: { CASH: 'રોકડ', UPI: 'યુપીઆઈ', BANK_TRANSFER: 'બેંક ટ્રાન્સફર', CHEQUE: 'ચેક' },
+  en: { CASH: 'Cash', UPI: 'UPI', PENDING: 'Pending' },
+  mr: { CASH: 'रोख', UPI: 'यूपीआय', PENDING: 'प्रलंबित' },
+  hi: { CASH: 'नकद', UPI: 'यूपीआई', PENDING: 'लंबित' },
+  gu: { CASH: 'રોકડ', UPI: 'યુપીઆઈ', PENDING: 'પેન્ડિંગ' },
 };
 
 /**
@@ -84,7 +84,7 @@ export function ReceiptCard({ data }: { data: ReceiptData }) {
         overflow: 'hidden',
         border: '1px solid #E5E1D8',
         fontFamily:
-          "Inter, 'Noto Sans Devanagari', 'Noto Sans Gujarati', system-ui, sans-serif",
+          "Inter, 'Noto Sans Devanagari', system-ui, sans-serif",
       }}
     >
       {/* Header */}

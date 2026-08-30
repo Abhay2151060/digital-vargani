@@ -21,10 +21,11 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-    CREATE TYPE payment_mode AS ENUM ('CASH', 'UPI', 'BANK_TRANSFER', 'CHEQUE');
+    CREATE TYPE payment_mode AS ENUM ('CASH', 'UPI', 'PENDING');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
+ALTER TYPE payment_mode ADD VALUE IF NOT EXISTS 'PENDING';
 
 DO $$ BEGIN
     CREATE TYPE payment_verification_status AS ENUM ('NOT_REQUIRED', 'PENDING_VERIFICATION', 'VERIFIED', 'REJECTED');
@@ -51,7 +52,7 @@ EXCEPTION
 END $$;
 
 DO $$ BEGIN
-    CREATE TYPE language_code AS ENUM ('mr', 'hi', 'gu', 'en');
+    CREATE TYPE language_code AS ENUM ('mr', 'en');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -85,6 +86,8 @@ CREATE TABLE IF NOT EXISTS mandals (
     logo_url TEXT,
     upi_id VARCHAR(100),
     upi_qr_url TEXT,
+    ahwal_url TEXT,
+    ahwal_title VARCHAR(200),
     preset_amounts INTEGER[] NOT NULL DEFAULT '{101, 251, 501, 1001, 2101, 5001}',
     hide_phone_numbers BOOLEAN NOT NULL DEFAULT TRUE,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,

@@ -9,7 +9,7 @@ export class TransparencyService {
   async getTransparencyReport(slug: string): Promise<PublicTransparencyReport> {
     // 1. Fetch mandal profile
     const mandalRes = await this.db.query(
-      `SELECT id, name, slug, registration_number, city, area, festival_type, logo_url, hide_phone_numbers
+      `SELECT id, name, slug, registration_number, city, area, festival_type, logo_url, upi_id, upi_qr_url, ahwal_url, ahwal_title, hide_phone_numbers
        FROM mandals
        WHERE slug = $1 AND is_active = TRUE`,
       [slug]
@@ -89,6 +89,10 @@ export class TransparencyService {
         area: mandal.area,
         festival_type: mandal.festival_type,
         logo_url: mandal.logo_url,
+        upi_id: mandal.upi_id,
+        upi_qr_url: mandal.upi_qr_url,
+        ahwal_url: mandal.ahwal_url,
+        ahwal_title: mandal.ahwal_title,
         hide_phone_numbers: mandal.hide_phone_numbers,
       },
       total_collected: totalCollected,
