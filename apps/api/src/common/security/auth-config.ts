@@ -1,3 +1,5 @@
+import '../../load-env';
+
 const DEVELOPMENT_AUTH_ENVS = new Set(['development', 'test']);
 const DEFAULT_DEVELOPMENT_JWT_SECRET = 'vargani-jwt-secret-key-2024';
 

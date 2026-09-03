@@ -1,3 +1,5 @@
+import '../load-env';
+
 const DEVELOPMENT_DATABASE_ENVS = new Set(['development', 'test']);
 const LOCAL_DATABASE_URL = 'postgresql://vargani_user:vargani_password@localhost:5432/vargani_db';
 
