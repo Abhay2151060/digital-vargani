@@ -16,8 +16,12 @@
     "db:migrate": "npm run --workspace=@vargani/db migrate",
     "db:seed": "npm run --workspace=@vargani/db seed"
   },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
-    "prisma": "^7.9.1",
+    "next": "14.2.35",
     "turbo": "^1.13.4",
     "typescript": "^5.4.5"
   },
