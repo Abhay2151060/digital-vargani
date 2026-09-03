@@ -2,6 +2,7 @@ import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '../src/common/guards/auth.guard';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
+import { getJwtSecret } from '../src/common/security/auth-config';
 
 describe('Security & Authentication Tests', () => {
   let authGuard: AuthGuard;
@@ -9,7 +10,7 @@ describe('Security & Authentication Tests', () => {
 
   beforeEach(() => {
     jwtService = new JwtService({
-      secret: 'test-secret-key-2024',
+      secret: getJwtSecret(),
     });
     authGuard = new AuthGuard(jwtService);
   });
@@ -40,7 +41,7 @@ describe('Security & Authentication Tests', () => {
 
     it('should accept a valid Bearer token and attach payload to request.user', async () => {
       const payload = { userId: 'user-123', mandalId: 'mandal-123', role: 'ADMIN' };
-      const validToken = jwtService.sign(payload, { secret: 'vargani-jwt-secret-key-2024' });
+      const validToken = jwtService.sign(payload, { secret: getJwtSecret() });
 
       const request: any = {
         headers: { authorization: `Bearer ${validToken}` },
@@ -61,7 +62,7 @@ describe('Security & Authentication Tests', () => {
 
     it('should reject tokens supplied through query parameters to avoid URL leakage', async () => {
       const payload = { userId: 'user-456', mandalId: 'mandal-123', role: 'TREASURER' };
-      const validToken = jwtService.sign(payload, { secret: 'vargani-jwt-secret-key-2024' });
+      const validToken = jwtService.sign(payload, { secret: getJwtSecret() });
 
       const request: any = {
         headers: {},
