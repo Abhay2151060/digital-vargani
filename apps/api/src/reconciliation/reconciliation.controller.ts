@@ -4,7 +4,8 @@ import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { CreateReconciliationInput, DiscrepancyStatus, Role } from '@vargani/types';
+import { createReconciliationSchema, DiscrepancyStatus, resolveDiscrepancySchema, Role } from '@vargani/types';
+import { parseRequest } from '../common/validation/parse-request';
 
 @Controller('reconciliation')
 @UseGuards(AuthGuard, RolesGuard)
@@ -40,11 +41,11 @@ export class ReconciliationController {
   async reconcileHandover(
     @CurrentUser('userId') treasurerId: string,
     @CurrentUser('mandalId') mandalId: string,
-    @Body() body: Omit<CreateReconciliationInput, 'mandal_id'>
+    @Body() body: unknown
   ) {
+    const input = parseRequest(createReconciliationSchema, { ...(body as object), mandal_id: mandalId });
     const result = await this.reconciliationService.reconcileCash(treasurerId, {
-      ...body,
-      mandal_id: mandalId,
+      ...input,
     });
     return {
       success: true,
@@ -62,13 +63,14 @@ export class ReconciliationController {
   async resolveDiscrepancy(
     @CurrentUser('mandalId') mandalId: string,
     @Param('id') reconciliationId: string,
-    @Body() body: { status: DiscrepancyStatus; notes?: string }
+    @Body() body: unknown
   ) {
+    const input = parseRequest(resolveDiscrepancySchema, body);
     const result = await this.reconciliationService.resolveDiscrepancy(
       mandalId,
       reconciliationId,
-      body.status,
-      body.notes
+      input.status,
+      input.notes
     );
     return {
       success: true,

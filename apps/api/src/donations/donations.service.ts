@@ -286,12 +286,20 @@ export class DonationsService {
        FROM donations d
        JOIN mandals m ON m.id = d.mandal_id
        JOIN users u ON u.id = d.volunteer_id
-       WHERE d.receipt_number = $1 AND d.is_voided = FALSE`,
+       WHERE d.receipt_number = $1 AND d.is_voided = FALSE
+       ORDER BY d.created_at DESC
+       LIMIT 2`,
       [receiptNumber]
     );
 
     if (res.rowCount === 0) {
       throw new NotFoundException({ code: 'RECEIPT_NOT_FOUND', message: 'Receipt not found or invalid' });
+    }
+    if ((res.rowCount || 0) > 1) {
+      throw new BadRequestException({
+        code: 'RECEIPT_NOT_UNIQUE',
+        message: 'This legacy receipt link is ambiguous. Please use the mandal-specific receipt link.',
+      });
     }
 
     const row = res.rows[0];
@@ -307,14 +315,12 @@ export class DonationsService {
     };
   }
 
-  async correctDonation(userId: string, input: CreateCorrectionInput) {
+  async correctDonation(userId: string, mandalId: string, input: CreateCorrectionInput) {
     // First retrieve donation to get mandal_id
-    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1`, [input.donation_id]);
+    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1 AND mandal_id = $2`, [input.donation_id, mandalId], [mandalId]);
     if (findRes.rowCount === 0) {
       throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation not found' });
     }
-    const mandalId = findRes.rows[0].mandal_id;
-
     return await this.db.withTransaction(async (client) => {
       const donRes = await client.query(
         `SELECT * FROM donations WHERE id = $1 FOR UPDATE`,
@@ -353,13 +359,11 @@ export class DonationsService {
     }, [mandalId]);
   }
 
-  async voidDonation(userId: string, input: VoidDonationInput) {
-    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1`, [input.donation_id]);
+  async voidDonation(userId: string, mandalId: string, input: VoidDonationInput) {
+    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1 AND mandal_id = $2`, [input.donation_id, mandalId], [mandalId]);
     if (findRes.rowCount === 0) {
       throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation not found' });
     }
-    const mandalId = findRes.rows[0].mandal_id;
-
     return await this.db.withTransaction(async (client) => {
       const donRes = await client.query(
         `SELECT * FROM donations WHERE id = $1 FOR UPDATE`,
@@ -393,13 +397,11 @@ export class DonationsService {
     }, [mandalId]);
   }
 
-  async collectPendingDonation(userId: string, input: CollectPendingDonationInput) {
-    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1`, [input.donation_id]);
+  async collectPendingDonation(userId: string, mandalId: string, input: CollectPendingDonationInput) {
+    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1 AND mandal_id = $2`, [input.donation_id, mandalId], [mandalId]);
     if (findRes.rowCount === 0) {
       throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation not found' });
     }
-    const mandalId = findRes.rows[0].mandal_id;
-
     return await this.db.withTransaction(async (client) => {
       const donRes = await client.query(
         `SELECT * FROM donations WHERE id = $1 FOR UPDATE`,

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../src/auth/auth.service';
 import { DbService } from '../src/db/db.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -32,6 +32,16 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
+    it('should fail closed when production OTP verification is not configured', async () => {
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      await expect(authService.login('9822012345')).rejects.toThrow(ServiceUnavailableException);
+      expect(mockDbService.query).not.toHaveBeenCalled();
+
+      process.env.NODE_ENV = originalEnv;
+    });
+
     it('should reject invalid Indian phone numbers', async () => {
       await expect(authService.login('12345')).rejects.toThrow(BadRequestException);
       await expect(authService.login('5555555555')).rejects.toThrow(BadRequestException);

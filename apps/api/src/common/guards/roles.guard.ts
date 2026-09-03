@@ -25,11 +25,8 @@ export class RolesGuard implements CanActivate {
       });
     }
 
-    // Role hierarchy: ADMIN has all permissions, TREASURER has volunteer permissions
+    // Check whether the user's role satisfies any of the required roles
     const userRole: Role = user.role;
-    if (userRole === Role.ADMIN) return true;
-    if (userRole === Role.TREASURER && !requiredRoles.includes(Role.ADMIN)) return true;
-
     const hasRole = requiredRoles.includes(userRole);
     if (!hasRole) {
       throw new ForbiddenException({

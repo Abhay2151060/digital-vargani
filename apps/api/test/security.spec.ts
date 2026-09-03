@@ -14,23 +14,21 @@ describe('Security & Authentication Tests', () => {
     authGuard = new AuthGuard(jwtService);
   });
 
-  const createMockContext = (authHeader?: string, queryToken?: string): ExecutionContext => {
+  const createMockContext = (authHeader?: string): ExecutionContext => {
     return {
       switchToHttp: () => ({
         getRequest: () => ({
           headers: {
             authorization: authHeader,
           },
-          query: {
-            token: queryToken,
-          },
+          query: {},
         }),
       }),
     } as any;
   };
 
   describe('AuthGuard', () => {
-    it('should throw UnauthorizedException when no Authorization header or token is provided', async () => {
+    it('should throw UnauthorizedException when no Authorization header is provided', async () => {
       const context = createMockContext(undefined);
       await expect(authGuard.canActivate(context)).rejects.toThrow(UnauthorizedException);
     });
@@ -61,7 +59,7 @@ describe('Security & Authentication Tests', () => {
       expect(request.user.role).toBe('ADMIN');
     });
 
-    it('should accept token from query parameter if Bearer header is omitted', async () => {
+    it('should reject tokens supplied through query parameters to avoid URL leakage', async () => {
       const payload = { userId: 'user-456', mandalId: 'mandal-123', role: 'TREASURER' };
       const validToken = jwtService.sign(payload, { secret: 'vargani-jwt-secret-key-2024' });
 
@@ -75,9 +73,7 @@ describe('Security & Authentication Tests', () => {
         }),
       } as any;
 
-      const canActivate = await authGuard.canActivate(context);
-      expect(canActivate).toBe(true);
-      expect(request.user.userId).toBe('user-456');
+      await expect(authGuard.canActivate(context)).rejects.toThrow(UnauthorizedException);
     });
   });
 

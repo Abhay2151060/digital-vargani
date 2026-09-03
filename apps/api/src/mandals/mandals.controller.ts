@@ -4,7 +4,8 @@ import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Role, UpdateMandalProfileInput, FestivalType } from '@vargani/types';
+import { Role, createMandalSchema, updateMandalProfileSchema } from '@vargani/types';
+import { parseRequest } from '../common/validation/parse-request';
 
 @Controller('mandals')
 export class MandalsController {
@@ -27,9 +28,9 @@ export class MandalsController {
   @UseGuards(AuthGuard)
   async createMandal(
     @CurrentUser('userId') userId: string,
-    @Body() body: { name: string; city: string; festival_type: FestivalType }
+    @Body() body: unknown
   ) {
-    const mandal = await this.mandalsService.createMandal(userId, body);
+    const mandal = await this.mandalsService.createMandal(userId, parseRequest(createMandalSchema, body));
     return {
       success: true,
       code: 'MANDAL_CREATED',
@@ -43,9 +44,9 @@ export class MandalsController {
   @Roles(Role.ADMIN)
   async updateCurrentMandal(
     @CurrentUser('mandalId') mandalId: string,
-    @Body() body: UpdateMandalProfileInput
+    @Body() body: unknown
   ) {
-    const mandal = await this.mandalsService.updateMandal(mandalId, body);
+    const mandal = await this.mandalsService.updateMandal(mandalId, parseRequest(updateMandalProfileSchema, body));
     return {
       success: true,
       code: 'MANDAL_UPDATED',

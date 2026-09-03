@@ -1,6 +1,7 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DbService } from '../db/db.service';
+import { getJwtExpiry, getJwtSecret, isDevelopmentAuthEnabled } from '../common/security/auth-config';
 
 @Injectable()
 export class AuthService {
@@ -10,6 +11,17 @@ export class AuthService {
   ) {}
 
   async login(phone: string, fullName?: string) {
+    if (!isDevelopmentAuthEnabled()) {
+      throw new ServiceUnavailableException({
+        code: 'OTP_VERIFICATION_REQUIRED',
+        message: 'Phone authentication requires a configured OTP provider in this environment.',
+      });
+    }
+
+    return this.completeLogin(phone, fullName);
+  }
+
+  private async completeLogin(phone: string, fullName?: string) {
     if (!/^[6-9]\d{9}$/.test(phone)) {
       throw new BadRequestException({
         code: 'INVALID_PHONE',
@@ -108,8 +120,8 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(tokenPayload, {
-      secret: process.env.JWT_SECRET || 'vargani-jwt-secret-key-2024',
-      expiresIn: '30d',
+      secret: getJwtSecret(),
+      expiresIn: getJwtExpiry(),
     });
 
     return {
@@ -133,11 +145,26 @@ export class AuthService {
         message: 'Please enter a valid 10-digit Indian mobile number',
       });
     }
-    return { success: true, message: 'Ready for login' };
+    if (!isDevelopmentAuthEnabled()) {
+      throw new ServiceUnavailableException({
+        code: 'OTP_PROVIDER_NOT_CONFIGURED',
+        message: 'Phone authentication requires a configured OTP provider in this environment.',
+      });
+    }
+    return { success: true, message: 'Development OTP ready' };
   }
 
-  async verifyOtp(phone: string, _otp?: string, fullName?: string) {
-    return await this.login(phone, fullName);
+  async verifyOtp(phone: string, otp?: string, fullName?: string) {
+    if (!isDevelopmentAuthEnabled()) {
+      throw new ServiceUnavailableException({
+        code: 'OTP_PROVIDER_NOT_CONFIGURED',
+        message: 'Phone authentication requires a configured OTP provider in this environment.',
+      });
+    }
+    if (otp !== '123456') {
+      throw new UnauthorizedException({ code: 'INVALID_OTP', message: 'The verification code is invalid.' });
+    }
+    return this.completeLogin(phone, fullName);
   }
 
   async switchMandal(userId: string, mandalId: string) {
@@ -177,8 +204,8 @@ export class AuthService {
     };
 
     const accessToken = this.jwtService.sign(tokenPayload, {
-      secret: process.env.JWT_SECRET || 'vargani-jwt-secret-key-2024',
-      expiresIn: '30d',
+      secret: getJwtSecret(),
+      expiresIn: getJwtExpiry(),
     });
 
     return {

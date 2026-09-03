@@ -403,13 +403,18 @@ export default function VolunteerHistoryPage() {
       <BottomNav
         activeId="history"
         items={
-          role === Role.VOLUNTEER
-            ? [{ id: 'history', label: t.history, icon: Receipt, href: '/history' }]
-            : [
+          role === Role.TREASURER
+            ? [
                 { id: 'collect', label: t.collect, icon: PlusCircle, href: '/collect' },
                 { id: 'totals', label: t.my_totals, icon: Wallet, href: '/totals' },
                 { id: 'history', label: t.history, icon: Receipt, href: '/history' },
               ]
+            : role === Role.ADMIN
+            ? [
+                { id: 'totals', label: t.my_totals, icon: Wallet, href: '/totals' },
+                { id: 'history', label: t.history, icon: Receipt, href: '/history' },
+              ]
+            : [{ id: 'history', label: t.history, icon: Receipt, href: '/history' }]
         }
         onSelect={(_id, href) => {
           if (href) router.push(href);

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import QRCode from 'qrcode';
 import { Button } from '@vargani/ui';
 import {
@@ -24,7 +24,9 @@ import Link from 'next/link';
 
 export default function ReceiptVerificationPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const receiptNumber = params.receiptId as string;
+  const mandalSlug = searchParams.get('mandal');
 
   const [receipt, setReceipt] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +44,10 @@ export default function ReceiptVerificationPage() {
   useEffect(() => {
     if (receiptNumber) {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-      fetch(`${apiBase}/donations/receipt/lookup/${receiptNumber}`)
+      const receiptEndpoint = mandalSlug
+        ? `${apiBase}/donations/receipt/${encodeURIComponent(mandalSlug)}/${encodeURIComponent(receiptNumber)}`
+        : `${apiBase}/donations/receipt/lookup/${encodeURIComponent(receiptNumber)}`;
+      fetch(receiptEndpoint)
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
@@ -56,10 +61,13 @@ export default function ReceiptVerificationPage() {
         .finally(() => setIsLoading(false));
 
       const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digitalvargani.in';
-      const verifyUrl = `${origin}/r/${receiptNumber}`;
+      const receiptPath = mandalSlug
+        ? `/r/${encodeURIComponent(mandalSlug)}/${encodeURIComponent(receiptNumber)}`
+        : `/r/${encodeURIComponent(receiptNumber)}`;
+      const verifyUrl = `${origin}${receiptPath}`;
       QRCode.toDataURL(verifyUrl, { margin: 1, width: 160 }).then(setQrUrl);
     }
-  }, [receiptNumber]);
+  }, [receiptNumber, mandalSlug]);
 
   if (isLoading) {
     return (
@@ -99,7 +107,7 @@ export default function ReceiptVerificationPage() {
   }
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digitalvargani.in';
-  const verificationUrl = `${origin}/r/${receipt.receipt_number}`;
+  const verificationUrl = `${origin}/r/${encodeURIComponent(receipt.mandal_slug)}/${encodeURIComponent(receipt.receipt_number)}`;
   const amountVal = parseFloat(receipt.amount);
   const amountInWords = numberToWordsIndian(amountVal, selectedLang as Language);
 

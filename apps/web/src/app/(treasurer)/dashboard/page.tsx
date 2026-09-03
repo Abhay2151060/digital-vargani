@@ -158,11 +158,13 @@ export default function TreasurerDashboardPage() {
             </p>
           </div>
 
-          <Link href="/collect">
-            <Button variant="primary" size="md" className="font-bold gap-1.5">
-              <span>{t.new_receipt}</span>
-            </Button>
-          </Link>
+          {role === Role.TREASURER && (
+            <Link href="/collect">
+              <Button variant="primary" size="md" className="font-bold gap-1.5">
+                <span>{t.new_receipt}</span>
+              </Button>
+            </Link>
+          )}
         </div>
 
         {/* 4 Summary Metric Cards */}

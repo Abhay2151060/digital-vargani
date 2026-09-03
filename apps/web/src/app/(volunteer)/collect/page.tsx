@@ -22,10 +22,8 @@ export default function CollectDonationPage() {
   const router = useRouter();
 
   const handleBack = () => {
-    if (role === Role.TREASURER || role === Role.ADMIN) {
+    if (role === Role.TREASURER) {
       router.push('/dashboard');
-    } else if (role === Role.VOLUNTEER) {
-      router.push('/history');
     } else {
       router.back();
     }
@@ -53,7 +51,7 @@ export default function CollectDonationPage() {
   const [allocation, setAllocation] = useState<any | null>(null);
 
   useEffect(() => {
-    if (activeMandal && token && (role === Role.ADMIN || role === Role.TREASURER)) {
+    if (activeMandal && token && role === Role.TREASURER) {
       apiRequest<any>('/donations/my-allocation')
         .then(setAllocation)
         .catch(console.error);
@@ -209,7 +207,7 @@ export default function CollectDonationPage() {
   const presetAmounts = activeMandal?.preset_amounts || [101, 251, 501, 1001, 2101, 5001];
 
   return (
-    <AuthGuard allowedRoles={[Role.ADMIN, Role.TREASURER]}>
+    <AuthGuard allowedRoles={[Role.TREASURER]}>
       <div className="min-h-screen flex flex-col bg-[#FAF9F6] pb-24">
       <Header />
       <OfflineBanner />

@@ -30,7 +30,7 @@ export async function query<T extends QueryResultRow = any>(
   const client = await pool.connect();
   try {
     if (mandalIds && mandalIds.length > 0) {
-      await client.query(`SELECT set_config('app.current_mandal_ids', $1, true)`, [mandalIds.join(',')]);
+      await client.query(`SELECT set_config('app.current_mandal_ids', $1, false)`, [mandalIds.join(',')]);
     }
     return await client.query<T>(text, params);
   } finally {

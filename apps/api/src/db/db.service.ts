@@ -1,5 +1,6 @@
 import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
 import { Pool, PoolClient, QueryResult, QueryResultRow } from 'pg';
+import { getDatabaseUrl } from './database-config';
 
 @Injectable()
 export class DbService implements OnModuleDestroy {
@@ -7,10 +8,7 @@ export class DbService implements OnModuleDestroy {
   private pool: Pool;
 
   constructor() {
-    const connectionString =
-      process.env.DIRECT_URL ||
-      process.env.DATABASE_URL ||
-      'postgresql://vargani_user:vargani_password@localhost:5432/vargani_db';
+    const connectionString = getDatabaseUrl();
 
     const isSSLNeeded =
       process.env.NODE_ENV === 'production' ||
@@ -39,7 +37,7 @@ export class DbService implements OnModuleDestroy {
     const client = await this.pool.connect();
     try {
       if (mandalIds && mandalIds.length > 0) {
-        await client.query(`SELECT set_config('app.current_mandal_ids', $1, true)`, [mandalIds.join(',')]);
+        await client.query(`SELECT set_config('app.current_mandal_ids', $1, false)`, [mandalIds.join(',')]);
       }
       return await client.query<T>(text, params);
     } finally {

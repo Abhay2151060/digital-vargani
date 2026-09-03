@@ -4,10 +4,11 @@ import React, { useEffect, useState } from 'react';
 import { WifiOff, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { getQueueCount, syncPendingQueue } from '../lib/offline-queue';
 import { useAuth } from '../context/AuthContext';
+import { Role } from '@vargani/types';
 import { getT } from '../lib/i18n';
 
 export const OfflineBanner: React.FC = () => {
-  const { activeMandal, token, language } = useAuth();
+  const { activeMandal, token, role, language } = useAuth();
   const t = getT(language);
 
   const [isOnline, setIsOnline] = useState<boolean>(true);
@@ -44,10 +45,10 @@ export const OfflineBanner: React.FC = () => {
       window.removeEventListener('offline', handleOffline);
       clearInterval(interval);
     };
-  }, [activeMandal, token]);
+  }, [activeMandal, token, role]);
 
   const handleAutoSync = async () => {
-    if (!activeMandal || !token) return;
+    if (!activeMandal || !token || role !== Role.TREASURER) return;
     setIsSyncing(true);
     const result = await syncPendingQueue(
       activeMandal.id,

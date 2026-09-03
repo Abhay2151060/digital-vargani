@@ -4,7 +4,8 @@ import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { Role, MemberStatus, InviteMemberInput } from '@vargani/types';
+import { Role, inviteMemberSchema, updateMemberRoleSchema, updateMemberStatusSchema } from '@vargani/types';
+import { parseRequest } from '../common/validation/parse-request';
 
 @Controller('members')
 @UseGuards(AuthGuard, RolesGuard)
@@ -23,16 +24,16 @@ export class MembersController {
   async inviteMember(
     @CurrentUser('userId') inviterId: string,
     @CurrentUser('mandalId') mandalId: string,
-    @Body() body: Omit<InviteMemberInput, 'mandal_id'>
+    @Body() body: unknown
   ) {
+    const input = parseRequest(inviteMemberSchema, { ...(body as object), mandal_id: mandalId });
     const result = await this.membersService.inviteMember(inviterId, {
-      ...body,
-      mandal_id: mandalId,
+      ...input,
     });
     return {
       success: true,
       code: 'MEMBER_INVITED',
-      message: `${body.full_name} added as ${body.role}`,
+      message: `${input.full_name} added as ${input.role}`,
       data: result,
     };
   }
@@ -42,9 +43,10 @@ export class MembersController {
   async updateStatus(
     @CurrentUser('mandalId') mandalId: string,
     @Param('id') memberId: string,
-    @Body() body: { status: MemberStatus }
+    @Body() body: unknown
   ) {
-    const member = await this.membersService.updateMemberStatus(mandalId, memberId, body.status);
+    const { status } = parseRequest(updateMemberStatusSchema, body);
+    const member = await this.membersService.updateMemberStatus(mandalId, memberId, status);
     return {
       success: true,
       code: 'MEMBER_STATUS_UPDATED',
@@ -58,9 +60,10 @@ export class MembersController {
   async updateRole(
     @CurrentUser('mandalId') mandalId: string,
     @Param('id') memberId: string,
-    @Body() body: { role: Role }
+    @Body() body: unknown
   ) {
-    const member = await this.membersService.updateMemberRole(mandalId, memberId, body.role);
+    const { role } = parseRequest(updateMemberRoleSchema, body);
+    const member = await this.membersService.updateMemberRole(mandalId, memberId, role);
     return {
       success: true,
       code: 'MEMBER_ROLE_UPDATED',

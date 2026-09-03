@@ -26,8 +26,9 @@ This project is built as a **Turborepo** monorepo:
 
 ## 🔐 Role-Based Access Control (RBAC)
 
-- **Admin & Treasurer**: Access to Dashboard, Expense Management, Member Administration, Donation Collection (`/collect`), Cash Reconciliation (`/totals` / `/reconciliation`), Pending Collection tracking (`येणे वर्गणी`), and Profile Settings (`/settings`) where the Admin uploads the Mandal Logo, **UPI Payment QR Code (QR कोड)**, and official **Mandal Ahwal (अहवाल - Annual / Audit Report)**.
-- **Volunteer (कार्यकर्ता)**: Scoped access to view complete Mandal donor details & collection history (`/history`), view receipts, share receipts via WhatsApp, and collect pending donations (**"येणे वर्गणी जमा करा"** via **Collect via UPI** or **Collect via Cash**). Direct receipt issuance (`/collect`) and cash totals (`/totals`) permissions are restricted to Treasurers and Admins.
+- **Treasurer (खजिनदार)**: Sole authority to issue **New Donation Receipts** (`/collect`), offline batch sync, Cash Reconciliation (`/totals` / `/reconciliation`), and view financial metrics on the Dashboard.
+- **Admin**: Access to Dashboard, Expense Management, Member Administration, Cash Reconciliation (`/totals` / `/reconciliation`), Pending Collection tracking (`येणे वर्गणी`), and Profile Settings (`/settings`) where the Admin uploads the Mandal Logo, **UPI Payment QR Code (QR कोड)**, and official **Mandal Ahwal (अहवाल - Annual / Audit Report)**. Direct "New Donation Receipt" issuance (`/collect`) is strictly restricted to the Treasurer.
+- **Volunteer (कार्यकर्ता)**: Scoped access to view complete Mandal donor details & collection history (`/history`), view receipts, share receipts via WhatsApp, and collect pending donations (**"येणे वर्गणी जमा करा"** via **Collect via UPI** or **Collect via Cash**). Direct receipt issuance (`/collect`) is strictly restricted to the Treasurer.
 
 ---
 
@@ -78,7 +79,9 @@ Review and adjust variables in `.env` if necessary:
 DATABASE_URL="postgresql://vargani_user:vargani_password@localhost:5432/vargani_db"
 PORT=4000
 NODE_ENV=development
-JWT_SECRET=vargani-jwt-secret-key-2024-production-secure
+JWT_SECRET=replace-with-a-long-random-secret
+JWT_EXPIRES_IN=8h
+CORS_ORIGINS=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 

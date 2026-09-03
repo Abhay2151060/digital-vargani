@@ -10,11 +10,15 @@ async function bootstrap() {
     bodyParser: false,
   });
 
-  app.use(json({ limit: '50mb' }));
-  app.use(urlencoded({ extended: true, limit: '50mb' }));
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
 
+  const configuredOrigins = process.env.CORS_ORIGINS?.split(',').map((origin) => origin.trim()).filter(Boolean) || [];
+  if (process.env.NODE_ENV === 'production' && configuredOrigins.length === 0) {
+    throw new Error('CORS_ORIGINS must list the allowed web origins in production.');
+  }
   app.enableCors({
-    origin: true,
+    origin: process.env.NODE_ENV === 'production' ? configuredOrigins : true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });

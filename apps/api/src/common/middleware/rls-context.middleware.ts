@@ -1,6 +1,7 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { getJwtSecret } from '../security/auth-config';
 
 @Injectable()
 export class RlsContextMiddleware implements NestMiddleware {
@@ -12,7 +13,7 @@ export class RlsContextMiddleware implements NestMiddleware {
       const token = authHeader.split(' ')[1];
       try {
         const payload = this.jwtService.verify(token, {
-          secret: process.env.JWT_SECRET || 'vargani-jwt-secret-key-2024',
+          secret: getJwtSecret(),
         });
         (req as any).user = payload;
       } catch {

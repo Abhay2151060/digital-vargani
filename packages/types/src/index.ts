@@ -415,6 +415,13 @@ export const updateMandalProfileSchema = z.object({
 });
 export type UpdateMandalProfileInput = z.infer<typeof updateMandalProfileSchema>;
 
+export const createMandalSchema = z.object({
+  name: z.string().trim().min(3).max(150),
+  city: z.string().trim().min(2).max(100),
+  festival_type: z.nativeEnum(FestivalType),
+});
+export type CreateMandalInput = z.infer<typeof createMandalSchema>;
+
 export const inviteMemberSchema = z.object({
   mandal_id: z.string().uuid(),
   phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'),
@@ -422,6 +429,22 @@ export const inviteMemberSchema = z.object({
   role: z.nativeEnum(Role),
 });
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;
+
+export const updateMemberStatusSchema = z.object({
+  status: z.nativeEnum(MemberStatus),
+});
+export type UpdateMemberStatusInput = z.infer<typeof updateMemberStatusSchema>;
+
+export const updateMemberRoleSchema = z.object({
+  role: z.nativeEnum(Role),
+});
+export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleSchema>;
+
+export const resolveDiscrepancySchema = z.object({
+  status: z.enum([DiscrepancyStatus.RESOLVED, DiscrepancyStatus.WRITTEN_OFF]),
+  notes: z.string().trim().max(2000).optional(),
+});
+export type ResolveDiscrepancyInput = z.infer<typeof resolveDiscrepancySchema>;
 
 // ==========================================
 // API RESPONSE STANDARD

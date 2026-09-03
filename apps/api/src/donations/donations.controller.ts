@@ -5,6 +5,8 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { CreateDonationInput, SyncDonationsBatchInput, CreateCorrectionInput, VoidDonationInput, CollectPendingDonationInput, Role } from '@vargani/types';
+import { collectPendingDonationSchema, createCorrectionSchema, createDonationSchema, syncDonationsBatchSchema, voidDonationSchema } from '@vargani/types';
+import { parseRequest } from '../common/validation/parse-request';
 
 @Controller('donations')
 export class DonationsController {
@@ -12,15 +14,15 @@ export class DonationsController {
 
   @Post()
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.TREASURER, Role.ADMIN)
+  @Roles(Role.TREASURER)
   async createDonation(
     @CurrentUser('userId') volunteerId: string,
     @CurrentUser('mandalId') mandalId: string,
-    @Body() body: Omit<CreateDonationInput, 'mandal_id'>
+    @Body() body: unknown
   ) {
+    const input = parseRequest(createDonationSchema, { ...(body as object), mandal_id: mandalId });
     const donation = await this.donationsService.createDonation(volunteerId, {
-      ...body,
-      mandal_id: mandalId,
+      ...input,
     });
     return {
       success: true,
@@ -32,15 +34,15 @@ export class DonationsController {
 
   @Post('sync-batch')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.TREASURER, Role.ADMIN)
+  @Roles(Role.TREASURER)
   async syncBatch(
     @CurrentUser('userId') volunteerId: string,
     @CurrentUser('mandalId') mandalId: string,
-    @Body() body: Omit<SyncDonationsBatchInput, 'mandal_id'>
+    @Body() body: unknown
   ) {
+    const input = parseRequest(syncDonationsBatchSchema, { ...(body as object), mandal_id: mandalId });
     const results = await this.donationsService.syncBatch(volunteerId, {
-      ...body,
-      mandal_id: mandalId,
+      ...input,
     });
     return {
       success: true,
@@ -51,7 +53,7 @@ export class DonationsController {
 
   @Get('my-allocation')
   @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.TREASURER, Role.ADMIN)
+  @Roles(Role.TREASURER)
   async getMyAllocation(
     @CurrentUser('userId') volunteerId: string,
     @CurrentUser('mandalId') mandalId: string
@@ -119,9 +121,10 @@ export class DonationsController {
   @Roles(Role.TREASURER, Role.ADMIN)
   async correctDonation(
     @CurrentUser('userId') userId: string,
-    @Body() body: CreateCorrectionInput
+    @CurrentUser('mandalId') mandalId: string,
+    @Body() body: unknown
   ) {
-    const donation = await this.donationsService.correctDonation(userId, body);
+    const donation = await this.donationsService.correctDonation(userId, mandalId, parseRequest(createCorrectionSchema, body));
     return {
       success: true,
       code: 'DONATION_CORRECTED',
@@ -135,9 +138,10 @@ export class DonationsController {
   @Roles(Role.TREASURER, Role.ADMIN)
   async voidDonation(
     @CurrentUser('userId') userId: string,
-    @Body() body: VoidDonationInput
+    @CurrentUser('mandalId') mandalId: string,
+    @Body() body: unknown
   ) {
-    const donation = await this.donationsService.voidDonation(userId, body);
+    const donation = await this.donationsService.voidDonation(userId, mandalId, parseRequest(voidDonationSchema, body));
     return {
       success: true,
       code: 'DONATION_VOIDED',
@@ -150,9 +154,10 @@ export class DonationsController {
   @UseGuards(AuthGuard)
   async collectPendingDonation(
     @CurrentUser('userId') userId: string,
-    @Body() body: CollectPendingDonationInput
+    @CurrentUser('mandalId') mandalId: string,
+    @Body() body: unknown
   ) {
-    const donation = await this.donationsService.collectPendingDonation(userId, body);
+    const donation = await this.donationsService.collectPendingDonation(userId, mandalId, parseRequest(collectPendingDonationSchema, body));
     return {
       success: true,
       code: 'PENDING_DONATION_COLLECTED',

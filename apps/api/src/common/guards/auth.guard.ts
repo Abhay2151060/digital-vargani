@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
+import { getJwtSecret } from '../security/auth-config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -24,7 +25,7 @@ export class AuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || 'vargani-jwt-secret-key-2024',
+        secret: getJwtSecret(),
       });
       (request as any).user = payload;
     } catch {
@@ -41,9 +42,6 @@ export class AuthGuard implements CanActivate {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     if (type === 'Bearer' && token) {
       return token;
-    }
-    if (request.query && typeof request.query.token === 'string' && request.query.token) {
-      return request.query.token;
     }
     return undefined;
   }

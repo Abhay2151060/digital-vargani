@@ -5,6 +5,12 @@ import { DbService } from '../db/db.service';
 export class ReportsService {
   constructor(private db: DbService) {}
 
+  private escapeCsvValue(value: unknown): string {
+    const text = String(value ?? '');
+    const neutralized = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+    return `"${neutralized.replace(/"/g, '""')}"`;
+  }
+
   async exportDonationsCsv(mandalId: string): Promise<string> {
     const res = await this.db.query(
       `SELECT d.receipt_number, d.donor_name, d.donor_phone, d.amount, d.payment_mode, 
@@ -31,16 +37,16 @@ export class ReportsService {
     ];
 
     const rows = res.rows.map((row) => [
-      `"${row.receipt_number}"`,
-      `"${row.donor_name.replace(/"/g, '""')}"`,
-      `"${row.donor_phone || ''}"`,
-      row.amount,
-      row.payment_mode,
-      `"${row.payment_reference || ''}"`,
-      `"${row.flat_wing || ''}"`,
-      `"${row.volunteer_name}"`,
-      row.is_reconciled ? 'YES' : 'NO',
-      `"${new Date(row.created_at).toLocaleString('en-IN')}"`,
+      this.escapeCsvValue(row.receipt_number),
+      this.escapeCsvValue(row.donor_name),
+      this.escapeCsvValue(row.donor_phone),
+      this.escapeCsvValue(row.amount),
+      this.escapeCsvValue(row.payment_mode),
+      this.escapeCsvValue(row.payment_reference),
+      this.escapeCsvValue(row.flat_wing),
+      this.escapeCsvValue(row.volunteer_name),
+      this.escapeCsvValue(row.is_reconciled ? 'YES' : 'NO'),
+      this.escapeCsvValue(new Date(row.created_at).toLocaleString('en-IN')),
     ]);
 
     return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -71,14 +77,14 @@ export class ReportsService {
     ];
 
     const rows = res.rows.map((row) => [
-      row.category,
-      row.amount,
-      `"${row.description.replace(/"/g, '""')}"`,
-      row.status,
-      `"${row.logged_by_name}"`,
-      `"${row.approved_by_name || ''}"`,
-      `"${row.approved_at ? new Date(row.approved_at).toLocaleString('en-IN') : ''}"`,
-      `"${new Date(row.created_at).toLocaleString('en-IN')}"`,
+      this.escapeCsvValue(row.category),
+      this.escapeCsvValue(row.amount),
+      this.escapeCsvValue(row.description),
+      this.escapeCsvValue(row.status),
+      this.escapeCsvValue(row.logged_by_name),
+      this.escapeCsvValue(row.approved_by_name),
+      this.escapeCsvValue(row.approved_at ? new Date(row.approved_at).toLocaleString('en-IN') : ''),
+      this.escapeCsvValue(new Date(row.created_at).toLocaleString('en-IN')),
     ]);
 
     return [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');

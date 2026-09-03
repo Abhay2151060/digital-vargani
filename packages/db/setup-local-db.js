@@ -10,10 +10,10 @@ async function main() {
     const roleCheck = await adminPool.query("SELECT 1 FROM pg_roles WHERE rolname = 'vargani_user'");
     if (roleCheck.rows.length === 0) {
       console.log('Creating role vargani_user...');
-      await adminPool.query("CREATE ROLE vargani_user WITH LOGIN SUPERUSER PASSWORD 'vargani_password'");
+      await adminPool.query("CREATE ROLE vargani_user WITH LOGIN PASSWORD 'vargani_password'");
     } else {
       console.log('Updating role vargani_user password...');
-      await adminPool.query("ALTER ROLE vargani_user WITH LOGIN SUPERUSER PASSWORD 'vargani_password'");
+      await adminPool.query("ALTER ROLE vargani_user WITH LOGIN NOSUPERUSER PASSWORD 'vargani_password'");
     }
 
     const dbCheck = await adminPool.query("SELECT 1 FROM pg_database WHERE datname = 'vargani_db'");

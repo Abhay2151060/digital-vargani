@@ -4,7 +4,9 @@ import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { CreateExpenseInput, UpdateExpenseStatusInput, Role, ExpenseStatus } from '@vargani/types';
+import { createExpenseSchema, ExpenseStatus, Role, updateExpenseStatusSchema } from '@vargani/types';
+import { parseRequest } from '../common/validation/parse-request';
+import { z } from 'zod';
 
 @Controller('expenses')
 @UseGuards(AuthGuard)
@@ -14,9 +16,10 @@ export class ExpensesController {
   @Get()
   async listExpenses(
     @CurrentUser('mandalId') mandalId: string,
-    @Query('status') status?: ExpenseStatus
+    @Query('status') status?: string
   ) {
-    const expenses = await this.expensesService.listExpenses(mandalId, status);
+    const { status: parsedStatus } = parseRequest(z.object({ status: z.nativeEnum(ExpenseStatus).optional() }), { status });
+    const expenses = await this.expensesService.listExpenses(mandalId, parsedStatus);
     return { success: true, code: 'EXPENSES_FETCHED', data: expenses };
   }
 
@@ -24,11 +27,11 @@ export class ExpensesController {
   async createExpense(
     @CurrentUser('userId') userId: string,
     @CurrentUser('mandalId') mandalId: string,
-    @Body() body: Omit<CreateExpenseInput, 'mandal_id'>
+    @Body() body: unknown
   ) {
+    const input = parseRequest(createExpenseSchema, { ...(body as object), mandal_id: mandalId });
     const expense = await this.expensesService.createExpense(userId, {
-      ...body,
-      mandal_id: mandalId,
+      ...input,
     });
     return {
       success: true,
@@ -44,13 +47,14 @@ export class ExpensesController {
   async updateStatus(
     @CurrentUser('userId') adminId: string,
     @CurrentUser('mandalId') mandalId: string,
-    @Body() body: UpdateExpenseStatusInput
+    @Body() body: unknown
   ) {
-    const expense = await this.expensesService.updateExpenseStatus(adminId, mandalId, body);
+    const input = parseRequest(updateExpenseStatusSchema, body);
+    const expense = await this.expensesService.updateExpenseStatus(adminId, mandalId, input);
     return {
       success: true,
       code: 'EXPENSE_STATUS_UPDATED',
-      message: `Expense ${body.status.toLowerCase()}`,
+      message: `Expense ${input.status.toLowerCase()}`,
       data: expense,
     };
   }

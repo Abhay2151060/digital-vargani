@@ -121,28 +121,37 @@ export default function VolunteerTotalsPage() {
           <strong className="text-emerald-700 font-bold">₹{totalReconciledCash.toLocaleString('en-IN')}</strong>
         </Card>
 
-        {/* CTA to collect */}
-        <div className="pt-2">
-          <Button
-            variant="primary"
-            size="lg"
-            fullWidth
-            onClick={() => router.push('/collect')}
-            className="font-bold gap-2"
-          >
-            <span>नवीन पावती बनवा</span>
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        </div>
+        {/* CTA to collect - Only visible to Treasurer */}
+        {role === Role.TREASURER && (
+          <div className="pt-2">
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => router.push('/collect')}
+              className="font-bold gap-2"
+            >
+              <span>नवीन पावती बनवा</span>
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
       </main>
 
       <BottomNav
         activeId="totals"
-        items={[
-          { id: 'collect', label: t.collect, icon: PlusCircle, href: '/collect' },
-          { id: 'totals', label: t.my_totals, icon: Wallet, href: '/totals' },
-          { id: 'history', label: t.history, icon: Receipt, href: '/history' },
-        ]}
+        items={
+          role === Role.TREASURER
+            ? [
+                { id: 'collect', label: t.collect, icon: PlusCircle, href: '/collect' },
+                { id: 'totals', label: t.my_totals, icon: Wallet, href: '/totals' },
+                { id: 'history', label: t.history, icon: Receipt, href: '/history' },
+              ]
+            : [
+                { id: 'totals', label: t.my_totals, icon: Wallet, href: '/totals' },
+                { id: 'history', label: t.history, icon: Receipt, href: '/history' },
+              ]
+        }
         onSelect={(_id, href) => {
           if (href) router.push(href);
         }}

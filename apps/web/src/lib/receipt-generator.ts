@@ -63,7 +63,7 @@ export async function generateReceiptPdf(data: ReceiptData): Promise<Blob> {
     format: [105, 148], // A6 pocket receipt size
   });
 
-  const verificationUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/r/${data.receiptNumber}`;
+  const verificationUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/r/${encodeURIComponent(data.mandalSlug)}/${encodeURIComponent(data.receiptNumber)}`;
   const qrDataUrl = await QRCode.toDataURL(verificationUrl, { margin: 1, width: 120 });
 
   // Deep Maroon / Saffron header banner

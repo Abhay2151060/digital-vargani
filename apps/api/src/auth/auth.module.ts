@@ -2,12 +2,13 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { getJwtExpiry, getJwtSecret } from '../common/security/auth-config';
 
 @Module({
   imports: [
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'vargani-jwt-secret-key-2024',
-      signOptions: { expiresIn: '30d' },
+      secret: getJwtSecret(),
+      signOptions: { expiresIn: getJwtExpiry() },
     }),
   ],
   controllers: [AuthController],

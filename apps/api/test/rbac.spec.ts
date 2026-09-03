@@ -54,38 +54,28 @@ describe('RolesGuard & RBAC Matrix', () => {
     expect(() => rolesGuard.canActivate(context)).toThrow(ForbiddenException);
   });
 
-  it('should DENY VOLUNTEER access to TREASURER endpoints', () => {
+  it('should DENY VOLUNTEER access to shared TREASURER & ADMIN endpoints', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.TREASURER, Role.ADMIN]);
     const context = createMockContext(Role.VOLUNTEER);
     expect(() => rolesGuard.canActivate(context)).toThrow(ForbiddenException);
   });
 
-  it('should allow TREASURER access to VOLUNTEER endpoints', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.VOLUNTEER]);
-    const context = createMockContext(Role.TREASURER);
-    expect(rolesGuard.canActivate(context)).toBe(true);
-  });
-
-  it('should allow ADMIN access to all subordinate role endpoints', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.VOLUNTEER]);
-    const contextVolunteer = createMockContext(Role.ADMIN);
-    expect(rolesGuard.canActivate(contextVolunteer)).toBe(true);
-
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.TREASURER]);
-    const contextTreasurer = createMockContext(Role.ADMIN);
-    expect(rolesGuard.canActivate(contextTreasurer)).toBe(true);
-  });
-
-  it('should DENY VOLUNTEER access to donation creation endpoints requiring TREASURER or ADMIN', () => {
+  it('should allow TREASURER and ADMIN access to shared endpoints', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.TREASURER, Role.ADMIN]);
+    expect(rolesGuard.canActivate(createMockContext(Role.TREASURER))).toBe(true);
+    expect(rolesGuard.canActivate(createMockContext(Role.ADMIN))).toBe(true);
+  });
+
+  it('should allow ONLY TREASURER access to New Donation Receipt endpoints (DENY both ADMIN and VOLUNTEER)', () => {
+    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([Role.TREASURER]);
     const volunteerContext = createMockContext(Role.VOLUNTEER);
     expect(() => rolesGuard.canActivate(volunteerContext)).toThrow(ForbiddenException);
 
+    const adminContext = createMockContext(Role.ADMIN);
+    expect(() => rolesGuard.canActivate(adminContext)).toThrow(ForbiddenException);
+
     const treasurerContext = createMockContext(Role.TREASURER);
     expect(rolesGuard.canActivate(treasurerContext)).toBe(true);
-
-    const adminContext = createMockContext(Role.ADMIN);
-    expect(rolesGuard.canActivate(adminContext)).toBe(true);
   });
 
   it('should DENY non-admin users from expense approvals and member invitations', () => {

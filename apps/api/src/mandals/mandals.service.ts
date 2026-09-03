@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DbService } from '../db/db.service';
-import { UpdateMandalProfileInput, FestivalType } from '@vargani/types';
+import { CreateMandalInput, UpdateMandalProfileInput } from '@vargani/types';
 
 @Injectable()
 export class MandalsService {
@@ -69,7 +69,7 @@ export class MandalsService {
     return res.rows[0];
   }
 
-  async createMandal(userId: string, input: { name: string; city: string; festival_type: FestivalType }) {
+  async createMandal(userId: string, input: CreateMandalInput) {
     const baseSlug = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const slug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`;
 

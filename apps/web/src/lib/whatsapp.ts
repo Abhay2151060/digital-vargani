@@ -17,7 +17,10 @@ export interface WhatsAppReceiptParams {
 
 export function generateWhatsAppShareUrl(params: WhatsAppReceiptParams): string {
   const origin = params.appUrl || (typeof window !== 'undefined' ? window.location.origin : 'https://digitalvargani.in');
-  const verifyUrl = `${origin}/r/${params.receiptNumber}`;
+  const receiptPath = params.mandalSlug
+    ? `/r/${encodeURIComponent(params.mandalSlug)}/${encodeURIComponent(params.receiptNumber)}`
+    : `/r/${encodeURIComponent(params.receiptNumber)}`;
+  const verifyUrl = `${origin}${receiptPath}`;
   const amountWords = numberToWordsIndian(params.amount, params.language || Language.MARATHI);
 
   return buildWhatsAppReceiptLink({

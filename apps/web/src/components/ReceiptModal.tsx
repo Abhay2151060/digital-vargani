@@ -47,7 +47,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   const t = getT(selectedLang as Language);
 
   useEffect(() => {
-    if (isOpen && donation) {
+    if (isOpen && donation && mandal) {
       try {
         confetti({
           particleCount: 70,
@@ -58,17 +58,17 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       } catch (e) {}
 
       const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digitalvargani.in';
-      const verifyUrl = `${origin}/r/${donation.receiptNumber}`;
+      const verifyUrl = `${origin}/r/${encodeURIComponent(mandal.slug)}/${encodeURIComponent(donation.receiptNumber)}`;
       QRCode.toDataURL(verifyUrl, { margin: 1, width: 140 }).then(setQrUrl);
       setSelectedLang(((donation.language || 'mr') as ReceiptLanguage));
       setIsCopied(false);
     }
-  }, [isOpen, donation]);
+  }, [isOpen, donation, mandal]);
 
   if (!donation || !mandal) return null;
 
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digitalvargani.in';
-  const verificationUrl = `${origin}/r/${donation.receiptNumber}`;
+  const verificationUrl = `${origin}/r/${encodeURIComponent(mandal.slug)}/${encodeURIComponent(donation.receiptNumber)}`;
   const amountInWords = numberToWordsIndian(donation.amount, selectedLang as Language);
 
   const handleShareWhatsApp = () => {
