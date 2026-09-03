@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import QRCode from 'qrcode';
 import { Button } from '@vargani/ui';
@@ -24,7 +24,7 @@ import { ReceiptCard } from '../../../components/ReceiptCard';
 import { Language } from '@vargani/types';
 import Link from 'next/link';
 
-export default function ReceiptVerificationPage() {
+function ReceiptVerificationContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const receiptNumber = params.receiptId as string;
@@ -342,5 +342,19 @@ export default function ReceiptVerificationPage() {
         <p>© 2024 Digital Vargani. सर्व हक्क राखीव.</p>
       </footer>
     </div>
+  );
+}
+
+export default function ReceiptVerificationPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[#FAF9F6]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F97316]"></div>
+        </div>
+      }
+    >
+      <ReceiptVerificationContent />
+    </Suspense>
   );
 }
