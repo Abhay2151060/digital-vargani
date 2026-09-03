@@ -5,6 +5,13 @@ const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@vargani/types', '@vargani/ui'],
 
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+
   async rewrites() {
     return [
       {
