@@ -15,11 +15,11 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: '10mb' }));
 
   const configuredOrigins = process.env.CORS_ORIGINS?.split(',').map((origin) => origin.trim()).filter(Boolean) || [];
-  if (process.env.NODE_ENV === 'production' && configuredOrigins.length === 0) {
-    throw new Error('CORS_ORIGINS must list the allowed web origins in production.');
+  if (configuredOrigins.length === 0) {
+    logger.warn('CORS_ORIGINS not specified. Permitting requests from all origins. Set CORS_ORIGINS in Render environment variables for restricted access.');
   }
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' ? configuredOrigins : true,
+    origin: configuredOrigins.length > 0 ? configuredOrigins : true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
