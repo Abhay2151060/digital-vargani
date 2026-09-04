@@ -10,14 +10,17 @@ import {
 
 describe('Validation Schemas (Zod)', () => {
   describe('loginSchema', () => {
-    it('should validate valid Indian mobile numbers', () => {
-      const valid = loginSchema.safeParse({ phone: '9822012345' });
+    it('should validate valid username and password', () => {
+      const valid = loginSchema.safeParse({ username: 'abhay', password: 'user123' });
       expect(valid.success).toBe(true);
     });
 
-    it('should reject landlines or invalid mobile prefixes', () => {
-      const invalid = loginSchema.safeParse({ phone: '0202543123' });
-      expect(invalid.success).toBe(false);
+    it('should reject empty username or short password', () => {
+      const invalidUname = loginSchema.safeParse({ username: 'a', password: 'user123' });
+      expect(invalidUname.success).toBe(false);
+
+      const invalidPass = loginSchema.safeParse({ username: 'abhay', password: '12' });
+      expect(invalidPass.success).toBe(false);
     });
   });
 

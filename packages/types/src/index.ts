@@ -72,9 +72,11 @@ export enum FestivalType {
 
 export interface User {
   id: string;
-  phone: string;
+  username?: string | null;
+  phone?: string | null;
   full_name: string;
   preferred_language: Language;
+  must_change_password?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -316,16 +318,29 @@ export interface PublicTransparencyReport {
 // ==========================================
 
 export const loginSchema = z.object({
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'),
-  full_name: z.string().min(2, 'Name must be at least 2 characters').optional(),
+  username: z.string().trim().min(2, 'युझरनेम किमान २ अक्षरांचे असणे आवश्यक आहे (Username must be at least 2 characters)'),
+  password: z.string().min(4, 'पासवर्ड किमान ४ अक्षरांचा असणे आवश्यक आहे (Password must be at least 4 characters)'),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const changePasswordSchema = z.object({
+  current_password: z.string().min(1, 'Current password is required'),
+  new_password: z.string().min(6, 'New password must be at least 6 characters'),
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
 // Legacy schema aliases for backward compatibility
-export const loginOtpRequestSchema = loginSchema;
-export type LoginOtpRequestInput = LoginInput;
-export const loginOtpVerifySchema = loginSchema.extend({
+export const loginOtpRequestSchema = z.object({
+  phone: z.string().optional(),
+  username: z.string().optional(),
+});
+export type LoginOtpRequestInput = z.infer<typeof loginOtpRequestSchema>;
+export const loginOtpVerifySchema = z.object({
+  phone: z.string().optional(),
+  username: z.string().optional(),
+  password: z.string().optional(),
   otp: z.string().optional(),
+  full_name: z.string().optional(),
 });
 export type LoginOtpVerifyInput = z.infer<typeof loginOtpVerifySchema>;
 
@@ -424,8 +439,9 @@ export type CreateMandalInput = z.infer<typeof createMandalSchema>;
 
 export const inviteMemberSchema = z.object({
   mandal_id: z.string().uuid(),
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number'),
-  full_name: z.string().min(2),
+  full_name: z.string().trim().min(2, 'Name must be at least 2 characters'),
+  username: z.string().trim().min(2).max(50).optional(),
+  phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number').optional().or(z.literal('')),
   role: z.nativeEnum(Role),
 });
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>;

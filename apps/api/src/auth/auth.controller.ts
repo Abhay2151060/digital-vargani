@@ -2,7 +2,7 @@ import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { loginOtpRequestSchema, loginOtpVerifySchema, loginSchema } from '@vargani/types';
+import { changePasswordSchema, loginSchema } from '@vargani/types';
 import { parseRequest } from '../common/validation/parse-request';
 import { z } from 'zod';
 
@@ -13,7 +13,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: unknown) {
     const input = parseRequest(loginSchema, body);
-    const result = await this.authService.login(input.phone, input.full_name);
+    const result = await this.authService.login(input.username, input.password);
     return {
       success: true,
       code: 'AUTH_SUCCESS',
@@ -22,27 +22,22 @@ export class AuthController {
     };
   }
 
-  // Backward-compatible endpoints
-  @Post('otp/request')
-  async requestOtp(@Body() body: unknown) {
-    const input = parseRequest(loginOtpRequestSchema, body);
-    const result = await this.authService.requestOtp(input.phone);
+  @Post('change-password')
+  @UseGuards(AuthGuard)
+  async changePassword(
+    @CurrentUser('userId') userId: string,
+    @Body() body: unknown
+  ) {
+    const input = parseRequest(changePasswordSchema, body);
+    const result = await this.authService.changePassword(
+      userId,
+      input.current_password,
+      input.new_password
+    );
     return {
       success: true,
-      code: 'OTP_SENT',
+      code: 'PASSWORD_CHANGED',
       message: result.message,
-      data: process.env.NODE_ENV === 'development' ? { devOtp: '123456' } : undefined,
-    };
-  }
-
-  @Post('otp/verify')
-  async verifyOtp(@Body() body: unknown) {
-    const input = parseRequest(loginOtpVerifySchema, body);
-    const result = await this.authService.verifyOtp(input.phone, input.otp, input.full_name);
-    return {
-      success: true,
-      code: 'AUTH_SUCCESS',
-      message: 'Login successful',
       data: result,
     };
   }

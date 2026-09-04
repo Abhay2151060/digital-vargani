@@ -12,7 +12,9 @@ interface AuthState {
   token: string | null;
   language: Language;
   isLoading: boolean;
-  login: (phone: string, fullName?: string) => Promise<void>;
+  mustChangePassword: boolean;
+  login: (username: string, password: string) => Promise<{ mustChangePassword: boolean }>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
   switchMandal: (mandalId: string) => Promise<void>;
   updateActiveMandal: (mandal: Mandal) => void;
@@ -89,6 +91,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [language, setLanguageState] = useState<Language>(Language.MARATHI);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [mustChangePassword, setMustChangePassword] = useState<boolean>(false);
 
   const initAuth = useCallback(async () => {
     try {
@@ -102,7 +105,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (savedToken && savedUser) {
         setToken(savedToken);
-        setUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+        setMustChangePassword(!!parsedUser?.must_change_password);
         if (savedMandal) setActiveMandal(JSON.parse(savedMandal));
         if (savedRole) setRole(savedRole);
         if (savedMemberships) setMemberships(JSON.parse(savedMemberships));
@@ -129,10 +134,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, [initAuth]);
 
-  const login = async (phone: string, fullName?: string) => {
+  const login = async (username: string, password: string) => {
     const res = await apiRequest<any>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ phone, full_name: fullName }),
+      body: JSON.stringify({ username: username.trim(), password }),
     });
 
     const { user: userData, activeMandal: mandalData, memberships: mems, accessToken } = res;
@@ -155,11 +160,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     safeSetMembershipsStorage(mems);
 
+    const requiresPassChange = !!userData?.must_change_password;
+    setMustChangePassword(requiresPassChange);
     setToken(accessToken);
     setUser(userData);
     setActiveMandal(mandalData);
     setRole(mandalData?.role || null);
     setMemberships(mems);
+
+    return { mustChangePassword: requiresPassChange };
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    await apiRequest('/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+      }),
+    });
+
+    setMustChangePassword(false);
+    if (user) {
+      const updated = { ...user, must_change_password: false };
+      setUser(updated);
+      try {
+        localStorage.setItem('vargani_user', JSON.stringify(updated));
+      } catch (err) {
+        console.warn('Error saving updated user:', err);
+      }
+    }
   };
 
   const logout = () => {
@@ -173,6 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveMandal(null);
     setRole(null);
     setMemberships([]);
+    setMustChangePassword(false);
     if (typeof window !== 'undefined') {
       window.location.href = '/login';
     }
@@ -217,7 +248,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         language,
         isLoading,
+        mustChangePassword,
         login,
+        changePassword,
         logout,
         switchMandal,
         updateActiveMandal,

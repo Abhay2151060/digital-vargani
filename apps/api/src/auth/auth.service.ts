@@ -1,7 +1,18 @@
-import { Injectable, BadRequestException, ServiceUnavailableException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { DbService } from '../db/db.service';
-import { getJwtExpiry, getJwtSecret, isDevelopmentAuthEnabled } from '../common/security/auth-config';
+import { getJwtExpiry, getJwtSecret } from '../common/security/auth-config';
+import {
+  DEFAULT_PASSWORD,
+  DEFAULT_PASSWORD_HASH,
+  hashPassword,
+  verifyPassword,
+} from '../common/security/password.util';
 
 @Injectable()
 export class AuthService {
@@ -10,50 +21,66 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  async login(phone: string, fullName?: string) {
-    if (!isDevelopmentAuthEnabled()) {
-      throw new ServiceUnavailableException({
-        code: 'OTP_VERIFICATION_REQUIRED',
-        message: 'Phone authentication requires a configured OTP provider in this environment.',
-      });
-    }
-
-    return this.completeLogin(phone, fullName);
-  }
-
-  private async completeLogin(phone: string, fullName?: string) {
-    if (!/^[6-9]\d{9}$/.test(phone)) {
+  /**
+   * Username & Password login.
+   * Only pre-created users by Admin can log in.
+   */
+  async login(usernameInput: string, passwordInput: string) {
+    const term = (usernameInput || '').trim();
+    if (!term || !passwordInput) {
       throw new BadRequestException({
-        code: 'INVALID_PHONE',
-        message: 'Please enter a valid 10-digit Indian mobile number',
+        code: 'INVALID_INPUT',
+        message: 'युझरनेम आणि पासवर्ड आवश्यक आहे (Username and password are required)',
       });
     }
 
-    // 1. Find or create user
+    // 1. Find user by case-insensitive username, phone, full_name, or stripped variants
     const userRes = await this.db.query(
-      `SELECT * FROM users WHERE phone = $1`,
-      [phone]
+      `SELECT * FROM users 
+       WHERE LOWER(username) = LOWER($1) 
+          OR phone = $1 
+          OR LOWER(full_name) = LOWER($1)
+          OR REPLACE(LOWER(username), '_', ' ') = LOWER($1)
+          OR REPLACE(LOWER(username), '_', '') = REPLACE(LOWER($1), ' ', '')
+          OR REPLACE(LOWER(full_name), ' ', '') = REPLACE(LOWER($1), ' ', '')
+       ORDER BY created_at ASC 
+       LIMIT 1`,
+      [term]
     );
 
-    let user = userRes.rows[0];
+    const user = userRes.rows[0];
     if (!user) {
-      const name = fullName || `User ${phone.slice(-4)}`;
-      const newUserRes = await this.db.query(
-        `INSERT INTO users (phone, full_name, preferred_language)
-         VALUES ($1, $2, 'mr')
-         RETURNING *`,
-        [phone, name]
-      );
-      user = newUserRes.rows[0];
-    } else if (fullName && user.full_name !== fullName) {
-      await this.db.query(
-        `UPDATE users SET full_name = $1, updated_at = NOW() WHERE id = $2`,
-        [fullName, user.id]
-      );
-      user.full_name = fullName;
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'अवैध युझरनेम किंवा पासवर्ड (Invalid username or password)',
+      });
     }
 
-    // 2. Activate pending member invites
+    // 2. Verify password
+    let passwordValid = false;
+    if (user.password_hash) {
+      passwordValid = verifyPassword(passwordInput, user.password_hash);
+    } else {
+      // Legacy fallback: if user had no password yet, check against default password
+      if (passwordInput === DEFAULT_PASSWORD) {
+        passwordValid = true;
+        // Seed the hash into user record
+        await this.db.query(
+          `UPDATE users SET password_hash = $1, must_change_password = TRUE WHERE id = $2`,
+          [DEFAULT_PASSWORD_HASH, user.id]
+        );
+        user.must_change_password = true;
+      }
+    }
+
+    if (!passwordValid) {
+      throw new UnauthorizedException({
+        code: 'INVALID_CREDENTIALS',
+        message: 'अवैध युझरनेम किंवा पासवर्ड (Invalid username or password)',
+      });
+    }
+
+    // 3. Activate pending member invites for this user
     await this.db.query(
       `UPDATE mandal_members 
        SET status = 'ACTIVE', updated_at = NOW()
@@ -61,7 +88,7 @@ export class AuthService {
       [user.id]
     );
 
-    // 3. Fetch mandal memberships
+    // 4. Fetch mandal memberships
     let membershipsRes = await this.db.query(
       `SELECT m.id, m.name, m.slug, m.registration_number, m.city, m.area, 
               m.festival_type, m.receipt_prefix, m.logo_url, m.upi_id, 
@@ -82,7 +109,10 @@ export class AuthService {
       );
       if (defaultMandalRes.rows.length > 0) {
         const defaultMandalId = defaultMandalRes.rows[0].id;
-        const assignedRole = phone === '8574968596' ? 'ADMIN' : 'VOLUNTEER';
+        const assignedRole =
+          user.phone === '8421692967' || user.username === 'abhay' || user.phone === '8574968596'
+            ? 'ADMIN'
+            : 'VOLUNTEER';
 
         await this.db.query(
           `INSERT INTO mandal_members (mandal_id, user_id, role, status)
@@ -106,17 +136,17 @@ export class AuthService {
     }
 
     const activeMandalIds = memberships.map((m) => m.id);
-
-    // Primary active mandal membership
     const primaryMembership = memberships[0] || null;
 
     const tokenPayload = {
       userId: user.id,
+      username: user.username,
       phone: user.phone,
       fullName: user.full_name,
       mandalId: primaryMembership ? primaryMembership.id : null,
       role: primaryMembership ? primaryMembership.role : null,
       activeMandalIds,
+      mustChangePassword: Boolean(user.must_change_password),
     };
 
     const accessToken = this.jwtService.sign(tokenPayload, {
@@ -127,44 +157,68 @@ export class AuthService {
     return {
       user: {
         id: user.id,
+        username: user.username,
         phone: user.phone,
         fullName: user.full_name,
         preferredLanguage: user.preferred_language,
+        mustChangePassword: Boolean(user.must_change_password),
       },
       activeMandal: primaryMembership,
       memberships,
       accessToken,
+      mustChangePassword: Boolean(user.must_change_password),
     };
   }
 
-  // Legacy wrappers for backward compatibility
-  async requestOtp(phone: string) {
-    if (!/^[6-9]\d{9}$/.test(phone)) {
+  /**
+   * Allows an authenticated user to change their password.
+   * Sets must_change_password = FALSE upon successful change.
+   */
+  async changePassword(userId: string, currentPasswordInput: string, newPasswordInput: string) {
+    if (!newPasswordInput || newPasswordInput.trim().length < 6) {
       throw new BadRequestException({
-        code: 'INVALID_PHONE',
-        message: 'Please enter a valid 10-digit Indian mobile number',
+        code: 'INVALID_PASSWORD_LENGTH',
+        message: 'नवीन पासवर्ड किमान ६ अक्षरांचा असणे आवश्यक आहे (New password must be at least 6 characters)',
       });
     }
-    if (!isDevelopmentAuthEnabled()) {
-      throw new ServiceUnavailableException({
-        code: 'OTP_PROVIDER_NOT_CONFIGURED',
-        message: 'Phone authentication requires a configured OTP provider in this environment.',
-      });
-    }
-    return { success: true, message: 'Development OTP ready' };
-  }
 
-  async verifyOtp(phone: string, otp?: string, fullName?: string) {
-    if (!isDevelopmentAuthEnabled()) {
-      throw new ServiceUnavailableException({
-        code: 'OTP_PROVIDER_NOT_CONFIGURED',
-        message: 'Phone authentication requires a configured OTP provider in this environment.',
+    const userRes = await this.db.query(`SELECT * FROM users WHERE id = $1`, [userId]);
+    const user = userRes.rows[0];
+    if (!user) {
+      throw new NotFoundException({
+        code: 'USER_NOT_FOUND',
+        message: 'युझर सापडला नाही (User not found)',
       });
     }
-    if (otp !== '123456') {
-      throw new UnauthorizedException({ code: 'INVALID_OTP', message: 'The verification code is invalid.' });
+
+    // Verify current password
+    let currentValid = false;
+    if (user.password_hash) {
+      currentValid = verifyPassword(currentPasswordInput, user.password_hash);
+    } else {
+      currentValid = currentPasswordInput === DEFAULT_PASSWORD;
     }
-    return this.completeLogin(phone, fullName);
+
+    if (!currentValid) {
+      throw new UnauthorizedException({
+        code: 'INCORRECT_CURRENT_PASSWORD',
+        message: 'सध्याचा पासवर्ड चुकीचा आहे (Current password is incorrect)',
+      });
+    }
+
+    const newHash = hashPassword(newPasswordInput.trim());
+    await this.db.query(
+      `UPDATE users 
+       SET password_hash = $1, must_change_password = FALSE, updated_at = NOW() 
+       WHERE id = $2`,
+      [newHash, userId]
+    );
+
+    return {
+      success: true,
+      code: 'PASSWORD_CHANGED',
+      message: 'पासवर्ड यशस्वीरीत्या बदलला आहे (Password changed successfully)',
+    };
   }
 
   async switchMandal(userId: string, mandalId: string) {
@@ -196,11 +250,13 @@ export class AuthService {
 
     const tokenPayload = {
       userId: user.id,
+      username: user.username,
       phone: user.phone,
       fullName: user.full_name,
       mandalId: membership.mandal_id,
       role: membership.role,
       activeMandalIds,
+      mustChangePassword: Boolean(user.must_change_password),
     };
 
     const accessToken = this.jwtService.sign(tokenPayload, {
