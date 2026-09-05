@@ -148,25 +148,25 @@ function ReconciliationContent() {
       <OfflineBanner />
 
       {/* Nav */}
-      <div className="bg-white border-b border-[#E5E1D8] px-4 py-2">
-        <div className="max-w-5xl mx-auto flex items-center gap-2 overflow-x-auto text-xs font-semibold">
-          <Link href="/dashboard" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+      <div className="bg-white/90 backdrop-blur-md border-b border-[#E5E1D8]/80 px-4 py-2 sticky top-[53px] z-20 shadow-2xs">
+        <div className="max-w-5xl mx-auto flex items-center gap-1.5 overflow-x-auto text-xs font-semibold">
+          <Link href="/dashboard" className="px-3 py-1.5 rounded-xl text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118] transition">
             {t.dashboard}
           </Link>
-          <Link href="/reconciliation" className="px-3 py-1.5 rounded-lg bg-orange-50 text-[#F97316] font-bold border border-orange-200">
+          <Link href="/reconciliation" className="px-3 py-1.5 rounded-xl bg-[#7C2D12] text-white font-bold shadow-2xs">
             {t.reconciliation}
           </Link>
-          <Link href="/expenses" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+          <Link href="/expenses" className="px-3 py-1.5 rounded-xl text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118] transition">
             {t.expenses}
           </Link>
-          <Link href="/members" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+          <Link href="/members" className="px-3 py-1.5 rounded-xl text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118] transition">
             {t.members}
           </Link>
-          <Link href="/reports" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+          <Link href="/reports" className="px-3 py-1.5 rounded-xl text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118] transition">
             {t.reports}
           </Link>
           {role === Role.ADMIN && (
-            <Link href="/settings" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
+            <Link href="/settings" className="px-3 py-1.5 rounded-xl text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118] transition">
               {t.settings}
             </Link>
           )}

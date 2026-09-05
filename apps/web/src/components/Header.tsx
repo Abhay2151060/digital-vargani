@@ -37,11 +37,11 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E5E1D8] shadow-xs">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="sticky top-0 z-30 glass-panel border-b border-[#E5E1D8]/80 shadow-[0_2px_15px_rgba(0,0,0,0.03)]">
+      <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
         {/* Mandal Brand Info */}
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#C2410C] to-[#F97316] flex items-center justify-center text-white font-bold shadow-md shadow-orange-500/20 shrink-0 overflow-hidden">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#7C2D12] via-[#C2410C] to-[#F97316] flex items-center justify-center text-white font-bold shadow-sm shadow-orange-500/20 shrink-0 overflow-hidden border border-orange-500/20">
             {activeMandal?.logo_url ? (
               <img
                 src={activeMandal.logo_url}
@@ -49,21 +49,21 @@ export const Header: React.FC = () => {
                 className="w-full h-full object-cover rounded-xl"
               />
             ) : (
-              <Sparkles className="w-5 h-5 text-amber-200" />
+              <span className="text-base">🚩</span>
             )}
           </div>
           <div className="min-w-0">
-            <h1 className="text-base font-bold text-[#292118] truncate leading-tight">
+            <h1 className="text-sm font-extrabold text-[#292118] truncate leading-tight">
               {activeMandal?.name || t.app_title}
             </h1>
-            <div className="flex items-center gap-1.5 text-xs text-[#6B6459]">
+            <div className="flex items-center gap-1.5 text-[11px] text-[#6B6459] mt-0.5">
               {role && (
-                <span className="font-semibold text-orange-700 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200/60">
+                <span className="font-semibold text-[#7C2D12] bg-orange-50 px-2 py-0.2 rounded-full border border-orange-200/70">
                   {getRoleLabel(role)}
                 </span>
               )}
               {activeMandal?.city && (
-                <span className="hidden sm:inline-block truncate">
+                <span className="hidden sm:inline-block truncate font-medium">
                   • {activeMandal.city} {activeMandal.area ? `(${activeMandal.area})` : ''}
                 </span>
               )}

@@ -160,7 +160,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         {/* Language Selector */}
         <div className="flex items-center gap-2 text-xs pt-1">
           <span className="text-[#6B6459] font-medium">{t.receipt_language}:</span>
-          <div className="flex gap-1">
+          <div className="flex bg-[#F3F1EC] p-0.5 rounded-xl border border-[#E5E1D8]">
             {[
               { code: 'mr', label: 'मराठी' },
               { code: 'en', label: 'English' },
@@ -168,10 +168,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               <button
                 key={item.code}
                 onClick={() => setSelectedLang(item.code as ReceiptLanguage)}
-                className={`px-3 py-1 rounded-lg font-semibold transition ${
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   selectedLang === item.code
-                    ? 'bg-[#F97316] text-white shadow-xs'
-                    : 'bg-[#F3F1EC] text-[#6B6459] hover:bg-[#E5E1D8]'
+                    ? 'bg-white text-[#7C2D12] shadow-xs'
+                    : 'text-[#6B6459] hover:text-[#292118]'
                 }`}
               >
                 {item.label}
@@ -181,14 +181,14 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="w-full flex flex-col gap-2 pt-2">
+        <div className="w-full flex flex-col gap-2.5 pt-2">
           {/* WhatsApp Direct Share */}
           <Button
             variant="primary"
             size="lg"
             fullWidth
             onClick={handleShareWhatsApp}
-            className="bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-2 shadow-md shadow-emerald-600/20 min-h-[48px]"
+            className="bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold gap-2 shadow-md shadow-emerald-600/20 min-h-[48px] border-emerald-600 rounded-xl cursor-pointer"
           >
             <Share2 className="w-5 h-5" />
             <span>{t.share_whatsapp}</span>
@@ -200,7 +200,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               variant="outline"
               size="md"
               onClick={handleCopyMessage}
-              className="gap-1.5 font-semibold text-xs border-[#E5E1D8]"
+              className="gap-1.5 font-semibold text-xs border-[#E5E1D8] rounded-xl cursor-pointer"
             >
               {isCopied ? (
                 <>
@@ -219,14 +219,14 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               variant="outline"
               size="md"
               onClick={handleDownloadPdf}
-              className="gap-1.5 font-semibold text-xs border-[#E5E1D8]"
+              className="gap-1.5 font-semibold text-xs border-[#E5E1D8] text-[#7C2D12] rounded-xl cursor-pointer"
             >
-              <Download className="w-4 h-4 text-[#F97316]" />
+              <Download className="w-4 h-4 text-[#C2410C]" />
               <span>{t.download_receipt}</span>
             </Button>
           </div>
 
-          <Button variant="ghost" size="sm" onClick={onClose} className="text-xs text-[#6B6459]">
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-xs text-[#6B6459] cursor-pointer">
             <span>{t.close}</span>
           </Button>
         </div>

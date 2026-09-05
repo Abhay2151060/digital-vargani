@@ -25,7 +25,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   return (
     <nav
       className={cn(
-        'fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E5E1D8] shadow-lg',
+        'fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-[#E5E1D8]/80 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]',
         'safe-area-bottom select-none',
         className
       )}
@@ -39,16 +39,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               key={item.id}
               onClick={() => onSelect(item.id, item.href)}
               className={cn(
-                'flex-1 flex flex-col items-center justify-center h-full py-1 gap-1 transition-colors min-h-[48px] touch-manipulation',
+                'flex-1 flex flex-col items-center justify-center h-full py-1 gap-1 transition-all duration-150 min-h-[48px] touch-manipulation cursor-pointer',
                 isActive
-                  ? 'text-[#F97316] font-semibold'
+                  ? 'text-[#C2410C] font-bold'
                   : 'text-[#6B6459] hover:text-[#292118]'
               )}
             >
               <div className="relative">
-                <Icon className={cn('w-5 h-5 transition-transform duration-150', isActive ? 'scale-110' : '')} />
+                <div className={cn(
+                  'p-1 rounded-xl transition-colors',
+                  isActive ? 'bg-orange-50 text-[#C2410C]' : ''
+                )}>
+                  <Icon className={cn('w-5 h-5 transition-transform duration-150', isActive ? 'scale-110 stroke-[2.4]' : 'stroke-[1.8]')} />
+                </div>
                 {item.badge !== undefined && (
-                  <span className="absolute -top-1.5 -right-2.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full min-w-[16px] text-center shadow-xs">
                     {item.badge}
                   </span>
                 )}

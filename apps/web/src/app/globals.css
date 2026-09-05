@@ -11,14 +11,16 @@ body {
   background-color: #FAF9F6;
   color: #292118;
   font-family: var(--font-inter), var(--font-noto-devanagari), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
-/* Custom scrollbars */
+/* Custom modern scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
   background: #FAF9F6;
@@ -28,7 +30,7 @@ body {
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #A8A297;
+  background: #D1CBC0;
 }
 
 /* Numeric alignment */
@@ -39,4 +41,30 @@ body {
 /* Safe area padding for mobile notches / bottom nav */
 .safe-area-bottom {
   padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Modern Cultural Minimalist custom utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 225, 216, 0.8);
+}
+
+.subtle-cultural-gradient {
+  background: linear-gradient(135deg, #FFFDFB 0%, #FAF5EE 100%);
+}
+
+.maroon-gradient {
+  background: linear-gradient(135deg, #7C2D12 0%, #5C220E 100%);
+}
+
+.saffron-gradient {
+  background: linear-gradient(135deg, #EA580C 0%, #F97316 100%);
+}
+
+.gold-gradient-text {
+  background: linear-gradient(135deg, #C2410C 0%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

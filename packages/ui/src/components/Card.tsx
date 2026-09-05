@@ -14,9 +14,9 @@ export const Card: React.FC<CardProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    default: 'bg-white rounded-2xl shadow-sm border border-[#E5E1D8]/80',
-    flat: 'bg-[#F3F1EC] rounded-2xl',
-    bordered: 'bg-white rounded-2xl border-2 border-[#E5E1D8]',
+    default: 'bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(41,33,24,0.05)] border border-[#E5E1D8]/80 hover:border-[#D6D0C4] transition-colors',
+    flat: 'bg-[#F3F1EC]/80 rounded-2xl border border-[#E5E1D8]/50',
+    bordered: 'bg-white rounded-2xl border border-[#E5E1D8] shadow-xs',
   };
 
   const paddingStyles = {
