@@ -199,7 +199,7 @@ export default function MembersPage() {
           <div>
             <h2 className="text-xl font-extrabold text-[#292118]">{t.members} (Mandal Team)</h2>
             <p className="text-xs text-[#6B6459] mt-0.5">
-              मंडळातील कार्यकर्ते, खजिनदार आणि व्यवस्थापक यांचे अधिकार, युझरनेम व पावती पुस्तक वाटप.
+              मंडळातील कार्यकर्ते, खजिनदार आणि व्यवस्थापक यांचे अधिकार व युझरनेम व्यवस्थापन.
             </p>
           </div>
 
@@ -233,7 +233,6 @@ export default function MembersPage() {
                   <th className="px-4 py-3">युझरनेम (Username)</th>
                   <th className="px-4 py-3">मोबाईल</th>
                   <th className="px-4 py-3">भूमिका (Role)</th>
-                  <th className="px-4 py-3">पावती पुस्तक ब्लॉक</th>
                   <th className="px-4 py-3 text-center">स्थिती (Status)</th>
                   {role === Role.ADMIN && <th className="px-4 py-3 text-center">लॉगिन शेअर</th>}
                   {role === Role.ADMIN && <th className="px-4 py-3 text-center">अधिकार</th>}
@@ -255,15 +254,6 @@ export default function MembersPage() {
                       }`}>
                         {m.role}
                       </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-[#6B6459]">
-                      {m.range_start ? (
-                        <span>
-                          क्र. {m.range_start} ते {m.range_end} (चालू: {m.current_number})
-                        </span>
-                      ) : (
-                        <span>—</span>
-                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {m.status === MemberStatus.ACTIVE ? (

@@ -10,11 +10,9 @@ export class MembersService {
   async listMembers(mandalId: string) {
     const res = await this.db.query(
       `SELECT mm.id, mm.mandal_id, mm.user_id, mm.role, mm.status, mm.created_at,
-              u.full_name, u.username, u.phone, u.preferred_language, u.must_change_password,
-              rna.range_start, rna.range_end, rna.current_number
+              u.full_name, u.username, u.phone, u.preferred_language, u.must_change_password
        FROM mandal_members mm
        JOIN users u ON u.id = mm.user_id
-       LEFT JOIN receipt_number_allocations rna ON rna.mandal_id = mm.mandal_id AND rna.user_id = mm.user_id
        WHERE mm.mandal_id = $1
        ORDER BY mm.created_at ASC`,
       [mandalId],
@@ -92,29 +90,6 @@ export class MembersService {
          RETURNING *`,
         [input.mandal_id, user.id, input.role, inviterId]
       );
-
-      // 4. If volunteer, allocate receipt block if not already allocated
-      if (input.role === Role.VOLUNTEER) {
-        const existingRange = await client.query(
-          `SELECT * FROM receipt_number_allocations WHERE mandal_id = $1 AND user_id = $2`,
-          [input.mandal_id, user.id]
-        );
-
-        if (existingRange.rowCount === 0) {
-          const maxRes = await client.query(
-            `SELECT COALESCE(MAX(range_end), 0) as max_end FROM receipt_number_allocations WHERE mandal_id = $1`,
-            [input.mandal_id]
-          );
-          const start = parseInt(maxRes.rows[0].max_end, 10) + 1;
-          const end = start + 499; // 500-receipt block
-
-          await client.query(
-            `INSERT INTO receipt_number_allocations (mandal_id, user_id, range_start, range_end, current_number)
-             VALUES ($1, $2, $3, $4, $3)`,
-            [input.mandal_id, user.id, start, end]
-          );
-        }
-      }
 
       const loginUrl = 'https://digital-vargani-mu.vercel.app/login';
       const shareableMessage = `🚩 *${mandalName} - डिजिटल वर्गणी लॉगिन माहिती*\n\nनमस्कार ${input.full_name},\nआपणांस डिजिटल वर्गणी प्रणालीमध्ये *${input.role}* म्हणून समाविष्ट करण्यात आले आहे.\n\n🔗 *लॉगिन लिंक:* ${loginUrl}\n👤 *युझरनेम (Username):* ${user.username}\n🔑 *पासवर्ड (Password):* ${DEFAULT_PASSWORD}\n\n⚠️ पहिल्या लॉगिननंतर कृपया आपला पासवर्ड बदलून घ्या.`;

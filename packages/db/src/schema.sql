@@ -121,6 +121,12 @@ CREATE TABLE IF NOT EXISTS mandal_members (
     CONSTRAINT uq_mandal_user UNIQUE (mandal_id, user_id)
 );
 
+-- Ensure mandal_members has no receipt book or block allocation columns
+ALTER TABLE mandal_members DROP COLUMN IF EXISTS receipt_book_block;
+ALTER TABLE mandal_members DROP COLUMN IF EXISTS range_start;
+ALTER TABLE mandal_members DROP COLUMN IF EXISTS range_end;
+ALTER TABLE mandal_members DROP COLUMN IF EXISTS current_number;
+
 -- 4. RECEIPT NUMBER ALLOCATIONS (SERVER-ALLOCATED RANGES FOR OFFLINE SAFETY)
 CREATE TABLE IF NOT EXISTS receipt_number_allocations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
