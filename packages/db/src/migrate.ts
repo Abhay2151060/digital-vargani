@@ -34,6 +34,7 @@ export async function runMigrations() {
       console.warn('expenses category type warning:', e);
     }
     try {
+      await client.query("UPDATE users SET full_name = username WHERE (full_name IS NULL OR TRIM(full_name) = '') AND username IS NOT NULL;");
       await client.query("UPDATE users SET full_name = REPLACE(full_name, '_', ' ') WHERE full_name LIKE '%_%';");
     } catch (e) {
       console.warn('clean full_name warning:', e);

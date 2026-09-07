@@ -106,7 +106,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (savedToken && savedUser) {
         setToken(savedToken);
         const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
+        const resolvedName = parsedUser.full_name || parsedUser.fullName || parsedUser.username || '';
+        const normalizedUser = {
+          ...parsedUser,
+          full_name: resolvedName,
+          fullName: resolvedName,
+        };
+        setUser(normalizedUser);
         setMustChangePassword(!!parsedUser?.must_change_password);
         if (savedMandal) setActiveMandal(JSON.parse(savedMandal));
         if (savedRole) setRole(savedRole);
@@ -163,7 +169,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const requiresPassChange = !!userData?.must_change_password;
     setMustChangePassword(requiresPassChange);
     setToken(accessToken);
-    setUser(userData);
+    const resolvedName = userData?.full_name || userData?.fullName || userData?.username || '';
+    const normalizedUser = {
+      ...userData,
+      full_name: resolvedName,
+      fullName: resolvedName,
+    };
+    setUser(normalizedUser);
     setActiveMandal(mandalData);
     setRole(mandalData?.role || null);
     setMemberships(mems);

@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const { user, activeMandal, role, language, setLanguage, changePassword } = useAuth();
   const t = getT(language);
   const router = useRouter();
+  const userDisplayName = formatDisplayName(user?.full_name || (user as any)?.fullName || user?.username) || 'वापरकर्ता';
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -96,13 +97,12 @@ export default function ProfilePage() {
         <Card variant="default" padding="lg" className="border border-[#E5E1D8] shadow-xs rounded-2xl space-y-5">
           <div className="flex items-center gap-3.5 pb-4 border-b border-[#E5E1D8]">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#7C2D12] via-[#C2410C] to-[#F97316] flex items-center justify-center text-white font-black text-2xl shadow-sm shadow-orange-500/20 shrink-0">
-              {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'U'}
+              {userDisplayName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
               <h2 className="text-lg font-extrabold text-[#292118] truncate">
-                {formatDisplayName(user?.full_name) || 'वापरकर्ता'}
+                {userDisplayName}
               </h2>
-              <p className="text-xs text-[#6B6459] font-mono">@{user?.username}</p>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[11px] font-bold text-[#7C2D12] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
                   {role}
@@ -118,9 +118,9 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
             <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-              <span className="text-[#6B6459] font-medium block">युझरनेम (Username)</span>
-              <span className="font-bold text-[#292118] text-sm mt-0.5 block font-mono">
-                {user?.username || '—'}
+              <span className="text-[#6B6459] font-medium block">पूर्ण नाव (Full Name)</span>
+              <span className="font-bold text-[#292118] text-sm mt-0.5 block">
+                {userDisplayName}
               </span>
             </div>
 

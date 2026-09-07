@@ -161,9 +161,9 @@ export class AuthService {
 
     const tokenPayload = {
       userId: user.id,
-      username: user.username,
+      full_name: user.full_name || user.username,
+      fullName: user.full_name || user.username,
       phone: user.phone,
-      fullName: user.full_name,
       mandalId: primaryMembership ? primaryMembership.id : null,
       role: primaryMembership ? primaryMembership.role : null,
       activeMandalIds,
@@ -178,9 +178,9 @@ export class AuthService {
     return {
       user: {
         id: user.id,
-        username: user.username,
+        full_name: user.full_name || user.username,
+        fullName: user.full_name || user.username,
         phone: user.phone,
-        fullName: user.full_name,
         preferredLanguage: user.preferred_language,
         mustChangePassword: Boolean(user.must_change_password),
       },

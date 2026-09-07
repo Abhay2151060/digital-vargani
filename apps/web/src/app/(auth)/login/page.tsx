@@ -144,7 +144,7 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 leftIcon={<User className="w-4 h-4" />}
                 required
-                autoComplete="username"
+                autoComplete="name"
               />
             </div>
 
