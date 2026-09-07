@@ -149,9 +149,6 @@ export default function ExpensesPage() {
               {t.settings}
             </Link>
           )}
-          <Link href="/profile" className="px-3 py-1.5 rounded-lg text-[#6B6459] hover:bg-[#F3F1EC]">
-            {language === Language.ENGLISH ? 'My Profile' : 'माझे प्रोफाईल'}
-          </Link>
         </div>
       </div>
 

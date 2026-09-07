@@ -183,15 +183,6 @@ export default function UnifiedDashboardPage() {
                 अहवाल व पारदर्शकता
               </button>
             </div>
-
-            <div className="flex items-center gap-2 shrink-0">
-              <Link href="/profile">
-                <Button variant="outline" size="sm" className="text-xs h-8 gap-1.5 rounded-xl cursor-pointer">
-                  <User className="w-3.5 h-3.5 text-[#7C2D12]" />
-                  <span>माझे प्रोफाईल</span>
-                </Button>
-              </Link>
-            </div>
           </div>
         </div>
 
@@ -657,12 +648,6 @@ export default function UnifiedDashboardPage() {
                 {t.settings}
               </Link>
             )}
-            <Link
-              href="/profile"
-              className="px-3 py-1.5 rounded-xl text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118] transition"
-            >
-              {language === Language.ENGLISH ? 'My Profile' : 'माझे प्रोफाईल'}
-            </Link>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
