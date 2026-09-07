@@ -13,7 +13,8 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: unknown) {
     const input = parseRequest(loginSchema, body);
-    const result = await this.authService.login(input.username, input.password);
+    const identifier = input.identifier || input.name_or_phone || input.username || '';
+    const result = await this.authService.login(identifier, input.password);
     return {
       success: true,
       code: 'AUTH_SUCCESS',

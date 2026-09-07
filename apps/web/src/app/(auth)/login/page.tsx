@@ -13,7 +13,7 @@ export default function LoginPage() {
   const t = getT(language);
   const router = useRouter();
 
-  const [username, setUsername] = useState('');
+  const [nameOrPhone, setNameOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +46,7 @@ export default function LoginPage() {
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    if (!username.trim()) {
+    if (!nameOrPhone.trim()) {
       setError('कृपया पूर्ण नाव किंवा मोबाईल नंबर टाका');
       return;
     }
@@ -58,7 +58,7 @@ export default function LoginPage() {
     setError(null);
     setIsLoading(true);
     try {
-      const res = await login(username.trim(), password);
+      const res = await login(nameOrPhone.trim(), password);
       if (res.mustChangePassword) {
         setCurrentPassword(password);
         setShowChangeModal(true);
@@ -137,11 +137,11 @@ export default function LoginPage() {
           <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
             <div>
               <Input
-                label={mounted ? t.username_label || 'पूर्ण नाव किंवा मोबाईल नंबर' : 'पूर्ण नाव किंवा मोबाईल नंबर'}
+                label={mounted ? t.name_or_phone_label || 'पूर्ण नाव किंवा मोबाईल नंबर' : 'पूर्ण नाव किंवा मोबाईल नंबर'}
                 type="text"
-                placeholder={mounted ? t.username_placeholder || 'उदा. धीरज कांबळे किंवा 9822012345' : 'उदा. धीरज कांबळे किंवा 9822012345'}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                placeholder={mounted ? t.name_or_phone_placeholder || 'उदा. धीरज कांबळे किंवा 9822012345' : 'उदा. धीरज कांबळे किंवा 9822012345'}
+                value={nameOrPhone}
+                onChange={(e) => setNameOrPhone(e.target.value)}
                 leftIcon={<User className="w-4 h-4" />}
                 required
                 autoComplete="name"

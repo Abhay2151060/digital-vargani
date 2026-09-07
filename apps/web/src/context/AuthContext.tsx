@@ -13,7 +13,7 @@ interface AuthState {
   language: Language;
   isLoading: boolean;
   mustChangePassword: boolean;
-  login: (username: string, password: string) => Promise<{ mustChangePassword: boolean }>;
+  login: (nameOrPhone: string, password: string) => Promise<{ mustChangePassword: boolean }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
   logout: () => void;
   switchMandal: (mandalId: string) => Promise<void>;
@@ -140,10 +140,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
   }, [initAuth]);
 
-  const login = async (username: string, password: string) => {
+  const login = async (nameOrPhone: string, password: string) => {
+    const trimmed = nameOrPhone.trim();
     const res = await apiRequest<any>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ username: username.trim(), password }),
+      body: JSON.stringify({
+        identifier: trimmed,
+        name_or_phone: trimmed,
+        username: trimmed,
+        password,
+      }),
     });
 
     const { user: userData, activeMandal: mandalData, memberships: mems, accessToken } = res;

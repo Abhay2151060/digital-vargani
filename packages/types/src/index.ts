@@ -325,8 +325,13 @@ export interface PublicTransparencyReport {
 // ==========================================
 
 export const loginSchema = z.object({
-  username: z.string().trim().min(2, 'युझरनेम किमान २ अक्षरांचे असणे आवश्यक आहे (Username must be at least 2 characters)'),
+  identifier: z.string().trim().optional(),
+  name_or_phone: z.string().trim().optional(),
+  username: z.string().trim().optional(),
   password: z.string().min(4, 'पासवर्ड किमान ४ अक्षरांचा असणे आवश्यक आहे (Password must be at least 4 characters)'),
+}).refine((data) => !!(data.identifier || data.name_or_phone || data.username), {
+  message: 'पूर्ण नाव किंवा मोबाईल नंबर आवश्यक आहे (Name or Phone Number is required)',
+  path: ['identifier'],
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 

@@ -201,7 +201,7 @@ export default function MembersPage() {
           <div>
             <h2 className="text-xl font-extrabold text-[#292118]">{t.members} (Mandal Team)</h2>
             <p className="text-xs text-[#6B6459] mt-0.5">
-              मंडळातील कार्यकर्ते, खजिनदार आणि व्यवस्थापक यांचे अधिकार व युझरनेम व्यवस्थापन.
+              मंडळातील कार्यकर्ते, खजिनदार आणि व्यवस्थापक यांचे अधिकार व सदस्य व्यवस्थापन.
             </p>
           </div>
 

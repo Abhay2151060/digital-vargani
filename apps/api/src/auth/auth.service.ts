@@ -22,11 +22,11 @@ export class AuthService {
   ) {}
 
   /**
-   * Username & Password login.
+   * Name or Phone Number & Password login.
    * Only pre-created users by Admin can log in.
    */
-  async login(usernameInput: string, passwordInput: string) {
-    const term = (usernameInput || '').trim();
+  async login(identifierInput: string, passwordInput: string) {
+    const term = (identifierInput || '').trim();
     if (!term || !passwordInput) {
       throw new BadRequestException({
         code: 'INVALID_INPUT',
@@ -271,9 +271,10 @@ export class AuthService {
 
     const tokenPayload = {
       userId: user.id,
+      full_name: user.full_name || user.username,
+      fullName: user.full_name || user.username,
       username: user.username,
       phone: user.phone,
-      fullName: user.full_name,
       mandalId: membership.mandal_id,
       role: membership.role,
       activeMandalIds,
