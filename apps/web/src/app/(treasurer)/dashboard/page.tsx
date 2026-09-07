@@ -46,6 +46,11 @@ export default function UnifiedDashboardPage() {
   const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
 
+  const [showAllDonations, setShowAllDonations] = useState(false);
+  const [adminDonationSearch, setAdminDonationSearch] = useState('');
+  const [adminPaymentFilter, setAdminPaymentFilter] = useState<'ALL' | 'CASH' | 'UPI' | 'PENDING'>('ALL');
+  const [isLoadingAllDonations, setIsLoadingAllDonations] = useState(false);
+
   // Exports
   const [isExportingDonations, setIsExportingDonations] = useState(false);
   const [isExportingExpenses, setIsExportingExpenses] = useState(false);
@@ -54,23 +59,61 @@ export default function UnifiedDashboardPage() {
     if (activeMandal && token) {
       const calls: Promise<any>[] = [
         apiRequest<TreasurerOverview>('/reconciliation/overview'),
+        apiRequest<any[]>('/donations?limit=300'),
       ];
 
       if (role === Role.VOLUNTEER) {
-        calls.push(apiRequest<any[]>('/donations?limit=100'));
         calls.push(apiRequest<any[]>('/expenses'));
       }
 
       Promise.all(calls)
         .then(([overviewData, donationsData, expensesData]) => {
           setOverview(overviewData);
-          if (donationsData) setDonations(donationsData);
+          if (Array.isArray(donationsData)) setDonations(donationsData);
           if (expensesData) setExpenses(expensesData);
         })
         .catch(console.error)
         .finally(() => setIsLoading(false));
     }
   };
+
+  const toggleViewAllDonations = async () => {
+    if (!showAllDonations && donations.length === 0) {
+      setIsLoadingAllDonations(true);
+      try {
+        const list = await apiRequest<any[]>('/donations?limit=500');
+        if (Array.isArray(list)) {
+          setDonations(list);
+        }
+      } catch (err) {
+        console.error('Failed to load all donations:', err);
+      } finally {
+        setIsLoadingAllDonations(false);
+      }
+    }
+    setShowAllDonations(!showAllDonations);
+  };
+
+  const displayedAdminDonations = React.useMemo(() => {
+    if (!showAllDonations) {
+      return overview?.recent_donations || [];
+    }
+    const sourceList = donations.length > 0 ? donations : (overview?.recent_donations || []);
+    return sourceList.filter((d: any) => {
+      if (adminPaymentFilter !== 'ALL' && d.payment_mode !== adminPaymentFilter) {
+        return false;
+      }
+      if (!adminDonationSearch.trim()) return true;
+      const term = adminDonationSearch.toLowerCase();
+      return (
+        d.donor_name?.toLowerCase().includes(term) ||
+        d.receipt_number?.toLowerCase().includes(term) ||
+        d.donor_phone?.includes(term) ||
+        d.flat_wing?.toLowerCase().includes(term) ||
+        d.volunteer_name?.toLowerCase().includes(term)
+      );
+    });
+  }, [showAllDonations, donations, overview?.recent_donations, adminPaymentFilter, adminDonationSearch]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -883,28 +926,89 @@ export default function UnifiedDashboardPage() {
           </div>
         </div>
 
-        {/* 3. RECENT DONATIONS (नुकत्याच जमा झालेल्या पावत्या) */}
+        {/* 3. RECENT / ALL DONATIONS (जमा झालेल्या पावत्या) */}
         <div className="bg-white rounded-2xl border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)] overflow-hidden">
-          <div className="p-4 border-b border-[#E5E1D8]/70 flex items-center justify-between">
+          <div className="p-4 border-b border-[#E5E1D8]/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <span className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700">
                 <Receipt className="w-4 h-4" />
               </span>
               <div>
-                <h3 className="text-sm font-extrabold text-[#292118]">नुकत्याच जमा झालेल्या पावत्या (Recent Donations)</h3>
-                <p className="text-xs text-[#6B6459] mt-0.5">नुकतीच नोंदवलेली देणगी व पावत्या</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-extrabold text-[#292118]">
+                    {showAllDonations
+                      ? 'जमा झालेल्या सर्व पावत्या (All Collected Donations)'
+                      : 'नुकत्याच जमा झालेल्या पावत्या (Recent Donations)'}
+                  </h3>
+                  {showAllDonations && (
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-[#7C2D12]">
+                      {displayedAdminDonations.length} पावत्या
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-[#6B6459] mt-0.5">
+                  {showAllDonations
+                    ? 'मंडळात जमा झालेल्या सर्व देणग्यांची संपूर्ण यादी व पावती तपशील'
+                    : 'नुकतीच नोंदवलेली देणगी व पावत्या'}
+                </p>
               </div>
             </div>
-            <Link href="/reports">
-              <Button variant="outline" size="sm" className="text-xs font-bold gap-1 rounded-xl cursor-pointer">
-                <span>अधिक पहा (View More)</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </Link>
+
+            <Button
+              variant={showAllDonations ? 'primary' : 'outline'}
+              size="sm"
+              onClick={toggleViewAllDonations}
+              disabled={isLoadingAllDonations}
+              className="text-xs font-bold gap-1.5 rounded-xl cursor-pointer shrink-0"
+            >
+              {isLoadingAllDonations ? (
+                <span>लोड होत आहे...</span>
+              ) : showAllDonations ? (
+                <>
+                  <span>कमी पहा (Show Less)</span>
+                  <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                </>
+              ) : (
+                <>
+                  <span>अधिक पहा (View More)</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </Button>
           </div>
 
+          {/* Search & Filter bar if showAllDonations */}
+          {showAllDonations && (
+            <div className="p-3.5 bg-[#FAF9F6] border-b border-[#E5E1D8]/70 flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <div className="w-full sm:w-72">
+                <Input
+                  placeholder="नाव, पावती क्र. किंवा मोबाईल शोधा..."
+                  value={adminDonationSearch}
+                  onChange={(e) => setAdminDonationSearch(e.target.value)}
+                  className="bg-white text-xs"
+                />
+              </div>
+
+              <div className="flex items-center gap-1.5 self-start sm:self-auto overflow-x-auto">
+                {(['ALL', 'CASH', 'UPI', 'PENDING'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setAdminPaymentFilter(mode)}
+                    className={`px-3 py-1 rounded-xl text-xs font-bold transition cursor-pointer ${
+                      adminPaymentFilter === mode
+                        ? 'bg-[#7C2D12] text-white shadow-2xs'
+                        : 'bg-white text-[#6B6459] hover:bg-[#F3F1EC] border border-[#E5E1D8]'
+                    }`}
+                  >
+                    {mode === 'ALL' ? 'सर्व (All)' : mode}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
-            {overview?.recent_donations && overview.recent_donations.length > 0 ? (
+            {displayedAdminDonations.length > 0 ? (
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                   <tr>
@@ -913,11 +1017,12 @@ export default function UnifiedDashboardPage() {
                     <th className="px-4 py-2.5">पेमेंट मोड</th>
                     <th className="px-4 py-2.5 text-right">रक्कम</th>
                     <th className="px-4 py-2.5">कार्यकर्ता</th>
-                    <th className="px-4 py-2.5">वेळ</th>
+                    <th className="px-4 py-2.5">वेळ/तारीख</th>
+                    <th className="px-4 py-2.5 text-center">पावती</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E1D8]/60">
-                  {overview.recent_donations.map((d: any) => (
+                  {displayedAdminDonations.map((d: any) => (
                     <tr key={d.id} className="hover:bg-orange-50/20 transition-colors">
                       <td className="px-4 py-2.5 font-mono font-bold text-[#7C2D12]">#{d.receipt_number}</td>
                       <td className="px-4 py-2.5 font-semibold text-[#292118]">
@@ -942,7 +1047,18 @@ export default function UnifiedDashboardPage() {
                       </td>
                       <td className="px-4 py-2.5 text-xs text-[#6B6459] font-medium">{d.volunteer_name || '—'}</td>
                       <td className="px-4 py-2.5 text-[11px] text-[#A8A297] whitespace-nowrap">
-                        {new Date(d.created_at).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })}
+                        {showAllDonations
+                          ? new Date(d.created_at).toLocaleDateString('mr-IN', { day: 'numeric', month: 'short' }) + ' ' + new Date(d.created_at).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })
+                          : new Date(d.created_at).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        <button
+                          onClick={() => openReceipt(d)}
+                          className="p-1.5 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
+                          title="पावती पहा (View Receipt)"
+                        >
+                          <Eye className="w-4 h-4 inline" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -950,7 +1066,7 @@ export default function UnifiedDashboardPage() {
               </table>
             ) : (
               <div className="p-8 text-center text-[#6B6459] text-xs">
-                अजून कोणत्याही पावत्या नोंदवलेल्या नाहीत.
+                कोणतीही पावती आढळली नाही.
               </div>
             )}
           </div>
@@ -1017,6 +1133,16 @@ export default function UnifiedDashboardPage() {
             </table>
           </div>
         </div>
+
+        {/* Receipt Modal for Admin & Treasurer */}
+        {selectedDonation && (
+          <ReceiptModal
+            isOpen={isReceiptModalOpen}
+            onClose={() => setIsReceiptModalOpen(false)}
+            donation={selectedDonation}
+            mandal={activeMandal}
+          />
+        )}
       </main>
     </div>
   );
