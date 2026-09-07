@@ -88,26 +88,37 @@ export class AuthService {
       [user.id]
     );
 
-    // 4. Fetch mandal memberships
-    let membershipsRes = await this.db.query(
+    // 4. Fetch all mandal memberships for this user
+    const membershipsRes = await this.db.query(
       `SELECT m.id, m.name, m.slug, m.registration_number, m.city, m.area, 
               m.festival_type, m.receipt_prefix, m.logo_url, m.upi_id, 
               m.preset_amounts, m.hide_phone_numbers, m.is_active, 
               mm.role, mm.status as member_status
        FROM mandal_members mm
        JOIN mandals m ON m.id = mm.mandal_id
-       WHERE mm.user_id = $1 AND mm.status = 'ACTIVE' AND m.is_active = TRUE`,
+       WHERE mm.user_id = $1 AND m.is_active = TRUE`,
       [user.id]
     );
 
-    let memberships = membershipsRes.rows;
+    const allMemberships = membershipsRes?.rows || [];
+    const activeMemberships = allMemberships.filter((m) => m.member_status === 'ACTIVE' || !m.member_status);
+    const hasRevoked = allMemberships.some((m) => m.member_status === 'REVOKED');
 
-    // Fallback: Auto-assign user to default active mandal if no membership exists
-    if (memberships.length === 0) {
+    if (hasRevoked && activeMemberships.length === 0) {
+      throw new UnauthorizedException({
+        code: 'ACCOUNT_DEACTIVATED',
+        message: 'तुमचे खाते निष्क्रिय (Deactivated) करण्यात आले आहे. कृपया मंडळाच्या व्यवस्थापकाशी (Admin) संपर्क साधा. (Your account has been deactivated. Please contact Admin.)',
+      });
+    }
+
+    let memberships = activeMemberships;
+
+    // Fallback: ONLY auto-assign if user has NEVER had a membership and is completely new
+    if (memberships.length === 0 && allMemberships.length === 0) {
       const defaultMandalRes = await this.db.query(
         `SELECT id FROM mandals WHERE is_active = TRUE ORDER BY created_at ASC LIMIT 1`
       );
-      if (defaultMandalRes.rows.length > 0) {
+      if (defaultMandalRes?.rows?.length > 0) {
         const defaultMandalId = defaultMandalRes.rows[0].id;
         const assignedRole =
           user.phone === '8421692967' || user.username === 'abhay' || user.phone === '8574968596'
@@ -121,7 +132,7 @@ export class AuthService {
           [defaultMandalId, user.id, assignedRole]
         );
 
-        membershipsRes = await this.db.query(
+        const newMembRes = await this.db.query(
           `SELECT m.id, m.name, m.slug, m.registration_number, m.city, m.area, 
                   m.festival_type, m.receipt_prefix, m.logo_url, m.upi_id, 
                   m.preset_amounts, m.hide_phone_numbers, m.is_active, 
@@ -131,8 +142,15 @@ export class AuthService {
            WHERE mm.user_id = $1 AND mm.status = 'ACTIVE' AND m.is_active = TRUE`,
           [user.id]
         );
-        memberships = membershipsRes.rows;
+        memberships = newMembRes?.rows || [];
       }
+    }
+
+    if (memberships.length === 0) {
+      throw new UnauthorizedException({
+        code: 'ACCOUNT_DEACTIVATED',
+        message: 'तुमचे खाते निष्क्रिय (Deactivated) आहे किंवा सक्रिय मंडळ आढळले नाही.',
+      });
     }
 
     const activeMandalIds = memberships.map((m) => m.id);

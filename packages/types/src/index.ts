@@ -191,6 +191,7 @@ export interface Expense {
   description: string;
   bill_photo_url?: string | null;
   status: ExpenseStatus;
+  payment_mode: PaymentMode;
   approved_by?: string | null;
   approved_at?: string | null;
   rejection_reason?: string | null;
@@ -252,6 +253,9 @@ export interface TreasurerOverview {
   mandal_id: string;
   festival_total_collected: number;
   today_total_collected: number;
+  today_cash_collected: number;
+  today_upi_collected: number;
+  today_pending_collected: number;
   total_cash_collected: number;
   total_upi_collected: number;
   total_pending_collected: number;
@@ -259,9 +263,12 @@ export interface TreasurerOverview {
   total_cash_reconciled: number;
   total_approved_expenses: number;
   total_pending_expenses: number;
+  expenses_paid_cash: number;
+  expenses_paid_upi: number;
   net_balance: number;
   volunteer_tallies: VolunteerTally[];
   recent_reconciliations: CashReconciliation[];
+  recent_donations: Donation[];
 }
 
 export interface PublicTransparencyReport {
@@ -394,6 +401,7 @@ export const createExpenseSchema = z.object({
   amount: z.number().positive('Expense amount must be greater than zero'),
   description: z.string().min(3, 'Description is required'),
   bill_photo_url: z.string().url().optional().or(z.literal('')),
+  payment_mode: z.nativeEnum(PaymentMode).optional().default(PaymentMode.CASH),
 });
 export type CreateExpenseInput = z.infer<typeof createExpenseSchema>;
 

@@ -27,6 +27,7 @@ export async function runMigrations() {
     await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS upi_qr_url TEXT;");
     await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS ahwal_url TEXT;");
     await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS ahwal_title VARCHAR(200);");
+    await client.query("ALTER TABLE expenses ADD COLUMN IF NOT EXISTS payment_mode payment_mode NOT NULL DEFAULT 'CASH';");
     console.log('Successfully applied database schema and added all columns.');
   } catch (error) {
     console.error('Migration failed:', error);

@@ -72,8 +72,8 @@ export class DonationsController {
     @Query('limit') limit?: string,
     @Query('offset') offset?: string
   ) {
-    // IDOR Defense: If caller is a VOLUNTEER, restrict strictly to their own donations
-    const effectiveVolunteerId = role === Role.VOLUNTEER ? userId : volunteerId;
+    // Allow volunteer, treasurer, and admin to view mandal donations (filtered by volunteerId if specified)
+    const effectiveVolunteerId = volunteerId;
     const parsedLimit = Math.min(Math.max(parseInt(limit || '100', 10) || 100, 1), 100);
     const parsedOffset = Math.max(parseInt(offset || '0', 10) || 0, 0);
 

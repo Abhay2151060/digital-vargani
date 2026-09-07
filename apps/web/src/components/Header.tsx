@@ -4,7 +4,8 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Language, Role } from '@vargani/types';
 import { getT } from '../lib/i18n';
-import { LogOut, Globe, Sparkles } from 'lucide-react';
+import { LogOut, Globe, Sparkles, User } from 'lucide-react';
+import Link from 'next/link';
 
 export const Header: React.FC = () => {
   const { user, activeMandal, role, memberships, language, setLanguage, logout, switchMandal } = useAuth();
@@ -102,12 +103,23 @@ export const Header: React.FC = () => {
             </select>
           </div>
 
+          {/* User Profile Link */}
+          {user && (
+            <Link
+              href="/profile"
+              title={language === Language.ENGLISH ? 'My Profile' : 'माझे प्रोफाईल'}
+              className="p-2 rounded-xl text-[#6B6459] hover:bg-orange-50 hover:text-[#7C2D12] transition min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer"
+            >
+              <User className="w-4 h-4" />
+            </Link>
+          )}
+
           {/* Logout Button */}
           {user && (
             <button
               onClick={logout}
               title={t.logout}
-              className="p-2 rounded-xl text-[#6B6459] hover:bg-red-50 hover:text-red-600 transition min-h-[40px] min-w-[40px] flex items-center justify-center"
+              className="p-2 rounded-xl text-[#6B6459] hover:bg-red-50 hover:text-red-600 transition min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
             </button>

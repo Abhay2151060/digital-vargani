@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '../context/AuthContext';
+import { ServiceWorkerRegister } from '../components/ServiceWorkerRegister';
 
 export const metadata: Metadata = {
   title: 'Digital Vargani | Mandal Fund & Receipt Management',
@@ -38,6 +39,7 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning className="min-h-screen flex flex-col bg-[#FAF9F6] text-[#292118] antialiased selection:bg-orange-100 selection:text-orange-900">
         <AuthProvider>
+          <ServiceWorkerRegister />
           {children}
         </AuthProvider>
       </body>

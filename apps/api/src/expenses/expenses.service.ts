@@ -7,9 +7,10 @@ export class ExpensesService {
   constructor(private db: DbService) {}
 
   async createExpense(userId: string, input: CreateExpenseInput) {
+    const paymentMode = input.payment_mode || 'CASH';
     const res = await this.db.query(
-      `INSERT INTO expenses (mandal_id, logged_by, category, amount, description, bill_photo_url, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'PENDING')
+      `INSERT INTO expenses (mandal_id, logged_by, category, amount, description, bill_photo_url, status, payment_mode)
+       VALUES ($1, $2, $3, $4, $5, $6, 'PENDING', $7)
        RETURNING *`,
       [
         input.mandal_id,
@@ -18,6 +19,7 @@ export class ExpensesService {
         input.amount,
         input.description,
         input.bill_photo_url || null,
+        paymentMode,
       ],
       [input.mandal_id]
     );

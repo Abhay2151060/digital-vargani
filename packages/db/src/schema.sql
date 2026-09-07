@@ -209,6 +209,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     description TEXT NOT NULL,
     bill_photo_url TEXT,
     status expense_status NOT NULL DEFAULT 'PENDING',
+    payment_mode payment_mode NOT NULL DEFAULT 'CASH',
     approved_by UUID REFERENCES users(id) ON DELETE SET NULL,
     approved_at TIMESTAMPTZ,
     rejection_reason TEXT,
@@ -216,6 +217,8 @@ CREATE TABLE IF NOT EXISTS expenses (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE expenses ADD COLUMN IF NOT EXISTS payment_mode payment_mode NOT NULL DEFAULT 'CASH';
 
 -- 9. AUDIT LOGS
 CREATE TABLE IF NOT EXISTS audit_logs (

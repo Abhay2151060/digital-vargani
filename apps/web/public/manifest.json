@@ -2,15 +2,35 @@
   "name": "Digital Vargani - Mandal Management",
   "short_name": "Digital Vargani",
   "description": "Festival trust donation collection, multi-lingual receipts & cash reconciliation",
-  "start_url": "/",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#FAF9F6",
   "theme_color": "#F97316",
+  "categories": ["finance", "productivity", "utilities"],
   "icons": [
     {
       "src": "/icon.svg",
       "sizes": "192x192 512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View live collection overview",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Expenses",
+      "short_name": "Expenses",
+      "description": "View & record expenses",
+      "url": "/expenses",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
     }
   ]
 }

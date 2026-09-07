@@ -145,6 +145,9 @@ export class ReconciliationService {
       `SELECT 
          COALESCE(SUM(amount), 0) as total_collected,
          COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE THEN amount ELSE 0 END), 0) as today_collected,
+         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'CASH' THEN amount ELSE 0 END), 0) as today_cash_collected,
+         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'UPI' THEN amount ELSE 0 END), 0) as today_upi_collected,
+         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'PENDING' THEN amount ELSE 0 END), 0) as today_pending_collected,
          COALESCE(SUM(CASE WHEN payment_mode = 'CASH' THEN amount ELSE 0 END), 0) as cash_collected,
          COALESCE(SUM(CASE WHEN payment_mode = 'UPI' THEN amount ELSE 0 END), 0) as upi_collected,
          COALESCE(SUM(CASE WHEN payment_mode = 'PENDING' THEN amount ELSE 0 END), 0) as pending_collected,
@@ -160,7 +163,9 @@ export class ReconciliationService {
     const expensesRes = await this.db.query(
       `SELECT 
          COALESCE(SUM(CASE WHEN status = 'APPROVED' THEN amount ELSE 0 END), 0) as approved_expenses,
-         COALESCE(SUM(CASE WHEN status = 'PENDING' THEN amount ELSE 0 END), 0) as pending_expenses
+         COALESCE(SUM(CASE WHEN status = 'PENDING' THEN amount ELSE 0 END), 0) as pending_expenses,
+         COALESCE(SUM(CASE WHEN status = 'APPROVED' AND payment_mode = 'CASH' THEN amount ELSE 0 END), 0) as expenses_paid_cash,
+         COALESCE(SUM(CASE WHEN status = 'APPROVED' AND payment_mode = 'UPI' THEN amount ELSE 0 END), 0) as expenses_paid_upi
        FROM expenses
        WHERE mandal_id = $1 AND is_voided = FALSE`,
       [mandalId],
@@ -190,6 +195,18 @@ export class ReconciliationService {
     // 4. Recent reconciliations
     const recList = await this.listReconciliations(mandalId);
 
+    // 5. Recent donations
+    const recentDonationsRes = await this.db.query(
+      `SELECT d.*, u.full_name as volunteer_name
+       FROM donations d
+       JOIN users u ON u.id = d.volunteer_id
+       WHERE d.mandal_id = $1 AND d.is_voided = FALSE
+       ORDER BY d.created_at DESC
+       LIMIT 10`,
+      [mandalId],
+      [mandalId]
+    );
+
     const totals = totalsRes.rows[0];
     const expenses = expensesRes.rows[0];
 
@@ -200,6 +217,9 @@ export class ReconciliationService {
       mandal_id: mandalId,
       festival_total_collected: totalCollected,
       today_total_collected: parseFloat(totals.today_collected),
+      today_cash_collected: parseFloat(totals.today_cash_collected),
+      today_upi_collected: parseFloat(totals.today_upi_collected),
+      today_pending_collected: parseFloat(totals.today_pending_collected),
       total_cash_collected: parseFloat(totals.cash_collected),
       total_upi_collected: parseFloat(totals.upi_collected),
       total_pending_collected: parseFloat(totals.pending_collected),
@@ -207,6 +227,8 @@ export class ReconciliationService {
       total_cash_reconciled: parseFloat(totals.cash_reconciled),
       total_approved_expenses: approvedExpenses,
       total_pending_expenses: parseFloat(expenses.pending_expenses),
+      expenses_paid_cash: parseFloat(expenses.expenses_paid_cash),
+      expenses_paid_upi: parseFloat(expenses.expenses_paid_upi),
       net_balance: totalCollected - approvedExpenses,
       volunteer_tallies: volunteerTalliesRes.rows.map((v) => ({
         volunteer_id: v.volunteer_id,
@@ -218,6 +240,7 @@ export class ReconciliationService {
         total_donations_count: parseInt(v.total_donations_count, 10),
       })),
       recent_reconciliations: recList.slice(0, 10),
+      recent_donations: recentDonationsRes.rows,
     };
   }
 }

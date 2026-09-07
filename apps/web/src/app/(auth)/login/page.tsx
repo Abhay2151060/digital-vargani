@@ -40,15 +40,8 @@ export default function LoginPage() {
     }
   }, [user, role, authLoading, showChangeModal]);
 
-  const redirectToRolePage = (userRole?: string | null) => {
-    const activeRole = userRole || localStorage.getItem('vargani_role');
-    if (activeRole === Role.VOLUNTEER) {
-      router.replace('/history');
-    } else if (activeRole === Role.TREASURER || activeRole === Role.ADMIN) {
-      router.replace('/dashboard');
-    } else {
-      router.replace('/history');
-    }
+  const redirectToRolePage = (_role?: string) => {
+    router.replace('/dashboard');
   };
 
   const handleLogin = async (e?: React.FormEvent) => {

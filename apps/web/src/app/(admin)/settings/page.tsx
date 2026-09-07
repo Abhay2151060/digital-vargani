@@ -10,10 +10,10 @@ import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { FestivalType, Role, UpdateMandalProfileInput } from '@vargani/types';
 import Link from 'next/link';
-import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, QrCode, FileText, ExternalLink, FileCheck } from 'lucide-react';
+import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, QrCode, FileText, ExternalLink, FileCheck, User, KeyRound, AlertCircle, Building } from 'lucide-react';
 
 export default function SettingsPage() {
-  const { user, role, activeMandal, language, updateActiveMandal, isLoading: authLoading } = useAuth();
+  const { user, role, activeMandal, language, setLanguage, updateActiveMandal, changePassword, isLoading: authLoading } = useAuth();
   const t = getT(language);
   const router = useRouter();
 
@@ -21,13 +21,56 @@ export default function SettingsPage() {
   const qrFileInputRef = useRef<HTMLInputElement>(null);
   const ahwalFileInputRef = useRef<HTMLInputElement>(null);
 
+  // Tab State: Mandal Profile vs User Profile
+  const [settingsTab, setSettingsTab] = useState<'mandal' | 'user'>('mandal');
+
+  // User Profile Change Password State
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isChangingPass, setIsChangingPass] = useState(false);
+  const [passSuccessMsg, setPassSuccessMsg] = useState<string | null>(null);
+  const [passErrorMsg, setPassErrorMsg] = useState<string | null>(null);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassErrorMsg(null);
+    setPassSuccessMsg(null);
+
+    if (!currentPassword) {
+      setPassErrorMsg('कृपया सध्याचा पासवर्ड टाका.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      setPassErrorMsg('नवीन पासवर्ड किमान ६ अक्षरांचा असावा.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPassErrorMsg('दोन्ही नवीन पासवर्ड जुळत नाहीत.');
+      return;
+    }
+
+    setIsChangingPass(true);
+    try {
+      await changePassword(currentPassword, newPassword);
+      setPassSuccessMsg('पासवर्ड यशस्वीरित्या बदलला आहे!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setPassErrorMsg(err.message || 'पासवर्ड बदलताना त्रुटी आली.');
+    } finally {
+      setIsChangingPass(false);
+    }
+  };
+
   // Enforce Admin Only Access
   useEffect(() => {
     if (!authLoading && role && role !== Role.ADMIN) {
       if (role === Role.TREASURER) {
         router.replace('/dashboard');
       } else {
-        router.replace('/history');
+        router.replace('/dashboard');
       }
     }
   }, [role, authLoading, router]);
@@ -385,8 +428,37 @@ export default function SettingsPage() {
           </div>
         )}
 
-        <Card variant="default" padding="lg" className="shadow-sm border border-[#E5E1D8]">
-          <form onSubmit={handleSave} className="space-y-5">
+        {/* Settings Tabs: Mandal Profile vs User Profile */}
+        <div className="flex items-center gap-2 border-b border-[#E5E1D8] pb-3">
+          <button
+            type="button"
+            onClick={() => setSettingsTab('mandal')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+              settingsTab === 'mandal'
+                ? 'bg-[#7C2D12] text-white shadow-2xs'
+                : 'bg-[#F3F1EC] text-[#6B6459] hover:text-[#292118]'
+            }`}
+          >
+            <Building className="w-3.5 h-3.5" />
+            <span>मंडळाचे प्रोफाईल (Mandal Profile)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSettingsTab('user')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 ${
+              settingsTab === 'user'
+                ? 'bg-[#7C2D12] text-white shadow-2xs'
+                : 'bg-[#F3F1EC] text-[#6B6459] hover:text-[#292118]'
+            }`}
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>वापरकर्ता प्रोफाईल (User Profile)</span>
+          </button>
+        </div>
+
+        {settingsTab === 'mandal' && (
+          <Card variant="default" padding="lg" className="shadow-sm border border-[#E5E1D8]">
+            <form onSubmit={handleSave} className="space-y-5">
             {/* Logo Upload Section */}
             <div className="p-4 bg-[#F8F7F4] rounded-2xl border border-[#E5E1D8] space-y-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -705,7 +777,7 @@ export default function SettingsPage() {
                 size="lg"
                 fullWidth
                 isLoading={isSaving}
-                className="font-bold gap-2"
+                className="font-bold gap-2 cursor-pointer"
               >
                 <Save className="w-5 h-5" />
                 <span>सेटिंग्ज सेव्ह करा</span>
@@ -713,6 +785,137 @@ export default function SettingsPage() {
             </div>
           </form>
         </Card>
+      )}
+
+      {/* USER PROFILE TAB */}
+      {settingsTab === 'user' && (
+        <div className="space-y-6">
+          {/* User Details Card */}
+          <Card variant="default" padding="lg" className="border border-[#E5E1D8] shadow-xs rounded-2xl space-y-5">
+            <div className="flex items-center gap-3.5 pb-4 border-b border-[#E5E1D8]">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#7C2D12] via-[#C2410C] to-[#F97316] flex items-center justify-center text-white font-black text-2xl shadow-sm shadow-orange-500/20 shrink-0">
+                {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-lg font-extrabold text-[#292118] truncate">
+                  {user?.full_name || 'व्यवस्थापक'}
+                </h2>
+                <p className="text-xs text-[#6B6459] font-mono">@{user?.username}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[11px] font-bold text-[#7C2D12] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
+                    {role}
+                  </span>
+                  {activeMandal?.name && (
+                    <span className="text-xs text-[#6B6459] truncate">
+                      • {activeMandal.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+              <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
+                <span className="text-[#6B6459] font-medium block">युझरनेम (Username)</span>
+                <span className="font-bold text-[#292118] text-sm mt-0.5 block font-mono">
+                  {user?.username || '—'}
+                </span>
+              </div>
+
+              <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
+                <span className="text-[#6B6459] font-medium block">मोबाईल नंबर (Phone)</span>
+                <span className="font-bold text-[#292118] text-sm mt-0.5 block font-mono">
+                  {user?.phone || 'नोंदवलेला नाही'}
+                </span>
+              </div>
+
+              <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
+                <span className="text-[#6B6459] font-medium block">सक्रिय मंडळ (Mandal)</span>
+                <span className="font-bold text-[#292118] text-sm mt-0.5 block truncate">
+                  {activeMandal?.name || '—'}
+                </span>
+              </div>
+
+              <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
+                <span className="text-[#6B6459] font-medium block">भाषा (Preferred Language)</span>
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as any)}
+                  className="mt-1 bg-white border border-[#E5E1D8] rounded-lg px-2 py-1 text-xs font-semibold text-[#292118] focus:outline-none cursor-pointer"
+                >
+                  <option value="mr">मराठी (Marathi)</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+            </div>
+          </Card>
+
+          {/* Change Password Card */}
+          <Card variant="default" padding="lg" className="border border-[#E5E1D8] shadow-xs rounded-2xl space-y-4">
+            <div className="flex items-center gap-2">
+              <KeyRound className="w-5 h-5 text-[#7C2D12]" />
+              <h3 className="text-base font-bold text-[#292118]">पासवर्ड बदला (Change Password)</h3>
+            </div>
+            <p className="text-xs text-[#6B6459]">
+              खाते सुरक्षित ठेवण्यासाठी नवीन पासवर्ड सेट करा.
+            </p>
+
+            {passSuccessMsg && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{passSuccessMsg}</span>
+              </div>
+            )}
+
+            {passErrorMsg && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                <span>{passErrorMsg}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleChangePassword} className="space-y-3.5">
+              <Input
+                label="सध्याचा पासवर्ड (Current Password)"
+                type="password"
+                placeholder="सध्याचा पासवर्ड टाका"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
+
+              <Input
+                label="नवीन पासवर्ड (New Password - किमान ६ अक्षरे)"
+                type="password"
+                placeholder="नवीन पासवर्ड टाका"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+              />
+
+              <Input
+                label="नवीन पासवर्ड पुन्हा टाका (Confirm New Password)"
+                type="password"
+                placeholder="नवीन पासवर्ड पुन्हा प्रविष्ट करा"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                fullWidth
+                isLoading={isChangingPass}
+                className="font-bold cursor-pointer"
+              >
+                <span>पासवर्ड अपडेट करा</span>
+              </Button>
+            </form>
+          </Card>
+        </div>
+      )}
       </main>
     </div>
   );

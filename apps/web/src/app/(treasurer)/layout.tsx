@@ -6,7 +6,7 @@ import { Role } from '@vargani/types';
 
 export default function TreasurerLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard allowedRoles={[Role.TREASURER, Role.ADMIN]}>
+    <AuthGuard allowedRoles={[Role.TREASURER, Role.ADMIN, Role.VOLUNTEER]}>
       {children}
     </AuthGuard>
   );
