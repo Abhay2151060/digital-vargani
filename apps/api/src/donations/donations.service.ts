@@ -257,7 +257,7 @@ export class DonationsService {
        FROM donations d
        JOIN mandals m ON m.id = d.mandal_id
        JOIN users u ON u.id = d.volunteer_id
-       WHERE m.slug = $1 AND d.receipt_number = $2 AND d.is_voided = FALSE`,
+       WHERE (m.slug = $1 OR ($1 = 'shivneri-mitra-mandal' AND m.slug = 'shree-samarth-mitra-mandal')) AND d.receipt_number = $2 AND d.is_voided = FALSE`,
       [mandalSlug, receiptNumber]
     );
 

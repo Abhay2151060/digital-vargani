@@ -78,7 +78,7 @@ export default function HomePage() {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/mandal/shivneri-mitra-mandal/transparency">
+            <Link href="/mandal/shree-samarth-mitra-mandal/transparency">
               <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-[#6B6459] hover:text-[#7C2D12] transition px-3.5 py-2 rounded-xl hover:bg-[#F3F1EC] border border-[#E5E1D8]/60">
                 <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>सार्वजनिक पारदर्शकता</span>
@@ -135,7 +135,7 @@ export default function HomePage() {
                 </Button>
               </Link>
 
-              <Link href="/mandal/shivneri-mitra-mandal/transparency" className="w-full sm:w-auto">
+              <Link href="/mandal/shree-samarth-mitra-mandal/transparency" className="w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="lg"

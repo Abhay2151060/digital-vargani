@@ -425,6 +425,7 @@ export type CreateReconciliationInput = z.infer<typeof createReconciliationSchem
 
 export const updateMandalProfileSchema = z.object({
   name: z.string().min(3),
+  slug: z.string().optional().nullable(),
   registration_number: z.string().optional().nullable(),
   city: z.string().min(2),
   area: z.string().optional().nullable(),

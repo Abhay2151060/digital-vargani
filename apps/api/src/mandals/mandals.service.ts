@@ -23,7 +23,9 @@ export class MandalsService {
 
   async getMandalBySlug(slug: string) {
     const res = await this.db.query(
-      `SELECT * FROM mandals WHERE slug = $1 AND is_active = TRUE`,
+      `SELECT * FROM mandals 
+       WHERE (slug = $1 OR ($1 = 'shivneri-mitra-mandal' AND slug = 'shree-samarth-mitra-mandal')) 
+         AND is_active = TRUE`,
       [slug]
     );
     if (res.rowCount === 0) {
@@ -36,13 +38,23 @@ export class MandalsService {
   }
 
   async updateMandal(mandalId: string, input: UpdateMandalProfileInput) {
+    let newSlug = input.slug?.trim() ? input.slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : null;
+    if (!newSlug && input.name) {
+      const generated = input.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      if (generated.length >= 3) {
+        newSlug = generated;
+      }
+    }
+
     const res = await this.db.query(
       `UPDATE mandals 
        SET name = $1, registration_number = $2, city = $3, area = $4, 
            festival_type = $5, receipt_prefix = $6, logo_url = $7, upi_id = $8, 
            upi_qr_url = $9, ahwal_url = $10, ahwal_title = $11, preset_amounts = $12, 
-           hide_phone_numbers = $13, updated_at = NOW()
-       WHERE id = $14
+           hide_phone_numbers = $13,
+           slug = COALESCE($14, slug),
+           updated_at = NOW()
+       WHERE id = $15
        RETURNING *`,
       [
         input.name,
@@ -58,6 +70,7 @@ export class MandalsService {
         input.ahwal_title,
         input.preset_amounts,
         input.hide_phone_numbers,
+        newSlug,
         mandalId,
       ],
       [mandalId]

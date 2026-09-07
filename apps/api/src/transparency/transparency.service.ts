@@ -11,7 +11,7 @@ export class TransparencyService {
     const mandalRes = await this.db.query(
       `SELECT id, name, slug, registration_number, city, area, festival_type, logo_url, upi_id, upi_qr_url, ahwal_url, ahwal_title, hide_phone_numbers
        FROM mandals
-       WHERE slug = $1 AND is_active = TRUE`,
+       WHERE (slug = $1 OR ($1 = 'shivneri-mitra-mandal' AND slug = 'shree-samarth-mitra-mandal')) AND is_active = TRUE`,
       [slug]
     );
 

@@ -10,7 +10,7 @@ import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { FestivalType, Role, UpdateMandalProfileInput, Language } from '@vargani/types';
 import Link from 'next/link';
-import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, QrCode, FileText, ExternalLink, FileCheck, User, KeyRound, AlertCircle, Building } from 'lucide-react';
+import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, QrCode, FileText, ExternalLink, FileCheck, User, KeyRound, AlertCircle, Building, Copy, ShieldCheck } from 'lucide-react';
 import { formatDisplayName } from '../../../lib/format';
 
 export default function SettingsPage() {
@@ -90,6 +90,8 @@ export default function SettingsPage() {
   const [ahwalTitle, setAhwalTitle] = useState('वार्षिक अहवाल व जमा-खर्च हिशोब');
   const [presetAmountsStr, setPresetAmountsStr] = useState('101, 251, 501, 1001, 2101, 5001');
   const [hidePhoneNumbers, setHidePhoneNumbers] = useState(true);
+  const [slug, setSlug] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
 
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingQr, setIsUploadingQr] = useState(false);
@@ -113,6 +115,7 @@ export default function SettingsPage() {
       setAhwalTitle(activeMandal.ahwal_title || 'वार्षिक अहवाल व जमा-खर्च हिशोब');
       setPresetAmountsStr((activeMandal.preset_amounts || [101, 251, 501, 1001, 2101, 5001]).join(', '));
       setHidePhoneNumbers(activeMandal.hide_phone_numbers ?? true);
+      setSlug(activeMandal.slug || '');
     }
   }, [activeMandal]);
 
@@ -341,6 +344,7 @@ export default function SettingsPage() {
     try {
       const payload: UpdateMandalProfileInput = {
         name: name.trim(),
+        slug: slug.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || null,
         registration_number: regNo.trim() || null,
         city: city.trim(),
         area: area.trim() || null,
@@ -687,11 +691,77 @@ export default function SettingsPage() {
 
             <Input
               label={t.mandal_name_label || (language === Language.ENGLISH ? 'Official Mandal Name' : 'मंडळाचे अधिकृत नाव')}
-              placeholder={language === Language.ENGLISH ? 'e.g. Shree Shivneri Mitra Mandal' : 'उदा. श्री शिवनेरी मित्र मंडळ'}
+              placeholder={language === Language.ENGLISH ? 'e.g. Shree Samarth Mitra Mandal' : 'उदा. श्री समर्थ मित्र मंडळ'}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
+
+            {/* Public Transparency Portal Slug & Link */}
+            <div className="bg-[#FFF7ED] border border-[#FDBA74]/70 rounded-2xl p-4 sm:p-5 space-y-3 text-left">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#C2410C]" />
+                  <span className="text-sm font-bold text-[#7C2D12]">
+                    {language === Language.ENGLISH ? 'Public Transparency Portal Link' : 'सार्वजनिक पारदर्शकता वेब लिंक (Public Portal)'}
+                  </span>
+                </div>
+                {slug && (
+                  <a
+                    href={`/mandal/${slug}/transparency`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#C2410C] hover:underline"
+                  >
+                    <span>{language === Language.ENGLISH ? 'Open Portal' : 'पेज उघडा'}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
+
+              <Input
+                label={language === Language.ENGLISH ? 'Portal URL Slug' : 'वेब स्लग (Portal Slug)'}
+                placeholder="shree-samarth-mitra-mandal"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                helperText={
+                  language === Language.ENGLISH
+                    ? 'Only lowercase English letters, numbers, and hyphens.'
+                    : 'केवळ लहान इंग्रजी अक्षरे, अंक आणि डॅश (-) वापरा.'
+                }
+              />
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-white/90 border border-[#FDBA74]/50 rounded-xl px-3.5 py-2.5">
+                <span className="text-xs font-mono text-[#7C2D12] break-all select-all">
+                  {typeof window !== 'undefined' ? `${window.location.origin}/mandal/${slug || '...'}/transparency` : `/mandal/${slug || '...'}/transparency`}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      navigator.clipboard.writeText(`${window.location.origin}/mandal/${slug}/transparency`);
+                      setCopiedLink(true);
+                      setTimeout(() => setCopiedLink(false), 3000);
+                    }
+                  }}
+                  className="shrink-0 text-xs font-bold gap-1.5 h-8 px-3"
+                >
+                  {copiedLink ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-emerald-700">{language === Language.ENGLISH ? 'Copied!' : 'कॉपी झाले!'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-[#6B6459]" />
+                      <span>{language === Language.ENGLISH ? 'Copy Link' : 'लिंक कॉपी करा'}</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
