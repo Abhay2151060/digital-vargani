@@ -6,6 +6,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Header } from '../../../components/Header';
 import { OfflineBanner } from '../../../components/OfflineBanner';
 import { ReceiptModal } from '../../../components/ReceiptModal';
+import { CollectPendingModal } from '../../../components/CollectPendingModal';
 import { Card, Button } from '@vargani/ui';
 import { apiRequest, downloadFile } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
@@ -42,6 +43,9 @@ export default function AllDonationsPage() {
   // Receipt Modal
   const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+
+  // Collect Pending Modal
+  const [collectingDonation, setCollectingDonation] = useState<any | null>(null);
 
   // Strict Access Control: Admin and Treasurer only
   useEffect(() => {
@@ -335,14 +339,26 @@ export default function AllDonationsPage() {
                         })}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => openReceipt(d)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100/70 border border-orange-200/60 transition cursor-pointer shadow-2xs"
-                          title="पावती पहा / शेअर करा"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>पाहा</span>
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          {d.payment_mode === 'PENDING' && !d.is_voided && (
+                            <button
+                              onClick={() => setCollectingDonation(d)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
+                              title="येणे वर्गणी जमा करा"
+                            >
+                              <Wallet className="w-3.5 h-3.5" />
+                              <span>वर्गणी जमा करा</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => openReceipt(d)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100/70 border border-orange-200/60 transition cursor-pointer shadow-2xs"
+                            title="पावती पहा / शेअर करा"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>पाहा</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -358,6 +374,23 @@ export default function AllDonationsPage() {
           </div>
         </div>
       </main>
+
+      {/* Collect Pending Modal */}
+      <CollectPendingModal
+        isOpen={!!collectingDonation}
+        onClose={() => setCollectingDonation(null)}
+        donation={collectingDonation}
+        onSuccess={(updated) => {
+          setDonations((prev) =>
+            prev.map((item) =>
+              item.id === collectingDonation?.id
+                ? { ...item, ...updated, payment_mode: updated.payment_mode }
+                : item
+            )
+          );
+          fetchDonations();
+        }}
+      />
 
       {/* Receipt Modal */}
       {selectedDonation && (

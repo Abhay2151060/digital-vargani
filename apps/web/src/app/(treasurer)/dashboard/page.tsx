@@ -5,6 +5,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { Header } from '../../../components/Header';
 import { OfflineBanner } from '../../../components/OfflineBanner';
 import { ReceiptModal } from '../../../components/ReceiptModal';
+import { CollectPendingModal } from '../../../components/CollectPendingModal';
 import { Card, Button, Input, StatusBadge } from '@vargani/ui';
 import { apiRequest, downloadFile } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
@@ -54,6 +55,7 @@ export default function UnifiedDashboardPage() {
   const [selectedDonation, setSelectedDonation] = useState<any | null>(null);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
   const [selectedBillUrl, setSelectedBillUrl] = useState<string | null>(null);
+  const [collectingDonation, setCollectingDonation] = useState<any | null>(null);
 
   // Exports
   const [isExportingDonations, setIsExportingDonations] = useState(false);
@@ -633,13 +635,25 @@ export default function UnifiedDashboardPage() {
                               {d.volunteer_name || 'खजिनदार'}
                             </td>
                             <td className="px-4 py-2.5 text-center">
-                              <button
-                                onClick={() => openReceipt(d)}
-                                className="p-1 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
-                                title="पावती पहा"
-                              >
-                                <Eye className="w-4 h-4 inline" />
-                              </button>
+                              <div className="flex items-center justify-center gap-1.5">
+                                {d.payment_mode === 'PENDING' && !d.is_voided && (
+                                  <button
+                                    onClick={() => setCollectingDonation(d)}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
+                                    title="येणे वर्गणी जमा करा"
+                                  >
+                                    <Wallet className="w-3 h-3" />
+                                    <span>जमा करा</span>
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => openReceipt(d)}
+                                  className="p-1 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
+                                  title="पावती पहा"
+                                >
+                                  <Eye className="w-4 h-4 inline" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -906,13 +920,25 @@ export default function UnifiedDashboardPage() {
                               })}
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <button
-                                onClick={() => openReceipt(d)}
-                                className="p-1.5 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
-                                title="पावती पहा / शेअर करा"
-                              >
-                                <Eye className="w-4 h-4 inline" />
-                              </button>
+                              <div className="flex items-center justify-center gap-1.5">
+                                {d.payment_mode === 'PENDING' && !d.is_voided && (
+                                  <button
+                                    onClick={() => setCollectingDonation(d)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
+                                    title="येणे वर्गणी जमा करा"
+                                  >
+                                    <Wallet className="w-3.5 h-3.5" />
+                                    <span>वर्गणी जमा करा</span>
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => openReceipt(d)}
+                                  className="p-1.5 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
+                                  title="पावती पहा / शेअर करा"
+                                >
+                                  <Eye className="w-4 h-4 inline" />
+                                </button>
+                              </div>
                             </td>
                           </tr>
                         ))
@@ -1627,13 +1653,25 @@ export default function UnifiedDashboardPage() {
                         {new Date(d.created_at).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })}
                       </td>
                       <td className="px-4 py-2.5 text-center">
-                        <button
-                          onClick={() => openReceipt(d)}
-                          className="p-1.5 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
-                          title="पावती पहा"
-                        >
-                          <Eye className="w-4 h-4 inline" />
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          {d.payment_mode === 'PENDING' && !d.is_voided && (
+                            <button
+                              onClick={() => setCollectingDonation(d)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
+                              title="येणे वर्गणी जमा करा"
+                            >
+                              <Wallet className="w-3.5 h-3.5" />
+                              <span className="hidden sm:inline">वर्गणी जमा करा</span>
+                            </button>
+                          )}
+                          <button
+                            onClick={() => openReceipt(d)}
+                            className="p-1.5 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
+                            title="पावती पहा"
+                          >
+                            <Eye className="w-4 h-4 inline" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1709,6 +1747,16 @@ export default function UnifiedDashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Collect Pending Modal */}
+      <CollectPendingModal
+        isOpen={!!collectingDonation}
+        onClose={() => setCollectingDonation(null)}
+        donation={collectingDonation}
+        onSuccess={() => {
+          fetchDashboardData();
+        }}
+      />
 
       {/* Receipt Modal for Admin & Treasurer */}
       {selectedDonation && (
