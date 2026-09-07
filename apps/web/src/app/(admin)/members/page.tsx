@@ -232,7 +232,6 @@ export default function MembersPage() {
               <thead className="bg-[#F3F1EC] text-[#6B6459] font-bold text-xs uppercase border-b border-[#E5E1D8]">
                 <tr>
                   <th className="px-4 py-3">नाव (Name)</th>
-                  <th className="px-4 py-3">युझरनेम (Username)</th>
                   <th className="px-4 py-3">मोबाईल</th>
                   <th className="px-4 py-3">भूमिका (Role)</th>
                   <th className="px-4 py-3 text-center">स्थिती (Status)</th>
@@ -244,9 +243,6 @@ export default function MembersPage() {
                 {members.map((m) => (
                   <tr key={m.id} className="hover:bg-orange-50/20 transition">
                     <td className="px-4 py-3 font-semibold text-[#292118]">{formatDisplayName(m.full_name)}</td>
-                    <td className="px-4 py-3 font-mono text-xs font-semibold text-[#C2410C]">
-                      {m.username || '—'}
-                    </td>
                     <td className="px-4 py-3 text-[#6B6459]">{m.phone || '—'}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-bold ${
