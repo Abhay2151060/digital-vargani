@@ -66,7 +66,7 @@ export default function LoginPage() {
         redirectToRolePage();
       }
     } catch (err: any) {
-      setError(err.message || 'लॉगिन अयशस्वी झाले (Login failed)');
+      setError(err.message || 'अवैध नाव/मोबाईल किंवा पासवर्ड. कृपया पुन्हा तपासा. (Invalid Name/Phone or Password)');
     } finally {
       setIsLoading(false);
     }
