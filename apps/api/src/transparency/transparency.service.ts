@@ -67,18 +67,16 @@ export class TransparencyService {
       [mandal.id]
     );
 
-    const totalCollected = collectionsRes.rows.reduce(
-      (sum, row) => sum + parseFloat(row.total_amount),
-      0
-    );
+    const totalCollected = collectionsRes.rows
+      .filter((row) => row.payment_mode !== 'PENDING')
+      .reduce((sum, row) => sum + parseFloat(row.total_amount), 0);
     const totalExpenses = expensesRes.rows.reduce(
       (sum, row) => sum + parseFloat(row.total_amount),
       0
     );
-    const totalDonorsCount = collectionsRes.rows.reduce(
-      (sum, row) => sum + parseInt(row.count, 10),
-      0
-    );
+    const totalDonorsCount = collectionsRes.rows
+      .filter((row) => row.payment_mode !== 'PENDING')
+      .reduce((sum, row) => sum + parseInt(row.count, 10), 0);
 
     return {
       mandal: {

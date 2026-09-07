@@ -198,16 +198,18 @@ export default function UnifiedDashboardPage() {
   const cashDonationsTotal = cashDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const upiDonationsTotal = upiDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const pendingDonationsTotal = pendingDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
-  const allDonationsTotal = donations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  // Only actual collected donations (Cash + UPI) are counted in total collection:
+  const allDonationsTotal = cashDonationsTotal + upiDonationsTotal;
 
   const todayDateStr = new Date().toISOString().split('T')[0];
   const todayDonations = donations.filter((d) => {
     const dDate = d.created_at ? new Date(d.created_at).toISOString().split('T')[0] : '';
     return dDate === todayDateStr;
   });
-  const todayTotalFromDonations = todayDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const todayCashFromDonations = todayDonations.filter((d) => d.payment_mode === 'CASH').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const todayUpiFromDonations = todayDonations.filter((d) => d.payment_mode === 'UPI').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  // Only actual collected donations for today (Cash + UPI):
+  const todayTotalFromDonations = todayCashFromDonations + todayUpiFromDonations;
   const todayPendingFromDonations = todayDonations.filter((d) => d.payment_mode === 'PENDING').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const recentDonationsList = overview?.recent_donations && overview.recent_donations.length > 0 ? overview.recent_donations : donations.slice(0, 5);
 
@@ -747,11 +749,11 @@ export default function UnifiedDashboardPage() {
               {/* Summary Stats Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-[#6B6459] uppercase">एकूण वर्गणी</span>
+                  <span className="text-xs font-semibold text-[#6B6459] uppercase">एकूण वर्गणी (Collected)</span>
                   <p className="text-xl font-black text-[#7C2D12] mt-1 tabular-nums">
                     ₹{allDonationsTotal.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">{donations.length} एकूण पावत्या</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{cashDonationsList.length + upiDonationsList.length} जमा पावत्या</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">

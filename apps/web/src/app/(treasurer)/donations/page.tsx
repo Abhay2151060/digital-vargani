@@ -99,14 +99,15 @@ export default function AllDonationsPage() {
     return null;
   }
 
-  // Aggregate Metrics
-  const totalAmount = donations.reduce((sum, d) => sum + (d.is_voided ? 0 : parseFloat(d.amount || 0)), 0);
+  // Aggregate Metrics (Only actual collected Cash + UPI are counted in totalAmount)
   const cashDonations = donations.filter((d) => d.payment_mode === 'CASH' && !d.is_voided);
   const totalCash = cashDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const upiDonations = donations.filter((d) => d.payment_mode === 'UPI' && !d.is_voided);
   const totalUpi = upiDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const pendingDonations = donations.filter((d) => d.payment_mode === 'PENDING' && !d.is_voided);
   const totalPending = pendingDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  const totalAmount = totalCash + totalUpi;
+  const collectedDonationsCount = cashDonations.length + upiDonations.length;
 
   // Filtered List
   const filteredDonations = donations.filter((d) => {
@@ -202,7 +203,7 @@ export default function AllDonationsPage() {
             <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
               ₹{totalAmount.toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] text-[#A8A297] mt-0.5">{donations.length} पावत्यांमधून जमा</p>
+            <p className="text-[11px] text-[#A8A297] mt-0.5">{collectedDonationsCount} जमा पावत्यांमधून</p>
           </div>
 
           <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">

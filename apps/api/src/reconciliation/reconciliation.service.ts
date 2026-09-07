@@ -140,11 +140,11 @@ export class ReconciliationService {
   }
 
   async getTreasurerOverview(mandalId: string): Promise<TreasurerOverview> {
-    // 1. Collections totals
+    // 1. Collections totals (Only actually collected CASH and UPI are counted in total_collected and today_collected; PENDING is kept separate)
     const totalsRes = await this.db.query(
       `SELECT 
-         COALESCE(SUM(amount), 0) as total_collected,
-         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE THEN amount ELSE 0 END), 0) as today_collected,
+         COALESCE(SUM(CASE WHEN payment_mode IN ('CASH', 'UPI') THEN amount ELSE 0 END), 0) as total_collected,
+         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode IN ('CASH', 'UPI') THEN amount ELSE 0 END), 0) as today_collected,
          COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'CASH' THEN amount ELSE 0 END), 0) as today_cash_collected,
          COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'UPI' THEN amount ELSE 0 END), 0) as today_upi_collected,
          COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'PENDING' THEN amount ELSE 0 END), 0) as today_pending_collected,
