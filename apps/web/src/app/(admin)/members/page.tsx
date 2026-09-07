@@ -7,7 +7,7 @@ import { OfflineBanner } from '../../../components/OfflineBanner';
 import { Card, Input, Button, StatusBadge, Modal } from '@vargani/ui';
 import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
-import { Role, MemberStatus } from '@vargani/types';
+import { Role, MemberStatus, Language } from '@vargani/types';
 import Link from 'next/link';
 import { UserPlus, Users, Phone, UserCheck, Share2, Copy, Check, Lock, ExternalLink, Shield } from 'lucide-react';
 import { formatDisplayName } from '../../../lib/format';
@@ -181,9 +181,9 @@ export default function MembersPage() {
       <main className="max-w-5xl mx-auto w-full px-4 pt-6 flex-1 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-extrabold text-[#292118]">{t.members} (Mandal Team)</h2>
+            <h2 className="text-xl font-extrabold text-[#292118]">{t.members}</h2>
             <p className="text-xs text-[#6B6459] mt-0.5">
-              मंडळातील कार्यकर्ते, खजिनदार आणि व्यवस्थापक यांचे अधिकार व सदस्य व्यवस्थापन.
+              {t.mandal_team_sub}
             </p>
           </div>
 
@@ -195,7 +195,7 @@ export default function MembersPage() {
               className="font-bold gap-1.5 self-start shadow-md shadow-orange-500/20"
             >
               <UserPlus className="w-4 h-4" />
-              <span>नवीन कार्यकर्ता जोडा (Add User)</span>
+              <span>{t.add_new_member}</span>
             </Button>
           )}
         </div>
@@ -205,7 +205,7 @@ export default function MembersPage() {
           <div className="p-4 border-b border-[#E5E1D8] flex items-center justify-between">
             <h3 className="text-base font-bold text-[#292118] flex items-center gap-2">
               <Users className="w-4 h-4 text-[#F97316]" />
-              <span>सक्रिय सभासद व कार्यकर्ते ({members.length})</span>
+              <span>{t.active_members} ({members.length})</span>
             </h3>
           </div>
 
@@ -213,12 +213,12 @@ export default function MembersPage() {
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[#F3F1EC] text-[#6B6459] font-bold text-xs uppercase border-b border-[#E5E1D8]">
                 <tr>
-                  <th className="px-4 py-3">नाव (Name)</th>
-                  <th className="px-4 py-3">मोबाईल</th>
-                  <th className="px-4 py-3">भूमिका (Role)</th>
-                  <th className="px-4 py-3 text-center">स्थिती (Status)</th>
-                  {role === Role.ADMIN && <th className="px-4 py-3 text-center">लॉगिन शेअर</th>}
-                  {role === Role.ADMIN && <th className="px-4 py-3 text-center">अधिकार</th>}
+                  <th className="px-4 py-3">{t.full_name_label}</th>
+                  <th className="px-4 py-3">{t.mobile}</th>
+                  <th className="px-4 py-3">{t.role}</th>
+                  <th className="px-4 py-3 text-center">{t.status}</th>
+                  {role === Role.ADMIN && <th className="px-4 py-3 text-center">{t.share_login}</th>}
+                  {role === Role.ADMIN && <th className="px-4 py-3 text-center">{t.permissions}</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E1D8]">
@@ -232,14 +232,14 @@ export default function MembersPage() {
                         m.role === 'TREASURER' ? 'bg-blue-100 text-blue-800' :
                         'bg-orange-100 text-orange-800'
                       }`}>
-                        {m.role}
+                        {m.role === 'ADMIN' ? t.admin_role : m.role === 'TREASURER' ? t.treasurer_role : t.volunteer_role}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
                       {m.status === MemberStatus.ACTIVE ? (
-                        <StatusBadge status="success" label="Active" size="sm" />
+                        <StatusBadge status="success" label={t.active} size="sm" />
                       ) : (
-                        <StatusBadge status="neutral" label="Revoked" size="sm" />
+                        <StatusBadge status="neutral" label={t.revoked} size="sm" />
                       )}
                     </td>
                     {role === Role.ADMIN && (
@@ -247,10 +247,10 @@ export default function MembersPage() {
                         <button
                           onClick={() => handleOpenExistingShare(m)}
                           className="inline-flex items-center gap-1 text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100 border border-orange-200 px-2.5 py-1 rounded-lg transition"
-                          title="लॉगिन तपशील शेअर करा"
+                          title={t.share_login}
                         >
                           <Share2 className="w-3.5 h-3.5" />
-                          <span>शेअर</span>
+                          <span>{t.share}</span>
                         </button>
                       </td>
                     )}
@@ -264,7 +264,7 @@ export default function MembersPage() {
                               : 'text-emerald-600 hover:bg-emerald-50'
                           }`}
                         >
-                          {m.status === MemberStatus.ACTIVE ? 'बंद करा (Deactivate)' : 'सक्रिय करा'}
+                          {m.status === MemberStatus.ACTIVE ? t.deactivate : t.activate}
                         </button>
                       </td>
                     )}
@@ -277,7 +277,7 @@ export default function MembersPage() {
       </main>
 
       {/* Invite / Add Member Modal */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="नवीन युझर / कार्यकर्ता जोडा">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t.add_new_member}>
         <form onSubmit={handleInvite} className="space-y-4">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
@@ -288,16 +288,18 @@ export default function MembersPage() {
           <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-xs text-orange-900 flex items-start gap-2.5">
             <Lock className="w-4 h-4 text-[#F97316] shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold">स्वयंचलित डिफॉल्ट पासवर्ड</p>
+              <p className="font-bold">{language === Language.ENGLISH ? 'Automatic Default Password' : 'स्वयंचलित डिफॉल्ट पासवर्ड'}</p>
               <p className="text-orange-800 mt-0.5">
-                नवीन युझरसाठी <strong>user123</strong> हा डिफॉल्ट पासवर्ड आपोआप सेट होईल. नवीन युझरला पहिल्या लॉगिननंतर पासवर्ड बदलण्याची सूचना दिली जाईल.
+                {language === Language.ENGLISH
+                  ? 'Default password user123 will be automatically set for new users. Users will be asked to change it on first login.'
+                  : 'नवीन युझरसाठी user123 हा डिफॉल्ट पासवर्ड आपोआप सेट होईल. नवीन युझरला पहिल्या लॉगिननंतर पासवर्ड बदलण्याची सूचना दिली जाईल.'}
               </p>
             </div>
           </div>
 
           <Input
-            label="कार्यकर्त्याचे पूर्ण नाव"
-            placeholder="उदा. राहुल जाधव"
+            label={language === Language.ENGLISH ? 'Member Full Name' : 'कार्यकर्त्याचे पूर्ण नाव'}
+            placeholder={language === Language.ENGLISH ? 'e.g. Rahul Jadhav' : 'उदा. राहुल जाधव'}
             value={fullName}
             onChange={(e) => handleNameChange(e.target.value)}
             leftIcon={<UserCheck className="w-4 h-4" />}
@@ -305,25 +307,25 @@ export default function MembersPage() {
           />
 
           <Input
-            label="मोबाईल नंबर (ऐच्छिक - व्हॉट्सॲपसाठी)"
+            label={language === Language.ENGLISH ? 'Mobile Number (Optional - for WhatsApp)' : 'मोबाईल नंबर (ऐच्छिक - व्हॉट्सॲपसाठी)'}
             type="tel"
             maxLength={10}
-            placeholder="उदा. 9822012345 (ऐच्छिक)"
+            placeholder={language === Language.ENGLISH ? 'e.g. 9822012345' : 'उदा. 9822012345 (ऐच्छिक)'}
             value={phone}
             onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
             leftIcon={<Phone className="w-4 h-4" />}
           />
 
           <div className="space-y-1 text-left">
-            <label className="text-sm font-medium text-[#292118]">भूमिका (Role)</label>
+            <label className="text-sm font-medium text-[#292118]">{t.role}</label>
             <select
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value as Role)}
               className="w-full min-h-[48px] rounded-xl border-2 border-[#E5E1D8] bg-white px-3.5 text-base text-[#292118] focus:border-[#F97316] focus:outline-none"
             >
-              <option value={Role.VOLUNTEER}>कार्यकर्ता (Volunteer) - वर्गणी नोंदणी</option>
-              <option value={Role.TREASURER}>खजिनदार (Treasurer) - हिशोब व पडताळणी</option>
-              <option value={Role.ADMIN}>अध्यक्ष / Admin - पूर्ण नियंत्रण</option>
+              <option value={Role.VOLUNTEER}>{language === Language.ENGLISH ? 'Volunteer - Donation Collection' : 'कार्यकर्ता - वर्गणी नोंदणी'}</option>
+              <option value={Role.TREASURER}>{language === Language.ENGLISH ? 'Treasurer - Accounts & Verification' : 'खजिनदार - हिशोब व पडताळणी'}</option>
+              <option value={Role.ADMIN}>{language === Language.ENGLISH ? 'Admin - Full Control' : 'व्यवस्थापक - पूर्ण नियंत्रण'}</option>
             </select>
           </div>
 
@@ -336,7 +338,7 @@ export default function MembersPage() {
               isLoading={isSubmitting}
               className="font-bold shadow-md shadow-orange-500/20 cursor-pointer"
             >
-              <span>कार्यकर्ता जोडा व लॉगिन तयार करा</span>
+              <span>{language === Language.ENGLISH ? 'Add Member & Generate Login' : 'कार्यकर्ता जोडा व लॉगिन तयार करा'}</span>
             </Button>
           </div>
         </form>
@@ -347,15 +349,15 @@ export default function MembersPage() {
         <Modal
           isOpen={true}
           onClose={() => setCredentialsModal(null)}
-          title="लॉगिन तपशील व शेअरिंग (User Credentials)"
+          title={t.user_credentials_title}
         >
           <div className="space-y-4">
             <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-start gap-2.5">
               <Shield className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-emerald-900">युझर यशस्वीरीत्या तयार झाला!</p>
+                <p className="font-bold text-emerald-900">{t.user_created_success}</p>
                 <p className="mt-0.5">
-                  खालील लॉगिन माहिती संबंधितांना पाठवा. लॉगिन करताना ते आपले पूर्ण नाव किंवा मोबाईल नंबर वापरू शकतात.
+                  {t.user_created_hint}
                 </p>
               </div>
             </div>
@@ -363,25 +365,25 @@ export default function MembersPage() {
             {/* Credentials Card */}
             <div className="bg-[#FAF9F6] border-2 border-[#E5E1D8] rounded-2xl p-4 space-y-3">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#6B6459] font-medium">नाव (Full Name):</span>
+                <span className="text-[#6B6459] font-medium">{t.full_name_label}:</span>
                 <span className="font-bold text-[#292118]">{formatDisplayName(credentialsModal.user.full_name)}</span>
               </div>
               {credentialsModal.user.phone && (
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-[#6B6459] font-medium">मोबाईल नंबर (Phone):</span>
+                  <span className="text-[#6B6459] font-medium">{t.mobile_label}:</span>
                   <span className="font-mono font-bold text-[#C2410C] bg-orange-100/60 px-2 py-0.5 rounded">
                     {credentialsModal.user.phone}
                   </span>
                 </div>
               )}
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#6B6459] font-medium">डिफॉल्ट पासवर्ड:</span>
+                <span className="text-[#6B6459] font-medium">{t.default_password}:</span>
                 <span className="font-mono font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded">
                   {credentialsModal.defaultPassword}
                 </span>
               </div>
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#6B6459] font-medium">लॉगिन लिंक:</span>
+                <span className="text-[#6B6459] font-medium">{t.login_link}:</span>
                 <a
                   href={credentialsModal.loginUrl}
                   target="_blank"
@@ -403,7 +405,7 @@ export default function MembersPage() {
                 onClick={() => handleShareWhatsApp(credentialsModal.shareableMessage, credentialsModal.user.phone)}
                 className="font-bold gap-2 bg-[#25D366] hover:bg-[#1EBE5D] border-transparent text-white shadow-md shadow-emerald-500/20"
               >
-                <span>💬 व्हॉट्सॲपवर पाठवा (Share via WhatsApp)</span>
+                <span>💬 {t.send_via_whatsapp}</span>
               </Button>
 
               <Button
@@ -416,12 +418,12 @@ export default function MembersPage() {
                 {copied ? (
                   <>
                     <Check className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-700 font-bold">माहिती कॉपी झाली! (Copied)</span>
+                    <span className="text-emerald-700 font-bold">{t.copied}</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4 text-[#6B6459]" />
-                    <span>लॉगिन माहिती कॉपी करा (Copy Details)</span>
+                    <span>{t.copy_details}</span>
                   </>
                 )}
               </Button>
@@ -433,7 +435,7 @@ export default function MembersPage() {
                 onClick={() => setCredentialsModal(null)}
                 className="mt-2 text-xs"
               >
-                पूर्ण झाले (Done)
+                {t.done}
               </Button>
             </div>
           </div>

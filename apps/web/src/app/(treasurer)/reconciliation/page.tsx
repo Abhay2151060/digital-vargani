@@ -10,7 +10,7 @@ import { OfflineBanner } from '../../../components/OfflineBanner';
 import { Card, Input, Button, StatusBadge } from '@vargani/ui';
 import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
-import { DiscrepancyStatus, Role } from '@vargani/types';
+import { DiscrepancyStatus, Role, Language } from '@vargani/types';
 import Link from 'next/link';
 import { formatDisplayName } from '../../../lib/format';
 import {
@@ -176,9 +176,9 @@ function ReconciliationContent() {
 
       <main className="max-w-5xl mx-auto w-full px-4 pt-6 flex-1 space-y-6">
         <div>
-          <h2 className="text-xl font-extrabold text-[#292118]">{t.reconciliation} (Cash Handover)</h2>
+          <h2 className="text-xl font-extrabold text-[#292118]">{t.reconciliation}</h2>
           <p className="text-xs text-[#6B6459] mt-0.5">
-            कार्यकर्त्यांकडून खजिनदारांकडे रोख वर्गणी जमा करून घेणे आणि पावत्यांचा ताळमेळ बसवणे.
+            {t.reconciliation_sub}
           </p>
         </div>
 
@@ -200,20 +200,20 @@ function ReconciliationContent() {
           <Card variant="default" padding="lg" className="shadow-sm border border-[#E5E1D8]">
             <h3 className="text-base font-bold text-[#292118] mb-4 flex items-center gap-2">
               <HandCoins className="w-5 h-5 text-[#F97316]" />
-              <span>नवीन रोख जमा नोंदवा</span>
+              <span>{t.record_new_handover}</span>
             </h3>
 
             <form onSubmit={handleSubmitReconciliation} className="space-y-4">
               {/* Select Volunteer */}
               <div className="space-y-1 text-left">
-                <label className="text-sm font-medium text-[#292118]">कार्यकर्ता निवडा (Select Volunteer)</label>
+                <label className="text-sm font-medium text-[#292118]">{t.select_volunteer}</label>
                 <select
                   value={selectedVolunteerId}
                   onChange={handleVolunteerChange}
                   className="w-full min-h-[48px] rounded-xl border-2 border-[#E5E1D8] bg-white px-3.5 text-base text-[#292118] focus:border-[#F97316] focus:outline-none"
                   required
                 >
-                  <option value="">-- कार्यकर्ता निवडा --</option>
+                  <option value="">{t.select_volunteer_option}</option>
                   {volunteers.map((m) => (
                     <option key={m.user_id} value={m.user_id}>
                       {formatDisplayName(m.full_name)} ({m.phone})
@@ -226,8 +226,8 @@ function ReconciliationContent() {
               {selectedVolunteerId && volunteerSummary && (
                 <div className="p-4 rounded-xl bg-[#F3F1EC] border border-[#E5E1D8] space-y-3">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-[#6B6459]">एकूण शिल्लक पावत्या:</span>
-                    <strong className="text-[#292118] font-bold">{volunteerSummary.donation_count} पावत्या</strong>
+                    <span className="text-[#6B6459]">{t.total_pending_receipts}:</span>
+                    <strong className="text-[#292118] font-bold">{volunteerSummary.donation_count} {t.receipts_suffix}</strong>
                   </div>
 
                   <div className="flex justify-between items-center border-t border-[#E5E1D8] pt-2">
@@ -238,7 +238,7 @@ function ReconciliationContent() {
                   </div>
 
                   <Input
-                    label="प्रत्यक्षात खजिनदारांस प्राप्त रोख रक्कम (₹)"
+                    label={t.actual_received_cash}
                     type="number"
                     value={receivedAmount}
                     onChange={(e) => setReceivedAmount(e.target.value)}
@@ -258,15 +258,15 @@ function ReconciliationContent() {
                     <span>{t.discrepancy}:</span>
                     <span>
                       {discrepancy === 0
-                        ? '₹0 (अचूक ताळमेळ / Matched)'
+                        ? `₹0 (${t.exact_match})`
                         : `${discrepancy > 0 ? '+' : ''}₹${discrepancy.toLocaleString('en-IN')}`}
                     </span>
                   </div>
 
                   {hasDiscrepancy && (
                     <Input
-                      label="तफावतीचे कारण (Reason for Discrepancy)"
-                      placeholder="उदा. चिल्लर शिल्लक, पुढील फेरीत जमा करणार"
+                      label={t.discrepancy_reason}
+                      placeholder={t.discrepancy_reason_placeholder}
                       value={discrepancyReason}
                       onChange={(e) => setDiscrepancyReason(e.target.value)}
                       required
@@ -274,8 +274,8 @@ function ReconciliationContent() {
                   )}
 
                   <Input
-                    label="टीप / शेरा (Optional Notes)"
-                    placeholder="उदा. ५०० च्या नोटा १०"
+                    label={t.optional_notes}
+                    placeholder={t.optional_notes_placeholder}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                   />
@@ -302,20 +302,20 @@ function ReconciliationContent() {
             <Card variant="flat" padding="md" className="border border-[#E5E1D8]">
               <h4 className="text-sm font-bold text-[#292118] mb-2 flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>हिशोब पडताळणी नियमावली</span>
+                <span>{t.reconciliation_rules}</span>
               </h4>
               <ul className="text-xs text-[#6B6459] space-y-2 list-disc list-inside">
-                <li>कार्यकर्त्याने ऑनलाइन किंवा ऑफलाइन फाडलेल्या सर्व <strong>CASH</strong> पावत्या आपोआप येथे जमा रकमेसाठी एकत्र मोजल्या जातात.</li>
-                <li>खजिनदारांनी प्रत्यक्षात रोख मोजून घेतल्यानंतर <strong>Confirm</strong> करावे.</li>
-                <li>कोणतीही तफावत असल्यास ती <strong>Open Discrepancy</strong> म्हणून नोंदवली जाते आणि नंतर सोडवता येते.</li>
-                <li>पडताळणी झाल्यानंतर त्या पावत्यांचे रेकॉर्ड्स लॉक होतात.</li>
+                <li>{language === Language.ENGLISH ? 'All CASH receipts issued online or offline by the volunteer are automatically summed here.' : 'कार्यकर्त्याने ऑनलाइन किंवा ऑफलाइन फाडलेल्या सर्व रोख पावत्या आपोआप येथे जमा रकमेसाठी एकत्र मोजल्या जातात.'}</li>
+                <li>{language === Language.ENGLISH ? 'Treasurer must physically count cash before clicking Confirm.' : 'खजिनदारांनी प्रत्यक्षात रोख मोजून घेतल्यानंतर निश्चित करावे.'}</li>
+                <li>{language === Language.ENGLISH ? 'Any difference is recorded as a discrepancy and can be resolved later.' : 'कोणतीही तफावत असल्यास ती नोंदवली जाते आणि नंतर सोडवता येते.'}</li>
+                <li>{language === Language.ENGLISH ? 'Receipt records are locked after reconciliation.' : 'पडताळणी झाल्यानंतर त्या पावत्यांचे रेकॉर्ड्स लॉक होतात.'}</li>
               </ul>
             </Card>
 
             <Card variant="default" padding="md" className="border border-[#E5E1D8]">
-              <h4 className="text-sm font-bold text-[#292118] mb-1">UPI व बँक पावत्या</h4>
+              <h4 className="text-sm font-bold text-[#292118] mb-1">{t.upi_bank_receipts_title}</h4>
               <p className="text-xs text-[#6B6459]">
-                UPI आणि बँक ट्रान्सफरची रक्कम थेट मंडळाच्या बँक खात्यात येत असल्याने त्यासाठी रोख handover ची गरज नसते.
+                {t.upi_bank_receipts_desc}
               </p>
             </Card>
           </div>
@@ -326,29 +326,29 @@ function ReconciliationContent() {
           <div className="p-4 border-b border-[#E5E1D8] flex items-center justify-between">
             <h3 className="text-base font-bold text-[#292118] flex items-center gap-2">
               <History className="w-4 h-4 text-[#F97316]" />
-              <span>मागील हिशोब पडताळणी इतिहास (Reconciliation Logs)</span>
+              <span>{t.reconciliation_history}</span>
             </h3>
-            <span className="text-xs text-[#6B6459] font-medium">{history.length} नोंदी</span>
+            <span className="text-xs text-[#6B6459] font-medium">{history.length} {t.records_suffix}</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[#F3F1EC] text-[#6B6459] font-bold text-xs uppercase border-b border-[#E5E1D8]">
                 <tr>
-                  <th className="px-4 py-3">तारीख व वेळ</th>
-                  <th className="px-4 py-3">कार्यकर्ता</th>
-                  <th className="px-4 py-3">खजिनदार</th>
-                  <th className="px-4 py-3 text-right">अपेक्षित</th>
-                  <th className="px-4 py-3 text-right">प्राप्त रोख</th>
-                  <th className="px-4 py-3 text-center">स्थिती (Status)</th>
-                  <th className="px-4 py-3 text-center">कृती</th>
+                  <th className="px-4 py-3">{t.date_and_time}</th>
+                  <th className="px-4 py-3">{t.volunteer_role}</th>
+                  <th className="px-4 py-3">{t.treasurer_role}</th>
+                  <th className="px-4 py-3 text-right">{t.expected_amount}</th>
+                  <th className="px-4 py-3 text-right">{t.received_amount}</th>
+                  <th className="px-4 py-3 text-center">{t.status}</th>
+                  <th className="px-4 py-3 text-center">{t.action}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E1D8]">
                 {history.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-4 py-8 text-center text-[#A8A297]">
-                      अद्याप कोणतीही पडताळणी झालेली नाही
+                      {t.no_reconciliation_yet}
                     </td>
                   </tr>
                 ) : (
@@ -357,7 +357,7 @@ function ReconciliationContent() {
                     return (
                       <tr key={h.id} className="hover:bg-orange-50/20 transition">
                         <td className="px-4 py-3 text-[#6B6459]">
-                          {new Date(h.created_at).toLocaleString('en-IN', {
+                          {new Date(h.created_at).toLocaleString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
                             day: '2-digit',
                             month: 'short',
                             hour: '2-digit',
@@ -370,9 +370,9 @@ function ReconciliationContent() {
                         <td className="px-4 py-3 text-right font-bold text-[#292118]">₹{parseFloat(h.received_amount).toLocaleString('en-IN')}</td>
                         <td className="px-4 py-3 text-center">
                           {h.discrepancy_status === 'NONE' ? (
-                            <StatusBadge status="success" label="Matched" size="sm" />
+                            <StatusBadge status="success" label={t.matched} size="sm" />
                           ) : h.discrepancy_status === 'OPEN' ? (
-                            <StatusBadge status="error" label={`फरक: ₹${disc}`} size="sm" />
+                            <StatusBadge status="error" label={`${t.diff}: ₹${disc}`} size="sm" />
                           ) : (
                             <StatusBadge status="info" label={h.discrepancy_status} size="sm" />
                           )}
@@ -383,7 +383,7 @@ function ReconciliationContent() {
                               onClick={() => handleResolveDiscrepancy(h.id, DiscrepancyStatus.RESOLVED)}
                               className="px-2 py-1 bg-emerald-600 text-white rounded text-[11px] font-bold hover:bg-emerald-700 transition"
                             >
-                              Resolve
+                              {t.resolve}
                             </button>
                           )}
                         </td>

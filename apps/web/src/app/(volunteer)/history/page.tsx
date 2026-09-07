@@ -42,22 +42,22 @@ export default function VolunteerHistoryPage() {
   }, [activeMandal, user]);
 
   const PAYMENT_MODE_MAP: Record<string, string> = {
-    CASH: 'Cash (रोख)',
-    UPI: 'UPI (यूपीआय)',
-    PENDING: 'Pending (प्रलंबित)',
+    CASH: t.cash,
+    UPI: t.upi,
+    PENDING: t.pending,
   };
 
   const handleShareWhatsApp = (d: any) => {
     const url = generateWhatsAppShareUrl({
       donorPhone: d.donor_phone || '',
       donorName: d.donor_name,
-      mandalName: activeMandal?.name || 'मंडळ',
+      mandalName: activeMandal?.name || (language === Language.ENGLISH ? 'Mandal' : 'मंडळ'),
       mandalSlug: activeMandal?.slug || '',
       receiptNumber: d.receipt_number,
       amount: parseFloat(d.amount),
       paymentMode: d.payment_mode,
-      date: new Date(d.created_at).toLocaleDateString('en-IN'),
-      language: d.language || Language.MARATHI,
+      date: new Date(d.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN'),
+      language: d.language || language,
     });
     window.open(url, '_blank');
   };
@@ -70,9 +70,9 @@ export default function VolunteerHistoryPage() {
       amount: parseFloat(d.amount),
       paymentMode: d.payment_mode,
       flatWing: d.flat_wing,
-      date: new Date(d.created_at).toLocaleDateString('en-IN'),
-      volunteerName: formatDisplayName(user?.full_name) || 'कार्यकर्ता',
-      language: d.language || Language.MARATHI,
+      date: new Date(d.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN'),
+      volunteerName: formatDisplayName(user?.full_name) || (role === Role.ADMIN ? t.admin_role : role === Role.TREASURER ? t.treasurer_role : t.volunteer_role),
+      language: d.language || language,
     });
     setIsModalOpen(true);
   };
@@ -106,25 +106,24 @@ export default function VolunteerHistoryPage() {
               </div>
               <div>
                 <h2 className="text-sm font-extrabold text-[#292118] leading-tight">
-                  देणगीदार संकलन नोंदवही
+                  {t.mandal_collection_register}
                 </h2>
-                <span className="text-[11px] text-[#6B6459]">Mandal Collection Register</span>
               </div>
             </div>
             <span className="text-xs font-bold text-[#7C2D12] bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200/70">
-              {donations.length} पावत्या
+              {donations.length} {t.receipts_suffix}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#E5E1D8]/60">
             <div className="bg-[#FAF9F6] p-2.5 rounded-xl border border-[#E5E1D8]/80">
-              <span className="text-[#6B6459] font-medium text-[11px] block">एकूण जमा (Received)</span>
+              <span className="text-[#6B6459] font-medium text-[11px] block">{t.total_received}</span>
               <span className="text-base font-black text-[#7C2D12] mt-0.5 block tabular-nums">
                 ₹{totalCollected.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="bg-[#FAF9F6] p-2.5 rounded-xl border border-[#E5E1D8]/80">
-              <span className="text-[#6B6459] font-medium text-[11px] block">येणे वर्गणी (Pending)</span>
+              <span className="text-[#6B6459] font-medium text-[11px] block">{t.pending_collection}</span>
               <span className="text-base font-black text-amber-700 mt-0.5 block tabular-nums">
                 ₹{totalPending.toLocaleString('en-IN')}
                 <span className="text-[10px] font-semibold text-[#8C857B] ml-1">({pendingDonations.length})</span>
@@ -136,10 +135,10 @@ export default function VolunteerHistoryPage() {
         {/* Filter Pills */}
         <div className="flex gap-1.5 overflow-x-auto pb-1 select-none">
           {[
-            { id: 'ALL', label: `सर्व (${donations.length})` },
-            { id: 'CASH', label: `रोख (${donations.filter((d) => d.payment_mode === 'CASH').length})` },
-            { id: 'UPI', label: `UPI (${donations.filter((d) => d.payment_mode === 'UPI').length})` },
-            { id: 'PENDING', label: `येणे (${pendingDonations.length})` },
+            { id: 'ALL', label: `${t.all} (${donations.length})` },
+            { id: 'CASH', label: `${t.cash} (${donations.filter((d) => d.payment_mode === 'CASH').length})` },
+            { id: 'UPI', label: `${t.upi} (${donations.filter((d) => d.payment_mode === 'UPI').length})` },
+            { id: 'PENDING', label: `${t.pending} (${pendingDonations.length})` },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -158,8 +157,8 @@ export default function VolunteerHistoryPage() {
         {filteredDonations.length === 0 && !isLoading ? (
           <div className="text-center py-12 bg-white rounded-2xl border border-[#E5E1D8]/80 p-6 shadow-2xs">
             <Receipt className="w-10 h-10 text-[#A8A297] mx-auto mb-2" />
-            <p className="text-sm font-bold text-[#292118]">कोणत्याही नोंदी आढळल्या नाहीत</p>
-            <p className="text-xs text-[#6B6459] mt-1">निवडलेल्या फिल्टरनुसार नोंदी उपलब्ध नाहीत.</p>
+            <p className="text-sm font-bold text-[#292118]">{t.no_records_found}</p>
+            <p className="text-xs text-[#6B6459] mt-1">{t.no_records_desc}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -177,11 +176,11 @@ export default function VolunteerHistoryPage() {
                       <span className="text-xs font-mono font-bold text-[#7C2D12] bg-orange-50 px-2.5 py-0.5 rounded-md border border-orange-200/70">
                         {d.receipt_number}
                       </span>
-                      {d.is_voided && <StatusBadge status="error" label="रद्द" size="sm" />}
-                      {!d.is_voided && d.payment_mode === 'PENDING' && <StatusBadge status="warning" label="येणे वर्गणी" size="sm" />}
-                      {!d.is_voided && isCash && d.is_reconciled && <StatusBadge status="success" label="जमा" size="sm" />}
-                      {!d.is_voided && isCash && !d.is_reconciled && <StatusBadge status="warning" label="रोख शिल्लक" size="sm" />}
-                      {!d.is_voided && d.payment_mode === 'UPI' && <StatusBadge status="info" label="UPI" size="sm" />}
+                      {d.is_voided && <StatusBadge status="error" label={t.void_status} size="sm" />}
+                      {!d.is_voided && d.payment_mode === 'PENDING' && <StatusBadge status="warning" label={t.pending} size="sm" />}
+                      {!d.is_voided && isCash && d.is_reconciled && <StatusBadge status="success" label={t.deposited} size="sm" />}
+                      {!d.is_voided && isCash && !d.is_reconciled && <StatusBadge status="warning" label={t.cash_balance} size="sm" />}
+                      {!d.is_voided && d.payment_mode === 'UPI' && <StatusBadge status="info" label={t.upi} size="sm" />}
                     </div>
                     <div className="text-right">
                       <p className="text-base font-black text-[#7C2D12] tabular-nums">
@@ -200,24 +199,24 @@ export default function VolunteerHistoryPage() {
                     {d.donor_phone && (
                       <div className="flex items-center gap-1.5 text-xs text-[#6B6459]">
                         <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                        <span>मोबाईल: <strong className="text-[#292118]">+91 {d.donor_phone}</strong></span>
+                        <span>{t.mobile}: <strong className="text-[#292118]">+91 {d.donor_phone}</strong></span>
                       </div>
                     )}
                     {d.flat_wing && (
                       <div className="flex items-center gap-1.5 text-xs text-[#6B6459]">
                         <Home className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        <span>फ्लॅट/विंग: <strong className="text-[#292118]">{d.flat_wing}</strong></span>
+                        <span>{t.flat_wing_label}: <strong className="text-[#292118]">{d.flat_wing}</strong></span>
                       </div>
                     )}
                     {d.volunteer_name && (
                       <div className="flex items-center gap-1.5 text-xs text-[#6B6459]">
                         <Users className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                        <span>नोंदणीकर्ता: <strong className="text-[#292118]">{d.volunteer_name}</strong></span>
+                        <span>{t.recorded_by}: <strong className="text-[#292118]">{d.volunteer_name}</strong></span>
                       </div>
                     )}
                     <div className="flex items-center gap-1.5 text-[11px] text-[#8C857B] pt-0.5">
                       <Calendar className="w-3.5 h-3.5 text-[#A8A297] shrink-0" />
-                      <span>{new Date(d.created_at).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>{new Date(d.created_at).toLocaleString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
 
@@ -229,7 +228,7 @@ export default function VolunteerHistoryPage() {
                           className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white text-xs font-bold flex items-center gap-1.5 transition min-h-[36px] shadow-xs cursor-pointer"
                         >
                           <PlusCircle className="w-3.5 h-3.5" />
-                          <span>वर्गणी जमा करा</span>
+                          <span>{t.collect_vargani}</span>
                         </button>
                       )}
                       <button
@@ -237,7 +236,7 @@ export default function VolunteerHistoryPage() {
                         className="px-3.5 py-1.5 rounded-xl border border-[#E5E1D8] text-xs font-semibold text-[#292118] bg-white hover:bg-[#FAF9F6] flex items-center gap-1.5 transition min-h-[36px] cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5 text-[#6B6459]" />
-                        <span>पावती पहा</span>
+                        <span>{t.view_receipt}</span>
                       </button>
                       {d.donor_phone && (
                         <button
@@ -245,7 +244,7 @@ export default function VolunteerHistoryPage() {
                           className="px-3.5 py-1.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold flex items-center gap-1.5 transition min-h-[36px] shadow-xs cursor-pointer"
                         >
                           <Share2 className="w-3.5 h-3.5" />
-                          <span>व्हॉट्सॲप</span>
+                          <span>{t.whatsapp}</span>
                         </button>
                       )}
                     </div>

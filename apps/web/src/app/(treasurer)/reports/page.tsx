@@ -144,39 +144,39 @@ export default function ReportsPage() {
       <main className="max-w-5xl mx-auto w-full px-4 py-6 flex-1 space-y-6">
         <div>
           <h1 className="text-2xl font-extrabold text-[#292118] tracking-tight">
-            अहवाल व डेटा निर्यात (Reports & Data Exports)
+            {t.reports_title}
           </h1>
           <p className="text-xs text-[#6B6459] mt-1">
-            मंडळाचा वार्षिक अहवाल, जमा-खर्च हिशोब, CSV निर्यात आणि सार्वजनिक पारदर्शकता पत्रक.
+            {t.reports_sub}
           </p>
         </div>
 
         {/* Financial Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card variant="default" padding="md" className="border-t-4 border-t-[#F97316] shadow-xs">
-            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">एकूण जमा (Collections)</span>
+            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">{t.total_collection}</span>
             <p className="text-2xl font-black text-[#292118] mt-1">
               ₹{(overview?.festival_total_collected || 0).toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] text-emerald-600 font-semibold mt-1">
-              रोख ₹{(overview?.total_cash_collected || 0).toLocaleString('en-IN')} • UPI ₹{(overview?.total_upi_collected || 0).toLocaleString('en-IN')}
+              {t.cash} ₹{(overview?.total_cash_collected || 0).toLocaleString('en-IN')} • {t.upi} ₹{(overview?.total_upi_collected || 0).toLocaleString('en-IN')}
             </p>
           </Card>
 
           <Card variant="default" padding="md" className="border-t-4 border-t-red-600 shadow-xs">
-            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">एकूण खर्च (Expenses)</span>
+            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">{t.total_expenses}</span>
             <p className="text-2xl font-black text-red-700 mt-1">
               ₹{(overview?.total_approved_expenses || 0).toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] text-[#6B6459] mt-1">मंजूर अधिकृत बिले</p>
+            <p className="text-[11px] text-[#6B6459] mt-1">{t.approved_bills}</p>
           </Card>
 
           <Card variant="default" padding="md" className="border-t-4 border-t-emerald-600 shadow-xs bg-gradient-to-br from-white to-emerald-50/40">
-            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">निव्वळ शिल्लक निधी (Net Balance)</span>
+            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">{t.net_balance}</span>
             <p className="text-2xl font-black text-emerald-800 mt-1">
               ₹{(overview?.net_balance || 0).toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] text-emerald-700 mt-1 font-medium">हिशोब प्रमाणित</p>
+            <p className="text-[11px] text-emerald-700 mt-1 font-medium">{t.net_balance_verified}</p>
           </Card>
         </div>
 
@@ -189,15 +189,13 @@ export default function ReportsPage() {
               </div>
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider bg-white/20 px-2.5 py-0.5 rounded-full">
-                  मंडळाचा अधिकृत अहवाल
+                  {t.mandal_official_report}
                 </span>
                 <h3 className="text-lg font-black mt-1">
-                  {activeMandal?.ahwal_title || 'वार्षिक अहवाल व जमा-खर्च हिशोब'}
+                  {activeMandal?.ahwal_title || t.annual_report_default_title}
                 </h3>
                 <p className="text-xs text-teal-100 mt-0.5">
-                  {activeMandal?.ahwal_url
-                    ? 'अहवाल फाईल अपलोड झालेली असून भाविकांसाठी सार्वजनिक उपलब्ध आहे.'
-                    : 'अद्याप अधिकृत अहवाल फाईल अपलोड केलेली नाही.'}
+                  {activeMandal?.ahwal_url ? t.ahwal_uploaded_desc : t.ahwal_not_uploaded_desc}
                 </p>
               </div>
             </div>
@@ -211,7 +209,7 @@ export default function ReportsPage() {
                   className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl bg-white text-teal-900 hover:bg-teal-50 text-xs font-black flex items-center justify-center gap-2 shadow-sm transition"
                 >
                   <Download className="w-4 h-4 text-teal-700" />
-                  <span>अहवाल पहा / डाउनलोड करा</span>
+                  <span>{t.view_download_report}</span>
                 </a>
               ) : role === Role.ADMIN ? (
                 <Link
@@ -219,7 +217,7 @@ export default function ReportsPage() {
                   className="flex-1 sm:flex-initial py-2.5 px-5 rounded-xl bg-white text-teal-900 hover:bg-teal-50 text-xs font-black flex items-center justify-center gap-2 shadow-sm transition"
                 >
                   <Upload className="w-4 h-4 text-teal-700" />
-                  <span>अहवाल अपलोड करा (Settings)</span>
+                  <span>{t.upload_report_settings}</span>
                 </Link>
               ) : null}
             </div>
@@ -235,9 +233,9 @@ export default function ReportsPage() {
                 <FileSpreadsheet className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#292118]">वर्गणी देणगी अहवाल (Donations CSV)</h3>
+                <h3 className="text-base font-bold text-[#292118]">{t.donations_csv_title}</h3>
                 <p className="text-xs text-[#6B6459] mt-0.5">
-                  सर्व देणग्यांची पावतीनिहाय यादी, देणगीदारांचे नाव, मोबाईल, माध्यम, तारीख व गोळा करणाऱ्या कार्यकर्त्याचे नाव.
+                  {t.donations_csv_desc}
                 </p>
               </div>
             </div>
@@ -252,7 +250,7 @@ export default function ReportsPage() {
                 className="font-bold gap-2 text-[#7C2D12] hover:bg-orange-50 border-[#F97316]/40"
               >
                 <Download className="w-4 h-4 text-[#F97316]" />
-                <span>वर्गणी लेजर डाउनलोड करा (CSV)</span>
+                <span>{t.download_donations_ledger}</span>
               </Button>
             </div>
           </Card>
@@ -264,9 +262,9 @@ export default function ReportsPage() {
                 <Building className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-[#292118]">खर्च अहवाल (Expenses CSV)</h3>
+                <h3 className="text-base font-bold text-[#292118]">{t.expenses_csv_title}</h3>
                 <p className="text-xs text-[#6B6459] mt-0.5">
-                  सर्व उत्सवातील खर्चांची बिले, वर्गीकरण (मंडप, ध्वनी, प्रसाद, इ.), मंजूर करणारी व्यक्ती व तपशील.
+                  {t.expenses_csv_desc}
                 </p>
               </div>
             </div>
@@ -281,7 +279,7 @@ export default function ReportsPage() {
                 className="font-bold gap-2 text-red-700 hover:bg-red-50 border-red-300"
               >
                 <Download className="w-4 h-4 text-red-600" />
-                <span>खर्च लेजर डाउनलोड करा (CSV)</span>
+                <span>{t.download_expenses_ledger}</span>
               </Button>
             </div>
           </Card>
@@ -296,9 +294,9 @@ export default function ReportsPage() {
                   <ShieldCheck className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#292118]">सार्वजनिक पारदर्शकता पोर्टल (Public Transparency)</h3>
+                  <h3 className="text-base font-bold text-[#292118]">{t.public_transparency_portal}</h3>
                   <p className="text-xs text-[#6B6459] mt-0.5">
-                    भाविकांना व देणगीदारांना मंडळाचा संपूर्ण डिजिटल हिशोब पाहण्यासाठी ही लिंक शेअर करा.
+                    {t.public_transparency_sub}
                   </p>
                   <p className="text-xs font-semibold text-[#F97316] mt-1 break-all">
                     {transparencyUrl}
@@ -316,12 +314,12 @@ export default function ReportsPage() {
                   {copiedLink ? (
                     <>
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      <span>कॉपी झाले!</span>
+                      <span>{t.copied}</span>
                     </>
                   ) : (
                     <>
                       <Share2 className="w-4 h-4" />
-                      <span>लिंक कॉपी करा</span>
+                      <span>{t.copy_link}</span>
                     </>
                   )}
                 </Button>
@@ -332,7 +330,7 @@ export default function ReportsPage() {
                   className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F97316] text-white hover:bg-[#EA580C] text-xs font-bold shadow-xs transition"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  <span>पोर्टल उघडा</span>
+                  <span>{t.open_portal}</span>
                 </Link>
               </div>
             </div>

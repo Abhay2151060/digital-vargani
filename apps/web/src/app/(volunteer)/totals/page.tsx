@@ -75,7 +75,7 @@ export default function VolunteerTotalsPage() {
               </span>
             </div>
             <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-              हस्तांतरण बाकी
+              {t.handover_pending}
             </span>
           </div>
 
@@ -84,7 +84,7 @@ export default function VolunteerTotalsPage() {
               ₹{totalUnreconciledCash.toLocaleString('en-IN')}
             </p>
             <p className="text-xs text-[#6B6459] mt-1 font-medium">
-              खजिनदारांकडे जमा करण्यासाठी शिल्लक रोख रक्कम
+              {t.handover_pending_desc}
             </p>
           </div>
         </div>
@@ -94,26 +94,26 @@ export default function VolunteerTotalsPage() {
           <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 mb-1">
               <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
-              <span>आजची रोख</span>
+              <span>{t.today_cash}</span>
             </div>
             <p className="text-xl font-bold text-[#292118] tabular-nums">
               ₹{todayCash.toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] text-[#6B6459] mt-0.5">
-              {todayDonations.filter((d) => d.payment_mode === 'CASH').length} पावत्या
+              {todayDonations.filter((d) => d.payment_mode === 'CASH').length} {t.receipts_suffix}
             </p>
           </div>
 
           <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-800 mb-1">
               <QrCode className="w-3.5 h-3.5 text-sky-600" />
-              <span>आजचे UPI</span>
+              <span>{t.today_upi}</span>
             </div>
             <p className="text-xl font-bold text-[#292118] tabular-nums">
               ₹{todayUpi.toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] text-[#6B6459] mt-0.5">
-              {todayDonations.filter((d) => d.payment_mode === 'UPI').length} पावत्या
+              {todayDonations.filter((d) => d.payment_mode === 'UPI').length} {t.receipts_suffix}
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function VolunteerTotalsPage() {
         <div className="bg-white rounded-2xl p-3.5 border border-[#E5E1D8]/80 flex items-center justify-between text-xs text-[#6B6459] shadow-2xs">
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>पूर्वी जमा झालेली रोख (Reconciled):</span>
+            <span>{t.previously_reconciled}</span>
           </div>
           <strong className="text-emerald-700 font-bold tabular-nums">₹{totalReconciledCash.toLocaleString('en-IN')}</strong>
         </div>
@@ -137,7 +137,7 @@ export default function VolunteerTotalsPage() {
               onClick={() => router.push('/collect')}
               className="font-bold gap-2 rounded-2xl cursor-pointer"
             >
-              <span>नवीन पावती बनवा</span>
+              <span>{t.new_receipt_btn}</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </div>

@@ -86,10 +86,10 @@ export default function ProfilePage() {
             className="inline-flex items-center gap-1.5 text-xs font-bold text-[#7C2D12] hover:underline"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>डॅशबोर्डवर परत जा</span>
+            <span>{language === Language.ENGLISH ? 'Back to Dashboard' : 'डॅशबोर्डवर परत जा'}</span>
           </Link>
           <span className="text-xs font-semibold text-[#6B6459] bg-[#F3F1EC] px-2.5 py-1 rounded-full border border-[#E5E1D8]">
-            User Profile
+            {t.user_profile}
           </span>
         </div>
 
@@ -105,7 +105,7 @@ export default function ProfilePage() {
               </h2>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-[11px] font-bold text-[#7C2D12] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
-                  {role}
+                  {role === Role.ADMIN ? t.admin_role : role === Role.TREASURER ? t.treasurer_role : t.volunteer_role}
                 </span>
                 {activeMandal?.name && (
                   <span className="text-xs text-[#6B6459] truncate">
@@ -118,34 +118,34 @@ export default function ProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
             <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-              <span className="text-[#6B6459] font-medium block">पूर्ण नाव (Full Name)</span>
+              <span className="text-[#6B6459] font-medium block">{t.full_name_label}</span>
               <span className="font-bold text-[#292118] text-sm mt-0.5 block">
                 {userDisplayName}
               </span>
             </div>
 
             <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-              <span className="text-[#6B6459] font-medium block">मोबाईल नंबर (Phone)</span>
+              <span className="text-[#6B6459] font-medium block">{t.mobile_label}</span>
               <span className="font-bold text-[#292118] text-sm mt-0.5 block font-mono">
-                {user?.phone || 'नोंदवलेला नाही'}
+                {user?.phone || (language === Language.ENGLISH ? 'Not registered' : 'नोंदवलेला नाही')}
               </span>
             </div>
 
             <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-              <span className="text-[#6B6459] font-medium block">सक्रिय मंडळ (Mandal)</span>
+              <span className="text-[#6B6459] font-medium block">{t.active_mandal_label}</span>
               <span className="font-bold text-[#292118] text-sm mt-0.5 block truncate">
                 {activeMandal?.name || '—'}
               </span>
             </div>
 
             <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-              <span className="text-[#6B6459] font-medium block">भाषा (Preferred Language)</span>
+              <span className="text-[#6B6459] font-medium block">{t.preferred_language_label}</span>
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as Language)}
-                className="mt-1 bg-white border border-[#E5E1D8] rounded-lg px-2 py-1 text-xs font-semibold text-[#292118] focus:outline-none"
+                className="mt-1 bg-white border border-[#E5E1D8] rounded-lg px-2 py-1 text-xs font-semibold text-[#292118] focus:outline-none cursor-pointer"
               >
-                <option value={Language.MARATHI}>मराठी (Marathi)</option>
+                <option value={Language.MARATHI}>मराठी</option>
                 <option value={Language.ENGLISH}>English</option>
               </select>
             </div>
@@ -156,10 +156,10 @@ export default function ProfilePage() {
         <Card variant="default" padding="lg" className="border border-[#E5E1D8] shadow-xs rounded-2xl space-y-4">
           <div className="flex items-center gap-2">
             <KeyRound className="w-5 h-5 text-[#7C2D12]" />
-            <h3 className="text-base font-bold text-[#292118]">पासवर्ड बदला (Change Password)</h3>
+            <h3 className="text-base font-bold text-[#292118]">{t.change_password}</h3>
           </div>
           <p className="text-xs text-[#6B6459]">
-            आपला खाते सुरक्षित ठेवण्यासाठी नवीन पासवर्ड सेट करा.
+            {t.change_password_card_sub}
           </p>
 
           {successMsg && (
@@ -178,27 +178,27 @@ export default function ProfilePage() {
 
           <form onSubmit={handleChangePassword} className="space-y-3.5">
             <Input
-              label="सध्याचा पासवर्ड (Current Password)"
+              label={t.current_password_label}
               type="password"
-              placeholder="सध्याचा पासवर्ड टाका"
+              placeholder={language === Language.ENGLISH ? 'Enter current password' : 'सध्याचा पासवर्ड टाका'}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
             />
 
             <Input
-              label="नवीन पासवर्ड (New Password - किमान ६ अक्षरे)"
+              label={t.new_password_label}
               type="password"
-              placeholder="नवीन पासवर्ड टाका"
+              placeholder={language === Language.ENGLISH ? 'Enter new password' : 'नवीन पासवर्ड टाका'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required
             />
 
             <Input
-              label="नवीन पासवर्ड पुन्हा टाका (Confirm New Password)"
+              label={t.confirm_new_password_label}
               type="password"
-              placeholder="नवीन पासवर्ड पुन्हा प्रविष्ट करा"
+              placeholder={language === Language.ENGLISH ? 'Re-enter new password' : 'नवीन पासवर्ड पुन्हा प्रविष्ट करा'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
@@ -212,7 +212,7 @@ export default function ProfilePage() {
               isLoading={isSubmitting}
               className="font-bold cursor-pointer"
             >
-              <span>पासवर्ड अपडेट करा</span>
+              <span>{t.update_password_btn_label}</span>
             </Button>
           </form>
         </Card>

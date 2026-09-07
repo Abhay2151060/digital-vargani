@@ -224,17 +224,17 @@ export default function CollectDonationPage() {
             className="flex items-center gap-1 text-xs font-semibold text-[#6B6459] hover:text-[#292118] bg-white hover:bg-[#F3F1EC] px-2.5 py-1 rounded-lg border border-[#E5E1D8] shadow-2xs transition"
           >
             <ArrowLeft className="w-4 h-4 text-[#F97316]" />
-            <span>मागे (Back)</span>
+            <span>{t.back}</span>
           </button>
 
           <div className="flex items-center gap-1.5 text-xs font-semibold text-[#7C2D12]">
             <Sparkles className="w-4 h-4 text-[#F97316]" />
-            <span>{activeMandal?.name || 'मंडळ'}</span>
+            <span>{activeMandal?.name || (language === Language.ENGLISH ? 'Mandal' : 'मंडळ')}</span>
           </div>
 
           {allocation && (
             <span className="text-[11px] font-medium text-[#6B6459] bg-[#F3F1EC] px-2 py-0.5 rounded-md border border-[#E5E1D8]">
-              पावती क्र. सुरू: <strong>{allocation.receipt_prefix}-{allocation.current_number}</strong>
+              {t.receipt_prefix_starts} <strong>{allocation.receipt_prefix}-{allocation.current_number}</strong>
             </span>
           )}
         </div>
@@ -251,7 +251,7 @@ export default function CollectDonationPage() {
             {/* Donor Name (Single most important field) */}
             <Input
               label={t.donor_name}
-              placeholder="उदा. आनंद जोशी / मे. शर्मा"
+              placeholder={t.donor_name_placeholder}
               value={donorName}
               onChange={(e) => setDonorName(e.target.value)}
               leftIcon={<User className="w-4 h-4" />}
@@ -275,7 +275,7 @@ export default function CollectDonationPage() {
             {/* Custom Amount / Flat Details */}
             <div className="grid grid-cols-2 gap-3">
               <Input
-                label="इतर रक्कम (₹)"
+                label={t.custom_amount}
                 type="number"
                 value={customAmount}
                 onChange={(e) => handleCustomAmountChange(e.target.value)}
@@ -283,8 +283,8 @@ export default function CollectDonationPage() {
                 required
               />
               <Input
-                label="फ्लॅट/विंग (ऐच्छिक)"
-                placeholder="A-302"
+                label={t.flat_wing}
+                placeholder={t.flat_wing_placeholder}
                 value={flatWing}
                 onChange={(e) => setFlatWing(e.target.value)}
                 leftIcon={<Home className="w-4 h-4" />}
@@ -296,7 +296,7 @@ export default function CollectDonationPage() {
               label={t.donor_phone}
               type="tel"
               maxLength={10}
-              placeholder="9822012345 (व्हॉट्सॲप साठी)"
+              placeholder={t.donor_phone_placeholder}
               value={donorPhone}
               onChange={(e) => setDonorPhone(e.target.value.replace(/\D/g, ''))}
               leftIcon={<Phone className="w-4 h-4" />}
@@ -342,7 +342,7 @@ export default function CollectDonationPage() {
                   }`}
                 >
                   <Clock className="w-4 h-4 shrink-0" />
-                  <span>{t.pending || 'Pending'}</span>
+                  <span>{t.pending}</span>
                 </button>
               </div>
             </div>
@@ -357,8 +357,8 @@ export default function CollectDonationPage() {
                       <QrCode className="w-4 h-4 text-blue-600 shrink-0" />
                       <span>
                         {activeMandal?.upi_qr_url
-                          ? 'मंडळाचा अधिकृत UPI QR कोड'
-                          : 'UPI द्वारे स्कॅन करून भरा (Scan & Pay)'}
+                          ? t.mandal_official_qr
+                          : t.scan_to_pay}
                       </span>
                     </div>
                     <div className="bg-blue-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full shadow-2xs">
@@ -386,22 +386,22 @@ export default function CollectDonationPage() {
                       ) : (
                         <div className="w-48 h-48 flex flex-col items-center justify-center bg-gray-50 rounded-xl text-xs text-gray-400">
                           <QrCode className="w-10 h-10 mb-1 animate-pulse text-blue-400" />
-                          <span>QR कोड लोड होत आहे...</span>
+                          <span>{t.qr_loading}</span>
                         </div>
                       )}
                     </div>
 
                     <div className="mt-2 space-y-0.5">
                       <p className="text-xs font-extrabold text-blue-950">
-                        {activeMandal?.name || 'मंडळ'}
+                        {activeMandal?.name || (language === Language.ENGLISH ? 'Mandal' : 'मंडळ')}
                       </p>
                       {activeMandal?.upi_qr_url && (
                         <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-200">
-                          ✓ ॲडमिनने अपलोड केलेला अधिकृत QR कोड
+                          ✓ {t.admin_uploaded_qr_badge}
                         </span>
                       )}
                       <p className="text-[10px] text-blue-700 font-medium">
-                        Google Pay • PhonePe • Paytm • BHIM द्वारे स्कॅन करा
+                        {t.scan_via_apps_hint}
                       </p>
                     </div>
                   </div>
@@ -414,7 +414,7 @@ export default function CollectDonationPage() {
                         className="inline-flex items-center gap-1 text-[11px] text-orange-600 font-bold hover:underline bg-orange-50 px-2.5 py-1 rounded-lg border border-orange-200"
                       >
                         <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-                        <span>मंडळाचा स्वतःचा QR कोड अपलोड करण्यासाठी येथे क्लिक करा (Settings)</span>
+                        <span>{language === Language.ENGLISH ? 'Click here to upload Mandal QR code (Settings)' : 'मंडळाचा स्वतःचा QR कोड अपलोड करण्यासाठी येथे क्लिक करा'}</span>
                       </Link>
                     </div>
                   )}
@@ -436,12 +436,12 @@ export default function CollectDonationPage() {
                         {isUpiCopied ? (
                           <>
                             <Check className="w-3.5 h-3.5 text-emerald-600" />
-                            <span className="text-emerald-700">कॉपी झाले!</span>
+                            <span className="text-emerald-700">{t.copied}</span>
                           </>
                         ) : (
                           <>
                             <Copy className="w-3.5 h-3.5 text-blue-600" />
-                            <span>कॉपी</span>
+                            <span>{t.copy}</span>
                           </>
                         )}
                       </button>
@@ -451,8 +451,8 @@ export default function CollectDonationPage() {
 
                 {/* UTR / Reference Input */}
                 <Input
-                  label="UPI Reference / UTR नंबर (ऐच्छिक)"
-                  placeholder="उदा. 4239812903"
+                  label={t.utr_reference_optional}
+                  placeholder={t.utr_placeholder}
                   value={paymentRef}
                   onChange={(e) => setPaymentRef(e.target.value)}
                 />
@@ -461,7 +461,7 @@ export default function CollectDonationPage() {
 
             {/* Receipt Language Selector */}
             <div className="space-y-1 text-left">
-              <label className="text-xs font-bold text-[#6B6459]">पावतीची भाषा (Receipt Language)</label>
+              <label className="text-xs font-bold text-[#6B6459]">{t.receipt_language}</label>
               <div className="flex flex-wrap gap-2">
                 {[
                   { lang: Language.MARATHI, label: 'मराठी' },

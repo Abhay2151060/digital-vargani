@@ -139,7 +139,7 @@ export default function AllDonationsPage() {
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[#7C2D12] bg-orange-50 font-bold border border-orange-200/60 hover:bg-orange-100/60 transition cursor-pointer shrink-0"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>डॅशबोर्ड (Dashboard)</span>
+              <span>{t.dashboard}</span>
             </Link>
             <Link href="/reconciliation" className="px-3 py-1.5 rounded-xl text-[#6B6459] hover:bg-[#F3F1EC] transition shrink-0">
               {t.reconciliation}
@@ -166,7 +166,7 @@ export default function AllDonationsPage() {
               className="text-xs font-bold gap-1.5 rounded-xl cursor-pointer hover:bg-emerald-50 hover:text-emerald-800 transition shadow-2xs"
             >
               <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">CSV डाउनलोड</span>
+              <span className="hidden sm:inline">CSV</span>
             </Button>
           </div>
         </div>
@@ -182,52 +182,52 @@ export default function AllDonationsPage() {
               </span>
               <div>
                 <h2 className="text-xl font-extrabold text-[#292118]">
-                  जमा झालेल्या सर्व पावत्या (All Collected Donations)
+                  {t.all_collected_donations}
                 </h2>
                 <p className="text-xs text-[#6B6459] mt-0.5">
-                  मंडळामध्ये आतापर्यंत जमा झालेल्या सर्व पावत्यांची सविस्तर यादी व तपशील
+                  {t.all_collected_donations_sub}
                 </p>
               </div>
             </div>
           </div>
 
           <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 self-start sm:self-auto">
-            एकूण {donations.length} पावत्या नोंदवल्या
+            {t.total_receipts_recorded}: {donations.length}
           </span>
         </div>
 
         {/* 4 Summary Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
           <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-            <span className="text-xs font-semibold text-[#6B6459]">एकूण जमा वर्गणी</span>
+            <span className="text-xs font-semibold text-[#6B6459]">{t.total_collection}</span>
             <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
               ₹{totalAmount.toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] text-[#A8A297] mt-0.5">{collectedDonationsCount} जमा पावत्यांमधून</p>
+            <p className="text-[11px] text-[#A8A297] mt-0.5">{collectedDonationsCount} {t.from_collected_receipts}</p>
           </div>
 
           <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-            <span className="text-xs font-semibold text-emerald-800">रोख वर्गणी (Cash)</span>
+            <span className="text-xs font-semibold text-emerald-800">{t.cash_donations}</span>
             <p className="text-xl font-black text-emerald-700 mt-1 tabular-nums">
               ₹{totalCash.toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] text-[#A8A297] mt-0.5">{cashDonations.length} रोख पावत्या</p>
+            <p className="text-[11px] text-[#A8A297] mt-0.5">{cashDonations.length} {t.cash_receipts_unit}</p>
           </div>
 
           <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-            <span className="text-xs font-semibold text-sky-800">UPI वर्गणी</span>
+            <span className="text-xs font-semibold text-sky-800">{t.upi_donations}</span>
             <p className="text-xl font-black text-sky-700 mt-1 tabular-nums">
               ₹{totalUpi.toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] text-[#A8A297] mt-0.5">{upiDonations.length} UPI पावत्या</p>
+            <p className="text-[11px] text-[#A8A297] mt-0.5">{upiDonations.length} {t.upi_receipts_unit}</p>
           </div>
 
           <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-            <span className="text-xs font-semibold text-amber-800">येणे बाकी (Pending)</span>
+            <span className="text-xs font-semibold text-amber-800">{t.pending_collection}</span>
             <p className="text-xl font-black text-amber-700 mt-1 tabular-nums">
               ₹{totalPending.toLocaleString('en-IN')}
             </p>
-            <p className="text-[11px] text-[#A8A297] mt-0.5">{pendingDonations.length} प्रलंबित नोंदी</p>
+            <p className="text-[11px] text-[#A8A297] mt-0.5">{pendingDonations.length} {t.pending_records_unit}</p>
           </div>
         </div>
 
@@ -241,7 +241,7 @@ export default function AllDonationsPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="नाव, पावती क्र., फोन, किंवा फ्लॅट क्र. शोधा..."
+                placeholder={t.search_donations_placeholder}
                 className="w-full pl-9 pr-4 py-2 bg-[#FAF9F6] border border-[#E5E1D8] rounded-xl text-xs sm:text-sm text-[#292118] placeholder:text-[#A8A297] focus:outline-none focus:border-[#F97316] transition"
               />
             </div>
@@ -249,10 +249,10 @@ export default function AllDonationsPage() {
             {/* Filter Tabs */}
             <div className="flex items-center gap-1.5 overflow-x-auto text-xs font-bold shrink-0">
               {[
-                { key: 'ALL', label: 'सर्व (All)', count: donations.length },
-                { key: 'CASH', label: 'रोख (Cash)', count: cashDonations.length },
-                { key: 'UPI', label: 'UPI', count: upiDonations.length },
-                { key: 'PENDING', label: 'प्रलंबित (Pending)', count: pendingDonations.length },
+                { key: 'ALL', label: t.all, count: donations.length },
+                { key: 'CASH', label: t.cash, count: cashDonations.length },
+                { key: 'UPI', label: t.upi, count: upiDonations.length },
+                { key: 'PENDING', label: t.pending, count: pendingDonations.length },
               ].map((tab) => (
                 <button
                   key={tab.key}
@@ -280,19 +280,19 @@ export default function AllDonationsPage() {
           <div className="overflow-x-auto">
             {isLoading ? (
               <div className="p-12 text-center text-[#6B6459] text-sm">
-                पावत्या लोड होत आहेत, कृपया प्रतीक्षा करा...
+                {t.loading_donations}
               </div>
             ) : filteredDonations.length > 0 ? (
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                   <tr>
-                    <th className="px-4 py-3">पावती क्र.</th>
-                    <th className="px-4 py-3">देणगीदार</th>
-                    <th className="px-4 py-3">पेमेंट मोड</th>
-                    <th className="px-4 py-3 text-right">रक्कम</th>
-                    <th className="px-4 py-3">जमाकर्ता / कार्यकर्ता</th>
-                    <th className="px-4 py-3">दिनांक व वेळ</th>
-                    <th className="px-4 py-3 text-center">कृती (पावती)</th>
+                    <th className="px-4 py-3">{t.receipt_no}</th>
+                    <th className="px-4 py-3">{t.donor}</th>
+                    <th className="px-4 py-3">{t.payment_mode}</th>
+                    <th className="px-4 py-3 text-right">{t.amount}</th>
+                    <th className="px-4 py-3">{t.recorded_by}</th>
+                    <th className="px-4 py-3">{t.date_and_time}</th>
+                    <th className="px-4 py-3 text-center">{t.action}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E1D8]/60">
@@ -304,8 +304,8 @@ export default function AllDonationsPage() {
                       <td className="px-4 py-3">
                         <div className="font-semibold text-[#292118]">{d.donor_name}</div>
                         <div className="text-[11px] text-[#A8A297] flex items-center gap-2 mt-0.5">
-                          {d.flat_wing && <span>फ्लॅट: {d.flat_wing}</span>}
-                          {d.donor_phone && <span>फोन: {d.donor_phone}</span>}
+                          {d.flat_wing && <span>{t.flat_wing_short}: {d.flat_wing}</span>}
+                          {d.donor_phone && <span>{t.phone_short}: {d.donor_phone}</span>}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -318,23 +318,23 @@ export default function AllDonationsPage() {
                               : 'bg-amber-50 text-amber-700 border-amber-200'
                           }`}
                         >
-                          {d.payment_mode}
+                          {d.payment_mode === 'CASH' ? t.cash : d.payment_mode === 'UPI' ? t.upi : t.pending}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-[#292118] tabular-nums text-sm">
                         ₹{parseFloat(d.amount).toLocaleString('en-IN')}
                       </td>
                       <td className="px-4 py-3 text-xs text-[#6B6459] font-medium">
-                        {d.volunteer_name || 'खजिनदार'}
+                        {d.volunteer_name || (role === Role.ADMIN ? t.admin_role : role === Role.TREASURER ? t.treasurer_role : t.volunteer_role)}
                       </td>
                       <td className="px-4 py-3 text-[11px] text-[#A8A297] whitespace-nowrap">
-                        {new Date(d.created_at).toLocaleDateString('mr-IN', {
+                        {new Date(d.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
                         })}{' '}
                         •{' '}
-                        {new Date(d.created_at).toLocaleTimeString('mr-IN', {
+                        {new Date(d.created_at).toLocaleTimeString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
@@ -345,19 +345,19 @@ export default function AllDonationsPage() {
                             <button
                               onClick={() => setCollectingDonation(d)}
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
-                              title="येणे वर्गणी जमा करा"
+                              title={t.collect_vargani}
                             >
                               <Wallet className="w-3.5 h-3.5" />
-                              <span>वर्गणी जमा करा</span>
+                              <span>{t.collect_vargani}</span>
                             </button>
                           )}
                           <button
                             onClick={() => openReceipt(d)}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100/70 border border-orange-200/60 transition cursor-pointer shadow-2xs"
-                            title="पावती पहा / शेअर करा"
+                            title={t.view_receipt}
                           >
                             <Eye className="w-3.5 h-3.5" />
-                            <span>पाहा</span>
+                            <span>{t.view}</span>
                           </button>
                         </div>
                       </td>
@@ -367,9 +367,7 @@ export default function AllDonationsPage() {
               </table>
             ) : (
               <div className="p-12 text-center text-[#6B6459] text-sm">
-                {searchTerm.trim()
-                  ? 'शोधलेल्या निकषांनुसार कोणतीही पावती आढळली नाही.'
-                  : 'अजून कोणतीही पावती जमा झालेली नाही.'}
+                {searchTerm.trim() ? t.no_donations_match : t.no_donations_yet}
               </div>
             )}
           </div>

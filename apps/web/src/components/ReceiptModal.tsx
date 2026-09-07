@@ -132,7 +132,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title="अधिकृत डिजिटल पावती (Digital Receipt)">
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="md" title={selectedLang === 'en' ? 'Official Digital Receipt' : 'अधिकृत डिजिटल पावती'}>
       <div className="flex flex-col items-center text-center space-y-4">
         {/* Success Banner */}
         <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-200 shadow-xs">
@@ -205,12 +205,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               {isCopied ? (
                 <>
                   <Check className="w-4 h-4 text-emerald-600" />
-                  <span className="text-emerald-700 font-bold">कॉपी झाले!</span>
+                  <span className="text-emerald-700 font-bold">{selectedLang === 'en' ? 'Copied!' : 'कॉपी झाले!'}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-4 h-4 text-[#6B6459]" />
-                  <span>मॅसेज कॉपी करा</span>
+                  <span>{selectedLang === 'en' ? 'Copy Message' : 'मॅसेज कॉपी करा'}</span>
                 </>
               )}
             </Button>

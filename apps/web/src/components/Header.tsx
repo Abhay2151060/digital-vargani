@@ -13,28 +13,15 @@ export const Header: React.FC = () => {
   const t = getT(language);
 
   const getRoleLabel = (r: Role | null) => {
-    if (language === Language.ENGLISH) {
-      switch (r) {
-        case Role.ADMIN:
-          return 'Admin';
-        case Role.TREASURER:
-          return 'Treasurer';
-        case Role.VOLUNTEER:
-          return 'Volunteer';
-        default:
-          return '';
-      }
-    } else {
-      switch (r) {
-        case Role.ADMIN:
-          return 'व्यवस्थापक (Admin)';
-        case Role.TREASURER:
-          return 'खजिनदार (Treasurer)';
-        case Role.VOLUNTEER:
-          return 'कार्यकर्ता (Volunteer)';
-        default:
-          return '';
-      }
+    switch (r) {
+      case Role.ADMIN:
+        return t.admin_role;
+      case Role.TREASURER:
+        return t.treasurer_role;
+      case Role.VOLUNTEER:
+        return t.volunteer_role;
+      default:
+        return '';
     }
   };
 

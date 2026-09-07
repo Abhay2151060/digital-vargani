@@ -8,7 +8,7 @@ import { OfflineBanner } from '../../../components/OfflineBanner';
 import { Card, Input, Button } from '@vargani/ui';
 import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
-import { FestivalType, Role, UpdateMandalProfileInput } from '@vargani/types';
+import { FestivalType, Role, UpdateMandalProfileInput, Language } from '@vargani/types';
 import Link from 'next/link';
 import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, QrCode, FileText, ExternalLink, FileCheck, User, KeyRound, AlertCircle, Building } from 'lucide-react';
 import { formatDisplayName } from '../../../lib/format';
@@ -411,9 +411,11 @@ export default function SettingsPage() {
 
       <main className="max-w-3xl mx-auto w-full px-4 pt-6 flex-1 space-y-6">
         <div>
-          <h2 className="text-xl font-extrabold text-[#292118]">{t.settings} (Mandal Profile)</h2>
+          <h2 className="text-xl font-extrabold text-[#292118]">{t.settings}</h2>
           <p className="text-xs text-[#6B6459] mt-0.5">
-            मंडळाचे नाव, लोगो, नोंदणी क्रमांक, पावती प्रिफिक्स आणि पारदर्शकता पर्याय व्यवस्थापित करा.
+            {language === Language.ENGLISH
+              ? 'Manage mandal name, logo, registration number, receipt prefix, and transparency settings.'
+              : 'मंडळाचे नाव, लोगो, नोंदणी क्रमांक, पावती प्रिफिक्स आणि पारदर्शकता पर्याय व्यवस्थापित करा.'}
           </p>
         </div>
 
@@ -442,7 +444,7 @@ export default function SettingsPage() {
             }`}
           >
             <Building className="w-3.5 h-3.5" />
-            <span>मंडळाचे प्रोफाईल (Mandal Profile)</span>
+            <span>{t.mandal_profile}</span>
           </button>
           <button
             type="button"
@@ -454,7 +456,7 @@ export default function SettingsPage() {
             }`}
           >
             <User className="w-3.5 h-3.5" />
-            <span>वापरकर्ता प्रोफाईल (User Profile)</span>
+            <span>{t.user_profile}</span>
           </button>
         </div>
 
@@ -481,13 +483,13 @@ export default function SettingsPage() {
                   <div>
                     <h3 className="text-sm font-bold text-[#292118] flex items-center gap-1.5">
                       <ImageIcon className="w-4 h-4 text-[#F97316]" />
-                      <span>मंडळाचा अधिकृत लोगो (Mandal Logo)</span>
+                      <span>{t.mandal_logo}</span>
                     </h3>
                     <p className="text-xs text-[#6B6459] mt-0.5">
-                      हा लोगो हेडर, पावती व पारदर्शकता पोर्टलवर दिसेल.
+                      {t.mandal_logo_sub}
                     </p>
                     <span className="inline-block mt-1 text-[10px] font-semibold text-orange-700 bg-orange-100/80 px-2 py-0.5 rounded-md border border-orange-200">
-                      {logoUrl ? '✓ कस्टम लोगो निवडला आहे' : '🚩 डीफॉल्ट आयकॉन सक्रिय'}
+                      {logoUrl ? `✓ ${t.custom_logo_selected}` : `🚩 ${t.default_logo_active}`}
                     </span>
                   </div>
                 </div>
@@ -511,7 +513,7 @@ export default function SettingsPage() {
                     className="font-semibold gap-1.5 flex-1 sm:flex-initial"
                   >
                     <Upload className="w-4 h-4 text-[#F97316]" />
-                    <span>{logoUrl ? 'लोगो बदला (Change)' : 'लोगो निवडा (Upload Logo)'}</span>
+                    <span>{logoUrl ? t.change_logo : t.upload_logo}</span>
                   </Button>
 
                   {logoUrl && (
@@ -521,10 +523,10 @@ export default function SettingsPage() {
                       size="sm"
                       onClick={handleRemoveLogo}
                       className="text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-1"
-                      title="लोगो काढा"
+                      title={t.remove}
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span className="hidden sm:inline">काढा</span>
+                      <span className="hidden sm:inline">{t.remove}</span>
                     </Button>
                   )}
                 </div>
@@ -551,13 +553,13 @@ export default function SettingsPage() {
                   <div>
                     <h3 className="text-sm font-bold text-[#292118] flex items-center gap-1.5">
                       <QrCode className="w-4 h-4 text-blue-600" />
-                      <span>मंडळाचा UPI QR कोड (Payment QR Code)</span>
+                      <span>{t.mandal_qr}</span>
                     </h3>
                     <p className="text-xs text-[#6B6459] mt-0.5">
-                      हा QR कोड पावती पाडताना आणि पारदर्शकता पोर्टलवर भाविकांना दिसेल.
+                      {t.mandal_qr_sub}
                     </p>
                     <span className="inline-block mt-1 text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-md border border-blue-200">
-                      {upiQrUrl ? '✓ अधिकृत QR कोड अपलोड आहे' : '⚠️ QR कोड अपलोड केलेला नाही'}
+                      {upiQrUrl ? `✓ ${t.qr_uploaded}` : `⚠️ ${t.qr_not_uploaded}`}
                     </span>
                   </div>
                 </div>
@@ -581,7 +583,7 @@ export default function SettingsPage() {
                     className="font-semibold gap-1.5 flex-1 sm:flex-initial"
                   >
                     <Upload className="w-4 h-4 text-blue-600" />
-                    <span>{upiQrUrl ? 'QR कोड बदला (Change)' : 'QR कोड निवडा (Upload QR)'}</span>
+                    <span>{upiQrUrl ? t.change_qr : t.upload_qr}</span>
                   </Button>
 
                   {upiQrUrl && (
@@ -591,10 +593,10 @@ export default function SettingsPage() {
                       size="sm"
                       onClick={handleRemoveQr}
                       className="text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-1"
-                      title="QR कोड काढा"
+                      title={t.remove}
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span className="hidden sm:inline">काढा</span>
+                      <span className="hidden sm:inline">{t.remove}</span>
                     </Button>
                   )}
                 </div>
@@ -612,13 +614,13 @@ export default function SettingsPage() {
                   <div>
                     <h3 className="text-sm font-bold text-[#292118] flex items-center gap-1.5">
                       <FileCheck className="w-4 h-4 text-emerald-600" />
-                      <span>मंडळाचा अहवाल (Annual / Audit Report)</span>
+                      <span>{t.mandal_ahwal_title || (language === Language.ENGLISH ? 'Mandal Report' : 'मंडळाचा अहवाल')}</span>
                     </h3>
                     <p className="text-xs text-[#6B6459] mt-0.5">
-                      मंडळाचा वार्षिक जमा-खर्च अहवाल / पत्रक (PDF किंवा इमेज स्वरूपात).
+                      {t.mandal_ahwal_sub || (language === Language.ENGLISH ? 'Annual income-expense report / statement (PDF or image).' : 'मंडळाचा वार्षिक जमा-खर्च अहवाल / पत्रक (PDF किंवा इमेज स्वरूपात).')}
                     </p>
                     <span className="inline-block mt-1 text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200">
-                      {ahwalUrl ? '✓ अहवाल फाईल अपलोड आहे' : '⚠️ अहवाल अपलोड केलेला नाही'}
+                      {ahwalUrl ? `✓ ${t.ahwal_uploaded || (language === Language.ENGLISH ? 'Report file uploaded' : 'अहवाल फाईल अपलोड आहे')}` : `⚠️ ${t.ahwal_not_uploaded || (language === Language.ENGLISH ? 'Report not uploaded' : 'अहवाल अपलोड केलेला नाही')}`}
                     </span>
                   </div>
                 </div>
@@ -642,7 +644,7 @@ export default function SettingsPage() {
                     className="font-semibold gap-1.5 flex-1 sm:flex-initial"
                   >
                     <Upload className="w-4 h-4 text-emerald-600" />
-                    <span>{ahwalUrl ? 'अहवाल बदला (Change)' : 'अहवाल निवडा (Upload Ahwal)'}</span>
+                    <span>{ahwalUrl ? (t.change_ahwal || (language === Language.ENGLISH ? 'Change Report' : 'अहवाल बदला')) : (t.upload_ahwal || (language === Language.ENGLISH ? 'Upload Report' : 'अहवाल निवडा'))}</span>
                   </Button>
 
                   {ahwalUrl && (
@@ -654,7 +656,7 @@ export default function SettingsPage() {
                         className="px-2.5 py-1.5 rounded-lg border border-emerald-300 text-xs font-semibold text-emerald-700 hover:bg-emerald-50 flex items-center gap-1 min-h-[36px]"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        <span>पहा</span>
+                        <span>{t.view || (language === Language.ENGLISH ? 'View' : 'पहा')}</span>
                       </a>
                       <Button
                         type="button"
@@ -662,10 +664,10 @@ export default function SettingsPage() {
                         size="sm"
                         onClick={handleRemoveAhwal}
                         className="text-red-600 hover:bg-red-50 hover:text-red-700 font-semibold gap-1"
-                        title="अहवाल काढा"
+                        title={language === Language.ENGLISH ? 'Remove report' : 'अहवाल काढा'}
                       >
                         <Trash2 className="w-4 h-4" />
-                        <span className="hidden sm:inline">काढा</span>
+                        <span className="hidden sm:inline">{t.remove || (language === Language.ENGLISH ? 'Remove' : 'काढा')}</span>
                       </Button>
                     </>
                   )}
@@ -675,8 +677,8 @@ export default function SettingsPage() {
               {/* Ahwal Title Input */}
               <div className="pt-2 border-t border-[#E5E1D8]/60">
                 <Input
-                  label="अहवाल शीर्षक / वर्णन (Report Title)"
-                  placeholder="उदा. वार्षिक अहवाल व जमा-खर्च हिशोब २०२४-२५"
+                  label={t.ahwal_title_label || (language === Language.ENGLISH ? 'Report Title / Description' : 'अहवाल शीर्षक / वर्णन')}
+                  placeholder={language === Language.ENGLISH ? 'e.g. Annual Financial and Activities Report 2024-25' : 'उदा. वार्षिक अहवाल व जमा-खर्च हिशोब २०२४-२५'}
                   value={ahwalTitle}
                   onChange={(e) => setAhwalTitle(e.target.value)}
                 />
@@ -684,8 +686,8 @@ export default function SettingsPage() {
             </div>
 
             <Input
-              label="मंडळाचे अधिकृत नाव (Mandal Name)"
-              placeholder="उदा. श्री शिवनेरी मित्र मंडळ"
+              label={t.mandal_name_label || (language === Language.ENGLISH ? 'Official Mandal Name' : 'मंडळाचे अधिकृत नाव')}
+              placeholder={language === Language.ENGLISH ? 'e.g. Shree Shivneri Mitra Mandal' : 'उदा. श्री शिवनेरी मित्र मंडळ'}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -693,39 +695,39 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="नोंदणी क्रमांक (Reg No / Trust No)"
+                label={t.reg_no_label || (language === Language.ENGLISH ? 'Registration / Trust No.' : 'नोंदणी क्रमांक')}
                 placeholder="MH/2024/PUN/00912"
                 value={regNo}
                 onChange={(e) => setRegNo(e.target.value)}
               />
 
               <div className="space-y-1 text-left">
-                <label className="text-sm font-medium text-[#292118]">उत्सव प्रकार (Festival)</label>
+                <label className="text-sm font-medium text-[#292118]">{t.festival_type_label || (language === Language.ENGLISH ? 'Festival Type' : 'उत्सव प्रकार')}</label>
                 <select
                   value={festivalType}
                   onChange={(e) => setFestivalType(e.target.value as FestivalType)}
                   className="w-full min-h-[48px] rounded-xl border-2 border-[#E5E1D8] bg-white px-3.5 text-base text-[#292118] focus:border-[#F97316] focus:outline-none"
                 >
-                  <option value={FestivalType.GANESHOTSAV}>गणेशोत्सव (Ganeshotsav)</option>
-                  <option value={FestivalType.NAVRATRI}>नवरात्रौत्सव (Navratri)</option>
-                  <option value={FestivalType.SHIV_JAYANTI}>शिवजयंती (Shiv Jayanti)</option>
-                  <option value={FestivalType.DAHI_HANDI}>दहीहंडी (Dahi Handi)</option>
-                  <option value={FestivalType.OTHER}>इतर उत्सव (Other)</option>
+                  <option value={FestivalType.GANESHOTSAV}>{language === Language.ENGLISH ? 'Ganeshotsav' : 'गणेशोत्सव'}</option>
+                  <option value={FestivalType.NAVRATRI}>{language === Language.ENGLISH ? 'Navratri' : 'नवरात्रौत्सव'}</option>
+                  <option value={FestivalType.SHIV_JAYANTI}>{language === Language.ENGLISH ? 'Shiv Jayanti' : 'शिवजयंती'}</option>
+                  <option value={FestivalType.DAHI_HANDI}>{language === Language.ENGLISH ? 'Dahi Handi' : 'दहीहंडी'}</option>
+                  <option value={FestivalType.OTHER}>{language === Language.ENGLISH ? 'Other Festival' : 'इतर उत्सव'}</option>
                 </select>
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="गाव / शहर (City)"
-                placeholder="उदा. पुणे"
+                label={t.city_label || (language === Language.ENGLISH ? 'City / Town' : 'गाव / शहर')}
+                placeholder={language === Language.ENGLISH ? 'e.g. Pune' : 'उदा. पुणे'}
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 required
               />
               <Input
-                label="परिसर / गल्ली (Area / Landmark)"
-                placeholder="उदा. कोथरूड, शिवाजी चौक"
+                label={t.area_label || (language === Language.ENGLISH ? 'Area / Landmark' : 'परिसर / गल्ली')}
+                placeholder={language === Language.ENGLISH ? 'e.g. Kothrud, Shivaji Chowk' : 'उदा. कोथरूड, शिवाजी चौक'}
                 value={area}
                 onChange={(e) => setArea(e.target.value)}
               />
@@ -733,15 +735,15 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
-                label="पावती प्रिफिक्स (Receipt Prefix)"
+                label={t.receipt_prefix_label || (language === Language.ENGLISH ? 'Receipt Prefix' : 'पावती प्रिफिक्स')}
                 placeholder="SSMM"
                 value={receiptPrefix}
                 onChange={(e) => setReceiptPrefix(e.target.value.toUpperCase())}
-                helperText="उदा. SSMM टाकल्यास पावती क्रमांक SSMM-001 असा बनेल."
+                helperText={language === Language.ENGLISH ? 'e.g. Entering SSMM will generate receipts like SSMM-001.' : 'उदा. SSMM टाकल्यास पावती क्रमांक SSMM-001 असा बनेल.'}
                 required
               />
               <Input
-                label="UPI ID / VPA (Optional)"
+                label={language === Language.ENGLISH ? 'UPI ID / VPA (Optional)' : 'UPI ID / VPA (पर्यायी)'}
                 placeholder="mandal@upi"
                 value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
@@ -749,19 +751,19 @@ export default function SettingsPage() {
             </div>
 
             <Input
-              label="क्विक-अमाऊंट चिप्स (Preset Amount Chips ₹)"
+              label={t.preset_amounts_label || (language === Language.ENGLISH ? 'Preset Amount Chips (₹)' : 'क्विक-अमाऊंट चिप्स (₹)')}
               placeholder="101, 251, 501, 1001, 2101, 5001"
               value={presetAmountsStr}
               onChange={(e) => setPresetAmountsStr(e.target.value)}
-              helperText="स्वल्पविराम (comma) देऊन रक्कम टाका, हे कार्यकर्त्यांच्या स्क्रीनवर दिसतील."
+              helperText={language === Language.ENGLISH ? 'Enter comma-separated amounts. These will appear on volunteers receipt screens.' : 'स्वल्पविराम देऊन रक्कम टाका, हे कार्यकर्त्यांच्या स्क्रीनवर दिसतील.'}
             />
 
             {/* Privacy Setting */}
             <div className="p-4 bg-[#F3F1EC] rounded-xl border border-[#E5E1D8] flex items-center justify-between">
               <div>
-                <span className="text-sm font-bold text-[#292118]">सार्वजनिक पारदर्शकता गोपनीयता</span>
+                <span className="text-sm font-bold text-[#292118]">{t.privacy_setting_title || (language === Language.ENGLISH ? 'Public Transparency Privacy' : 'सार्वजनिक पारदर्शकता गोपनीयता')}</span>
                 <p className="text-xs text-[#6B6459] mt-0.5">
-                  पारदर्शकता पोर्टलवर देणगीदारांचे मोबाईल नंबर गोपनीय ठेवा (उदा. 98220*****)
+                  {t.privacy_setting_sub || (language === Language.ENGLISH ? 'Keep donor phone numbers masked on transparency portal (e.g. 98220*****).' : 'पारदर्शकता पोर्टलवर देणगीदारांचे मोबाईल नंबर गोपनीय ठेवा (उदा. ९८२२०*****)')}
                 </p>
               </div>
               <input
@@ -782,7 +784,7 @@ export default function SettingsPage() {
                 className="font-bold gap-2 cursor-pointer"
               >
                 <Save className="w-5 h-5" />
-                <span>सेटिंग्ज सेव्ह करा</span>
+                <span>{t.save_settings || (language === Language.ENGLISH ? 'Save Settings' : 'सेटिंग्ज सेव्ह करा')}</span>
               </Button>
             </div>
           </form>
@@ -804,7 +806,7 @@ export default function SettingsPage() {
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="text-[11px] font-bold text-[#7C2D12] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-200">
-                    {role}
+                    {role === Role.ADMIN ? t.admin_role : role === Role.TREASURER ? t.treasurer_role : t.volunteer_role}
                   </span>
                   {activeMandal?.name && (
                     <span className="text-xs text-[#6B6459] truncate">
@@ -817,34 +819,34 @@ export default function SettingsPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
               <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-                <span className="text-[#6B6459] font-medium block">पूर्ण नाव (Full Name)</span>
+                <span className="text-[#6B6459] font-medium block">{t.full_name_label || (language === Language.ENGLISH ? 'Full Name' : 'पूर्ण नाव')}</span>
                 <span className="font-bold text-[#292118] text-sm mt-0.5 block">
                   {userDisplayName}
                 </span>
               </div>
 
               <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-                <span className="text-[#6B6459] font-medium block">मोबाईल नंबर (Phone)</span>
+                <span className="text-[#6B6459] font-medium block">{t.mobile_label || (language === Language.ENGLISH ? 'Mobile Number' : 'मोबाईल नंबर')}</span>
                 <span className="font-bold text-[#292118] text-sm mt-0.5 block font-mono">
-                  {user?.phone || 'नोंदवलेला नाही'}
+                  {user?.phone || (language === Language.ENGLISH ? 'Not registered' : 'नोंदवलेला नाही')}
                 </span>
               </div>
 
               <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-                <span className="text-[#6B6459] font-medium block">सक्रिय मंडळ (Mandal)</span>
+                <span className="text-[#6B6459] font-medium block">{t.active_mandal_label || (language === Language.ENGLISH ? 'Active Mandal' : 'सक्रिय मंडळ')}</span>
                 <span className="font-bold text-[#292118] text-sm mt-0.5 block truncate">
                   {activeMandal?.name || '—'}
                 </span>
               </div>
 
               <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-                <span className="text-[#6B6459] font-medium block">भाषा (Preferred Language)</span>
+                <span className="text-[#6B6459] font-medium block">{t.preferred_language_label || (language === Language.ENGLISH ? 'Preferred Language' : 'भाषा')}</span>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as any)}
                   className="mt-1 bg-white border border-[#E5E1D8] rounded-lg px-2 py-1 text-xs font-semibold text-[#292118] focus:outline-none cursor-pointer"
                 >
-                  <option value="mr">मराठी (Marathi)</option>
+                  <option value="mr">मराठी</option>
                   <option value="en">English</option>
                 </select>
               </div>
@@ -855,10 +857,10 @@ export default function SettingsPage() {
           <Card variant="default" padding="lg" className="border border-[#E5E1D8] shadow-xs rounded-2xl space-y-4">
             <div className="flex items-center gap-2">
               <KeyRound className="w-5 h-5 text-[#7C2D12]" />
-              <h3 className="text-base font-bold text-[#292118]">पासवर्ड बदला (Change Password)</h3>
+              <h3 className="text-base font-bold text-[#292118]">{t.change_password || (language === Language.ENGLISH ? 'Change Password' : 'पासवर्ड बदला')}</h3>
             </div>
             <p className="text-xs text-[#6B6459]">
-              खाते सुरक्षित ठेवण्यासाठी नवीन पासवर्ड सेट करा.
+              {t.change_password_card_sub || (language === Language.ENGLISH ? 'Set a new password to keep your account secure.' : 'खाते सुरक्षित ठेवण्यासाठी नवीन पासवर्ड सेट करा.')}
             </p>
 
             {passSuccessMsg && (
@@ -877,27 +879,27 @@ export default function SettingsPage() {
 
             <form onSubmit={handleChangePassword} className="space-y-3.5">
               <Input
-                label="सध्याचा पासवर्ड (Current Password)"
+                label={t.current_password_label || (language === Language.ENGLISH ? 'Current Password' : 'सध्याचा पासवर्ड')}
                 type="password"
-                placeholder="सध्याचा पासवर्ड टाका"
+                placeholder={language === Language.ENGLISH ? 'Enter current password' : 'सध्याचा पासवर्ड टाका'}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
               />
 
               <Input
-                label="नवीन पासवर्ड (New Password - किमान ६ अक्षरे)"
+                label={t.new_password_label || (language === Language.ENGLISH ? 'New Password (min 6 characters)' : 'नवीन पासवर्ड (किमान ६ अक्षरे)')}
                 type="password"
-                placeholder="नवीन पासवर्ड टाका"
+                placeholder={language === Language.ENGLISH ? 'Enter new password' : 'नवीन पासवर्ड टाका'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
               />
 
               <Input
-                label="नवीन पासवर्ड पुन्हा टाका (Confirm New Password)"
+                label={t.confirm_new_password_label || (language === Language.ENGLISH ? 'Confirm New Password' : 'नवीन पासवर्ड पुन्हा टाका')}
                 type="password"
-                placeholder="नवीन पासवर्ड पुन्हा प्रविष्ट करा"
+                placeholder={language === Language.ENGLISH ? 'Re-enter new password' : 'नवीन पासवर्ड पुन्हा प्रविष्ट करा'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -911,7 +913,7 @@ export default function SettingsPage() {
                 isLoading={isChangingPass}
                 className="font-bold cursor-pointer"
               >
-                <span>पासवर्ड अपडेट करा</span>
+                <span>{t.update_password_btn_label || (language === Language.ENGLISH ? 'Update Password' : 'पासवर्ड अपडेट करा')}</span>
               </Button>
             </form>
           </Card>

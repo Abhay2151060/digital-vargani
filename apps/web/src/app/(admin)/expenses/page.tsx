@@ -55,15 +55,15 @@ export default function ExpensesPage() {
     e.preventDefault();
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('कृपया वैध खर्च रक्कम टाका');
+      setError(language === Language.ENGLISH ? 'Please enter a valid expense amount' : 'कृपया वैध खर्च रक्कम टाका');
       return;
     }
     if (!category.trim()) {
-      setError('कृपया खर्च वर्गवारी टाका (Category is required)');
+      setError(language === Language.ENGLISH ? 'Category is required' : 'कृपया खर्च वर्गवारी टाका');
       return;
     }
     if (!description.trim()) {
-      setError('खर्चाचा तपशील आवश्यक आहे');
+      setError(language === Language.ENGLISH ? 'Description is required' : 'खर्चाचा तपशील आवश्यक आहे');
       return;
     }
 
@@ -161,9 +161,9 @@ export default function ExpensesPage() {
       <main className="max-w-5xl mx-auto w-full px-4 pt-6 flex-1 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-xl font-extrabold text-[#292118]">{t.expenses} (Festival Expenses)</h2>
+            <h2 className="text-xl font-extrabold text-[#292118]">{t.expenses}</h2>
             <p className="text-xs text-[#6B6459] mt-0.5">
-              मंडपाचे डेकोरेशन, मूर्ती, ध्वनीव्यवस्था आणि इतर खर्चाची पावतीसह नोंद व मंजुरी.
+              {t.festival_expenses_sub}
             </p>
           </div>
 
@@ -176,7 +176,7 @@ export default function ExpensesPage() {
               className="font-bold gap-1.5 rounded-xl border-amber-600/60 text-amber-900 bg-amber-50/50 hover:bg-amber-100/60 cursor-pointer"
             >
               <Wallet className="w-4 h-4 text-amber-700" />
-              <span>रोख खर्च (Cash Expense)</span>
+              <span>{t.cash_expense}</span>
             </Button>
             <Button
               variant="primary"
@@ -185,7 +185,7 @@ export default function ExpensesPage() {
               className="font-bold gap-1.5 rounded-xl shadow-xs cursor-pointer"
             >
               <QrCode className="w-4 h-4" />
-              <span>UPI खर्च (UPI Expense)</span>
+              <span>{t.upi_expense}</span>
             </Button>
           </div>
         </div>
@@ -193,64 +193,64 @@ export default function ExpensesPage() {
         {/* 4 Expense Summary Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Card variant="default" padding="md" className="border-l-4 border-l-emerald-600 shadow-2xs">
-            <span className="text-xs font-semibold text-[#6B6459] uppercase">मंजूर खर्च (Approved)</span>
+            <span className="text-xs font-semibold text-[#6B6459] uppercase">{t.approved_expenses_title}</span>
             <p className="text-xl sm:text-2xl font-black text-emerald-800 mt-1 tabular-nums">
               ₹{totalApproved.toLocaleString('en-IN')}
             </p>
-            <p className="text-[10px] text-emerald-700 mt-0.5 font-medium">पारदर्शकता पोर्टलवर समाविष्ट</p>
+            <p className="text-[10px] text-emerald-700 mt-0.5 font-medium">{t.net_balance_verified}</p>
           </Card>
 
           <Card variant="default" padding="md" className="border-l-4 border-l-rose-500 shadow-2xs">
-            <span className="text-xs font-semibold text-[#6B6459] uppercase">मंजुरी प्रलंबित (Pending)</span>
+            <span className="text-xs font-semibold text-[#6B6459] uppercase">{t.pending_approval_title}</span>
             <p className="text-xl sm:text-2xl font-black text-rose-700 mt-1 tabular-nums">
               ₹{totalPending.toLocaleString('en-IN')}
             </p>
-            <p className="text-[10px] text-rose-600 mt-0.5 font-medium">Admin मंजुरीची आवश्यकता</p>
+            <p className="text-[10px] text-rose-600 mt-0.5 font-medium">{t.pending_verification_badge}</p>
           </Card>
 
           <Card variant="default" padding="md" className="border-l-4 border-l-amber-600 shadow-2xs">
-            <span className="text-xs font-semibold text-[#6B6459] uppercase">रोख खर्च (Paid in Cash)</span>
+            <span className="text-xs font-semibold text-[#6B6459] uppercase">{t.cash_expense}</span>
             <p className="text-xl sm:text-2xl font-black text-amber-800 mt-1 tabular-nums">
               ₹{totalCashPaid.toLocaleString('en-IN')}
             </p>
-            <p className="text-[10px] text-amber-700 mt-0.5 font-medium">रोख रक्कम स्वरूपात दिलेला</p>
+            <p className="text-[10px] text-amber-700 mt-0.5 font-medium">{t.paid_in_cash}</p>
           </Card>
 
           <Card variant="default" padding="md" className="border-l-4 border-l-sky-600 shadow-2xs">
-            <span className="text-xs font-semibold text-[#6B6459] uppercase">UPI खर्च (Paid via UPI)</span>
+            <span className="text-xs font-semibold text-[#6B6459] uppercase">{t.upi_expense}</span>
             <p className="text-xl sm:text-2xl font-black text-sky-800 mt-1 tabular-nums">
               ₹{totalUpiPaid.toLocaleString('en-IN')}
             </p>
-            <p className="text-[10px] text-sky-700 mt-0.5 font-medium">थेट बँक/QR द्वारे दिलेला</p>
+            <p className="text-[10px] text-sky-700 mt-0.5 font-medium">{t.paid_via_upi}</p>
           </Card>
         </div>
 
         {/* Expenses List */}
         <Card variant="default" padding="none" className="shadow-xs overflow-hidden rounded-2xl border border-[#E5E1D8]">
           <div className="p-4 border-b border-[#E5E1D8] flex items-center justify-between">
-            <h3 className="text-base font-bold text-[#292118]">खर्च नोंदींची यादी (Expenses List)</h3>
-            <span className="text-xs text-[#6B6459] font-semibold">{expenses.length} नोंदी</span>
+            <h3 className="text-base font-bold text-[#292118]">{t.expenses_list_title}</h3>
+            <span className="text-xs text-[#6B6459] font-semibold">{expenses.length} {t.records_suffix}</span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]">
                 <tr>
-                  <th className="px-4 py-3">वर्गवारी (Category)</th>
-                  <th className="px-4 py-3">तपशील (Description)</th>
-                  <th className="px-4 py-3">पेमेंट मोड</th>
-                  <th className="px-4 py-3 text-right">रक्कम (₹)</th>
-                  <th className="px-4 py-3">नोंदवणारा</th>
-                  <th className="px-4 py-3 text-center">बिल पावती</th>
-                  <th className="px-4 py-3 text-center">स्थिती (Status)</th>
-                  {isAdmin && <th className="px-4 py-3 text-center">Admin कृती</th>}
+                  <th className="px-4 py-3">{t.category}</th>
+                  <th className="px-4 py-3">{t.description}</th>
+                  <th className="px-4 py-3">{t.payment_mode}</th>
+                  <th className="px-4 py-3 text-right">{t.amount}</th>
+                  <th className="px-4 py-3">{t.recorded_by}</th>
+                  <th className="px-4 py-3 text-center">{t.bill_receipt}</th>
+                  <th className="px-4 py-3 text-center">{t.status}</th>
+                  {isAdmin && <th className="px-4 py-3 text-center">{t.admin_action}</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E1D8]/70">
                 {expenses.length === 0 ? (
                   <tr>
                     <td colSpan={isAdmin ? 8 : 7} className="px-4 py-8 text-center text-[#A8A297]">
-                      अद्याप कोणताही खर्च नोंदवलेला नाही
+                      {t.no_expenses_yet}
                     </td>
                   </tr>
                 ) : (
@@ -270,7 +270,7 @@ export default function ExpensesPage() {
                               : 'bg-amber-50 text-amber-700 border-amber-200'
                           }`}
                         >
-                          {e.payment_mode === PaymentMode.UPI ? 'UPI' : 'CASH'}
+                          {e.payment_mode === PaymentMode.UPI ? t.upi : t.cash}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right font-black text-[#7C2D12] tabular-nums">
@@ -286,7 +286,7 @@ export default function ExpensesPage() {
                             className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline font-semibold"
                           >
                             <ImageIcon className="w-3.5 h-3.5" />
-                            <span>पहा</span>
+                            <span>{t.view}</span>
                           </a>
                         ) : (
                           <span className="text-[#A8A297] text-xs">—</span>
@@ -294,11 +294,11 @@ export default function ExpensesPage() {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {e.status === ExpenseStatus.APPROVED ? (
-                          <StatusBadge status="success" label="Approved" size="sm" />
+                          <StatusBadge status="success" label={t.approved} size="sm" />
                         ) : e.status === ExpenseStatus.REJECTED ? (
-                          <StatusBadge status="error" label="Rejected" size="sm" />
+                          <StatusBadge status="error" label={t.rejected} size="sm" />
                         ) : (
-                          <StatusBadge status="warning" label="Pending" size="sm" />
+                          <StatusBadge status="warning" label={t.pending_status} size="sm" />
                         )}
                       </td>
                       {isAdmin && (
@@ -307,22 +307,22 @@ export default function ExpensesPage() {
                             <div className="flex items-center justify-center gap-1.5">
                               <button
                                 onClick={() => handleUpdateStatus(e.id, ExpenseStatus.APPROVED)}
-                                title="Approve"
+                                title={t.approve}
                                 className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition cursor-pointer"
                               >
-                                मंजूर
+                                {t.approve}
                               </button>
                               <button
                                 onClick={() => handleUpdateStatus(e.id, ExpenseStatus.REJECTED)}
-                                title="Reject"
+                                title={t.reject}
                                 className="px-2.5 py-1 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700 transition cursor-pointer"
                               >
-                                नामंजूर
+                                {t.reject}
                               </button>
                             </div>
                           ) : (
                             <span className="text-xs text-[#6B6459]">
-                              {e.approved_by_name ? `By ${e.approved_by_name}` : 'Settled'}
+                              {e.approved_by_name ? `By ${e.approved_by_name}` : t.approved}
                             </span>
                           )}
                         </td>
@@ -340,7 +340,7 @@ export default function ExpensesPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={paymentMode === PaymentMode.UPI ? 'नवीन UPI खर्च नोंदवा' : 'नवीन रोख (Cash) खर्च नोंदवा'}
+        title={paymentMode === PaymentMode.UPI ? t.record_new_upi_expense : t.record_new_cash_expense}
       >
         <form onSubmit={handleCreateExpense} className="space-y-4">
           {error && (
@@ -351,7 +351,7 @@ export default function ExpensesPage() {
 
           {/* Payment Mode Selector */}
           <div className="space-y-1.5 text-left">
-            <label className="text-xs font-bold text-[#6B6459] uppercase">पेमेंट मोड (Payment Mode)</label>
+            <label className="text-xs font-bold text-[#6B6459] uppercase">{t.payment_mode}</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -363,7 +363,7 @@ export default function ExpensesPage() {
                 }`}
               >
                 <Wallet className="w-3.5 h-3.5 text-amber-700" />
-                <span>रोख (Cash)</span>
+                <span>{t.cash}</span>
               </button>
 
               <button
@@ -376,38 +376,38 @@ export default function ExpensesPage() {
                 }`}
               >
                 <QrCode className="w-3.5 h-3.5 text-sky-700" />
-                <span>UPI / QR कोड</span>
+                <span>{t.upi}</span>
               </button>
             </div>
           </div>
 
           <Input
-            label="खर्च वर्गवारी (Category)"
-            placeholder="उदा. मंडप डेकोरेशन, जनरेटर डिझेल, मूर्ती, साऊंड सिस्टीम"
+            label={t.category}
+            placeholder={language === Language.ENGLISH ? 'e.g. Mandap decoration, Generator, Sound system' : 'उदा. मंडप डेकोरेशन, जनरेटर डिझेल, मूर्ती, साऊंड सिस्टीम'}
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             required
           />
 
           <Input
-            label="खर्च रक्कम (₹)"
+            label={t.amount}
             type="number"
-            placeholder="उदा. 5000"
+            placeholder="5000"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
           />
 
           <Input
-            label="तपशील / कोणाला दिले (Description)"
-            placeholder="उदा. मंडप advance / जनरेटर डिझेल"
+            label={t.description}
+            placeholder={language === Language.ENGLISH ? 'e.g. Mandap advance / generator diesel' : 'उदा. मंडप advance / जनरेटर डिझेल'}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
           />
 
           <Input
-            label="बिल पावती फोटो URL (Optional Bill Photo Link)"
+            label={language === Language.ENGLISH ? 'Bill / Receipt Photo URL (Optional)' : 'बिल पावती फोटो URL (ऐच्छिक)'}
             placeholder="https://example.com/bill.jpg"
             value={billUrl}
             onChange={(e) => setBillUrl(e.target.value)}
@@ -422,7 +422,7 @@ export default function ExpensesPage() {
               isLoading={isSubmitting}
               className="font-bold cursor-pointer"
             >
-              <span>{paymentMode === PaymentMode.UPI ? 'UPI खर्च सादर करा' : 'रोख खर्च सादर करा'}</span>
+              <span>{paymentMode === PaymentMode.UPI ? t.record_new_upi_expense : t.record_new_cash_expense}</span>
             </Button>
           </div>
         </form>

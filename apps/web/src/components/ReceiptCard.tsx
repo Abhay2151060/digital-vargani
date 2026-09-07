@@ -23,27 +23,29 @@ export interface ReceiptData {
 
 const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
   mr: {
-    receiptNo: 'पावती क्र. (Receipt no.)',
-    date: 'दिनांक (Date)',
-    donor: 'देणगीदार (Donor)',
-    mode: 'पेमेंट मोड (Mode)',
-    amount: 'रक्कम (Amount)',
+    receiptNo: 'पावती क्र.',
+    date: 'दिनांक',
+    donor: 'देणगीदार',
+    mode: 'पेमेंट पद्धत',
+    amount: 'रक्कम',
     verifyHint: 'पावती ऑनलाईन तपासण्यासाठी स्कॅन करा किंवा खालील लिंकला भेट द्या.',
     deityDefault: '॥ श्री गणेशाय नमः ॥',
+    officialBadge: 'अधिकृत देणगी पावती',
   },
   en: {
-    receiptNo: 'Receipt no.',
+    receiptNo: 'Receipt No.',
     date: 'Date',
     donor: 'Donor',
-    mode: 'Mode',
+    mode: 'Payment Mode',
     amount: 'Amount',
     verifyHint: 'Scan to verify this receipt online, or visit the link below.',
     deityDefault: '|| Shree Ganeshay Namah ||',
+    officialBadge: 'Official Donation Receipt',
   },
 };
 
 const PAYMENT_MODE_LABELS: Record<ReceiptLanguage, Record<PaymentMode, string>> = {
-  mr: { CASH: 'रोख (Cash)', UPI: 'यूपीआय (UPI)', PENDING: 'प्रलंबित (Pending)' },
+  mr: { CASH: 'रोख', UPI: 'यूपीआय', PENDING: 'प्रलंबित' },
   en: { CASH: 'Cash', UPI: 'UPI', PENDING: 'Pending' },
 };
 
@@ -103,7 +105,7 @@ export const ReceiptCard: React.FC<{ data: ReceiptData; className?: string }> = 
         </p>
 
         <div className="mt-1 inline-flex items-center gap-1 bg-white/10 text-orange-200 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-white/15">
-          <span>अधिकृत देणगी पावती</span>
+          <span>{t.officialBadge}</span>
         </div>
       </div>
 

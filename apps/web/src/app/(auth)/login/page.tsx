@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { Input, Button, Card, Modal } from '@vargani/ui';
-import { Role } from '@vargani/types';
+import { Role, Language } from '@vargani/types';
 import { User, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
 import { getT } from '../../../lib/i18n';
 
@@ -66,7 +66,7 @@ export default function LoginPage() {
         redirectToRolePage();
       }
     } catch (err: any) {
-      setError(err.message || 'अवैध नाव/मोबाईल किंवा पासवर्ड. कृपया पुन्हा तपासा. (Invalid Name/Phone or Password)');
+      setError(err.message || t.invalid_login_error);
     } finally {
       setIsLoading(false);
     }
@@ -75,11 +75,11 @@ export default function LoginPage() {
   const handleChangePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || newPassword.length < 6) {
-      setChangePassError('नवीन पासवर्ड किमान ६ अक्षरांचा असावा');
+      setChangePassError(language === Language.ENGLISH ? 'New password must be at least 6 characters' : 'नवीन पासवर्ड किमान ६ अक्षरांचा असावा');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setChangePassError('दोन्ही पासवर्ड जुळत नाहीत');
+      setChangePassError(language === Language.ENGLISH ? 'Passwords do not match' : 'दोन्ही पासवर्ड जुळत नाहीत');
       return;
     }
 
@@ -90,7 +90,7 @@ export default function LoginPage() {
       setShowChangeModal(false);
       redirectToRolePage();
     } catch (err: any) {
-      setChangePassError(err.message || 'पासवर्ड बदलताना त्रुटी आली');
+      setChangePassError(err.message || (language === Language.ENGLISH ? 'Error changing password' : 'पासवर्ड बदलताना त्रुटी आली'));
     } finally {
       setIsChangingPass(false);
     }
@@ -124,7 +124,7 @@ export default function LoginPage() {
               {mounted ? t.login_title : 'मंडळ लॉगिन'}
             </h2>
             <span className="text-[11px] font-semibold text-[#8C827A] bg-[#F3F1EC] px-2.5 py-1 rounded-full border border-[#E5E1D8]">
-              पासवर्ड लॉगिन
+              {mounted ? t.password_login_badge : 'पासवर्ड लॉगिन'}
             </span>
           </div>
 
@@ -137,9 +137,9 @@ export default function LoginPage() {
           <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
             <div>
               <Input
-                label={mounted ? t.name_or_phone_label || 'पूर्ण नाव किंवा मोबाईल नंबर' : 'पूर्ण नाव किंवा मोबाईल नंबर'}
+                label={mounted ? t.name_or_phone_label : 'पूर्ण नाव किंवा मोबाईल नंबर'}
                 type="text"
-                placeholder={mounted ? t.name_or_phone_placeholder || 'उदा. धीरज कांबळे किंवा 9822012345' : 'उदा. धीरज कांबळे किंवा 9822012345'}
+                placeholder={mounted ? t.name_or_phone_placeholder : 'उदा. धीरज कांबळे किंवा 9822012345'}
                 value={nameOrPhone}
                 onChange={(e) => setNameOrPhone(e.target.value)}
                 leftIcon={<User className="w-4 h-4" />}
@@ -151,9 +151,9 @@ export default function LoginPage() {
             <div>
               <div className="relative">
                 <Input
-                  label={mounted ? t.password_label || 'पासवर्ड (Password)' : 'पासवर्ड (Password)'}
+                  label={mounted ? t.password_label : 'पासवर्ड'}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={mounted ? t.password_placeholder || 'आपला पासवर्ड टाका' : 'आपला पासवर्ड टाका'}
+                  placeholder={mounted ? t.password_placeholder : 'आपला पासवर्ड टाका'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   leftIcon={<Lock className="w-4 h-4" />}
@@ -179,14 +179,14 @@ export default function LoginPage() {
               isLoading={isLoading}
               className="font-bold gap-2 shadow-md shadow-orange-500/20 cursor-pointer"
             >
-              <span>{mounted ? t.login_btn || 'लॉगिन करा' : 'लॉगिन करा'}</span>
+              <span>{mounted ? t.login_btn : 'लॉगिन करा'}</span>
               <ArrowRight className="w-4 h-4" />
             </Button>
           </form>
 
           <div className="mt-4 pt-3 border-t border-[#E5E1D8] text-center">
             <p className="text-[11px] text-[#8C827A]">
-              नवीन खाते तयार करण्यासाठी कृपया आपल्या मंडळाच्या अध्यक्षांशी (Admin) संपर्क साधा.
+              {mounted ? t.contact_admin_help : 'नवीन खाते तयार करण्यासाठी कृपया आपल्या मंडळाच्या अध्यक्षांशी संपर्क साधा.'}
             </p>
           </div>
         </Card>
@@ -196,13 +196,13 @@ export default function LoginPage() {
       <Modal
         isOpen={showChangeModal}
         onClose={handleSkipPasswordChange}
-        title={mounted ? t.change_password_title || 'पहिल्या लॉगिनसाठी पासवर्ड बदला' : 'पहिल्या लॉगिनसाठी पासवर्ड बदला'}
+        title={mounted ? t.change_password_title : 'पहिल्या लॉगिनसाठी पासवर्ड बदला'}
       >
         <div className="space-y-4">
           <div className="flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
             <ShieldCheck className="w-5 h-5 text-[#F97316] shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold">सुरक्षा सूचना</p>
+              <p className="font-bold">{mounted ? t.security_notice : 'सुरक्षा सूचना'}</p>
               <p className="mt-0.5 text-amber-700">
                 {mounted ? t.change_password_desc : 'सुरक्षेसाठी कृपया आपला डिफॉल्ट पासवर्ड बदलून नवीन पासवर्ड सेट करा.'}
               </p>
@@ -217,7 +217,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleChangePasswordSubmit} className="space-y-3.5">
             <Input
-              label={mounted ? t.current_password || 'चालू पासवर्ड' : 'चालू पासवर्ड'}
+              label={mounted ? t.current_password : 'चालू पासवर्ड'}
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
@@ -227,7 +227,7 @@ export default function LoginPage() {
 
             <div className="relative">
               <Input
-                label={mounted ? t.new_password || 'नवीन पासवर्ड (किमान ६ अक्षरे)' : 'नवीन पासवर्ड (किमान ६ अक्षरे)'}
+                label={mounted ? t.new_password : 'नवीन पासवर्ड (किमान ६ अक्षरे)'}
                 type={showNewPassword ? 'text' : 'password'}
                 placeholder="उदा. MyPass@2026"
                 value={newPassword}
@@ -246,9 +246,9 @@ export default function LoginPage() {
             </div>
 
             <Input
-              label={mounted ? t.confirm_new_password || 'नवीन पासवर्ड पुन्हा टाका' : 'नवीन पासवर्ड पुन्हा टाका'}
+              label={mounted ? t.confirm_new_password : 'नवीन पासवर्ड पुन्हा टाका'}
               type="password"
-              placeholder="नवीन पासवर्ड पुन्हा टाका"
+              placeholder={language === Language.ENGLISH ? 'Confirm new password' : 'नवीन पासवर्ड पुन्हा टाका'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               leftIcon={<KeyRound className="w-4 h-4" />}
@@ -264,7 +264,7 @@ export default function LoginPage() {
                 isLoading={isChangingPass}
                 className="font-bold"
               >
-                {mounted ? t.update_password_btn || 'पासवर्ड बदला व पुढे जा' : 'पासवर्ड बदला व पुढे जा'}
+                {mounted ? t.update_password_btn : 'पासवर्ड बदला व पुढे जा'}
               </Button>
               <Button
                 type="button"
@@ -273,7 +273,7 @@ export default function LoginPage() {
                 fullWidth
                 onClick={handleSkipPasswordChange}
               >
-                नंतर बदला (Skip)
+                {mounted ? t.skip : 'नंतर बदला'}
               </Button>
             </div>
           </form>

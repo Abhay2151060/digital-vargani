@@ -5,6 +5,7 @@ import { Wallet, QrCode, X, CheckCircle2, Copy, Check } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../lib/api-client';
+import { getT } from '../lib/i18n';
 
 interface CollectPendingModalProps {
   isOpen: boolean;
@@ -25,7 +26,8 @@ export function CollectPendingModal({
   donation,
   onSuccess,
 }: CollectPendingModalProps) {
-  const { activeMandal } = useAuth();
+  const { activeMandal, language } = useAuth();
+  const t = getT(language);
   const [paymentMode, setPaymentMode] = useState<'CASH' | 'UPI'>('UPI');
   const [paymentRef, setPaymentRef] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -109,7 +111,7 @@ export function CollectPendingModal({
       onClose();
     } catch (err: any) {
       console.error('Failed to collect pending donation:', err);
-      setError(err.message || 'वर्गणी जमा करण्यात त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
+      setError(err.message || t.collect_error);
     } finally {
       setIsSubmitting(false);
     }
@@ -123,9 +125,9 @@ export function CollectPendingModal({
           <div>
             <h3 className="text-base font-extrabold text-[#292118] flex items-center gap-2">
               <Wallet className="w-5 h-5 text-amber-600" />
-              <span>येणे वर्गणी जमा करा (Collect Pending)</span>
+              <span>{t.collect_pending_title}</span>
             </h3>
-            <p className="text-xs text-[#6B6459] mt-0.5">देणगीदाराकडून आलेली रक्कम जमा निश्चित करा</p>
+            <p className="text-xs text-[#6B6459] mt-0.5">{t.collect_pending_sub}</p>
           </div>
           <button
             onClick={onClose}
@@ -138,21 +140,21 @@ export function CollectPendingModal({
         {/* Donation Details Card */}
         <div className="bg-[#FAF9F6] p-3.5 rounded-2xl border border-[#E5E1D8] space-y-1">
           <div className="flex justify-between items-center text-xs">
-            <span className="text-[#6B6459]">देणगीदार:</span>
+            <span className="text-[#6B6459]">{t.donor}:</span>
             <span className="font-bold text-[#292118]">{donation.donor_name}</span>
           </div>
           <div className="flex justify-between items-center text-xs">
-            <span className="text-[#6B6459]">पावती क्र:</span>
+            <span className="text-[#6B6459]">{t.receipt_no}:</span>
             <span className="font-mono font-bold text-[#7C2D12]">#{donation.receipt_number}</span>
           </div>
           {donation.flat_wing && (
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[#6B6459]">फ्लॅट / विंग:</span>
+              <span className="text-[#6B6459]">{t.flat_wing}:</span>
               <span className="text-[#292118]">{donation.flat_wing}</span>
             </div>
           )}
           <div className="flex justify-between items-center text-sm pt-1 border-t border-[#E5E1D8]/60">
-            <span className="font-bold text-[#292118]">रक्कम:</span>
+            <span className="font-bold text-[#292118]">{t.amount}:</span>
             <span className="text-lg font-black text-[#7C2D12] tabular-nums">
               ₹{parseFloat(String(donation.amount)).toLocaleString('en-IN')}/-
             </span>
@@ -161,7 +163,7 @@ export function CollectPendingModal({
 
         {/* Payment Mode Selection */}
         <div className="space-y-2">
-          <label className="text-xs font-bold text-[#292118] block">भरणा प्रकार निवडा (Payment Mode)</label>
+          <label className="text-xs font-bold text-[#292118] block">{t.select_payment_mode}</label>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -173,7 +175,7 @@ export function CollectPendingModal({
               }`}
             >
               <QrCode className="w-5 h-5 mx-auto mb-1" />
-              <span className="text-xs block">UPI द्वारे</span>
+              <span className="text-xs block">{t.via_upi}</span>
             </button>
             <button
               type="button"
@@ -185,7 +187,7 @@ export function CollectPendingModal({
               }`}
             >
               <Wallet className="w-5 h-5 mx-auto mb-1" />
-              <span className="text-xs block">रोख (Cash)</span>
+              <span className="text-xs block">{t.via_cash}</span>
             </button>
           </div>
         </div>
@@ -197,7 +199,7 @@ export function CollectPendingModal({
               <div className="flex items-center gap-1.5 text-xs font-bold text-[#7C2D12]">
                 <QrCode className="w-4 h-4 text-[#C2410C]" />
                 <span>
-                  {adminQrUrl ? 'मंडळाचा अधिकृत UPI QR कोड' : 'स्कॅन करून भरा (Scan & Pay)'}
+                  {adminQrUrl ? t.mandal_official_qr : t.scan_to_pay}
                 </span>
               </div>
               <span className="text-xs font-black text-[#7C2D12] bg-white px-2.5 py-0.5 rounded-full border border-orange-200 shadow-2xs">
@@ -223,7 +225,7 @@ export function CollectPendingModal({
                 ) : (
                   <div className="w-44 h-44 flex flex-col items-center justify-center bg-gray-50 rounded-xl text-xs text-gray-400">
                     <QrCode className="w-8 h-8 mb-1 animate-pulse text-orange-400" />
-                    <span>QR कोड लोड होत आहे...</span>
+                    <span>{t.qr_loading}</span>
                   </div>
                 )}
               </div>
@@ -231,11 +233,11 @@ export function CollectPendingModal({
               {adminQrUrl ? (
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-200 mt-2">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  <span>ॲडमिनने अपलोड केलेला अधिकृत QR कोड</span>
+                  <span>{t.admin_uploaded_qr_badge}</span>
                 </span>
               ) : (
                 <p className="text-[10px] text-[#6B6459] mt-1.5 font-medium">
-                  Google Pay • PhonePe • Paytm • BHIM द्वारे स्कॅन करा
+                  {t.scan_via_apps_hint}
                 </p>
               )}
             </div>
@@ -255,7 +257,7 @@ export function CollectPendingModal({
                   className="px-2.5 py-1 text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100 rounded-lg border border-orange-200 transition cursor-pointer flex items-center gap-1 shrink-0"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'कॉपी झाले!' : 'कॉपी करा'}</span>
+                  <span>{copied ? t.copied : t.copy}</span>
                 </button>
               </div>
             )}
@@ -266,11 +268,11 @@ export function CollectPendingModal({
         {paymentMode === 'UPI' && (
           <div>
             <label className="text-xs font-bold text-[#292118] block mb-1">
-              UPI संदर्भ / UTR क्रमांक (पर्यायी)
+              {t.utr_reference_optional}
             </label>
             <input
               type="text"
-              placeholder="उदा. 4235XXXXXXXX किंवा बँक संदर्भ"
+              placeholder={t.utr_reference_placeholder}
               value={paymentRef}
               onChange={(e) => setPaymentRef(e.target.value)}
               className="w-full px-3 py-2 bg-[#FAF9F6] border border-[#E5E1D8] rounded-xl text-xs sm:text-sm text-[#292118] focus:outline-none focus:border-[#C2410C]"
@@ -291,7 +293,7 @@ export function CollectPendingModal({
             onClick={onClose}
             className="flex-1 py-2.5 rounded-xl border border-[#E5E1D8] text-xs font-bold text-[#6B6459] hover:bg-[#FAF9F6] transition cursor-pointer"
           >
-            रद्द करा
+            {t.cancel}
           </button>
           <button
             type="button"
@@ -300,11 +302,11 @@ export function CollectPendingModal({
             className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-600 hover:from-emerald-800 hover:to-emerald-700 text-white text-xs font-bold transition shadow-xs disabled:opacity-50 cursor-pointer flex items-center justify-center gap-1.5"
           >
             {isSubmitting ? (
-              <span>जमा होत आहे...</span>
+              <span>{t.collecting}</span>
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                <span>जमा निश्चित करा</span>
+                <span>{t.confirm_collect_btn}</span>
               </>
             )}
           </button>

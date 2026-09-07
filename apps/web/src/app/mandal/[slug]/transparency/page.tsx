@@ -117,19 +117,19 @@ export default function PublicTransparencyPage() {
         {/* Balance Sheet Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card variant="default" padding="md" className="border-t-4 border-t-[#F97316] shadow-sm">
-            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">एकूण जमा वर्गणी (Collections)</span>
+            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">एकूण जमा वर्गणी</span>
             <p className="text-2xl font-black text-[#292118] mt-1">₹{total_collected.toLocaleString('en-IN')}</p>
             <p className="text-[11px] text-emerald-600 font-semibold mt-1">एकूण {total_donors_count} देणगीदार</p>
           </Card>
 
           <Card variant="default" padding="md" className="border-t-4 border-t-red-600 shadow-sm">
-            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">एकूण मंजूर खर्च (Expenses)</span>
+            <span className="text-xs font-bold text-[#6B6459] uppercase tracking-wider">एकूण मंजूर खर्च</span>
             <p className="text-2xl font-black text-red-700 mt-1">₹{total_expenses.toLocaleString('en-IN')}</p>
             <p className="text-[11px] text-[#6B6459] mt-1">{approved_expenses_list.length} अधिकृत बिले</p>
           </Card>
 
           <Card variant="default" padding="md" className="border-t-4 border-t-emerald-600 shadow-sm bg-gradient-to-br from-white to-emerald-50/40">
-            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">निव्वळ शिल्लक निधी (Net Balance)</span>
+            <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">निव्वळ शिल्लक निधी</span>
             <p className="text-2xl font-black text-emerald-800 mt-1">₹{net_balance.toLocaleString('en-IN')}</p>
             <p className="text-[11px] text-emerald-700 mt-1 font-medium">मंडळाच्या बँक खात्यात व खजिनदारांकडे</p>
           </Card>
@@ -141,7 +141,7 @@ export default function PublicTransparencyPage() {
           <Card variant="default" padding="md" className="shadow-sm">
             <h3 className="text-sm font-bold text-[#292118] mb-3 flex items-center gap-1.5">
               <QrCode className="w-4 h-4 text-[#F97316]" />
-              <span>पेमेंट माध्यम वर्गीकरण (Collections Split)</span>
+              <span>पेमेंट माध्यम वर्गीकरण</span>
             </h3>
             <div className="space-y-2">
               {collections_by_mode.map((m) => (
@@ -160,7 +160,7 @@ export default function PublicTransparencyPage() {
           <Card variant="default" padding="md" className="shadow-sm">
             <h3 className="text-sm font-bold text-[#292118] mb-3 flex items-center gap-1.5">
               <Building className="w-4 h-4 text-[#F97316]" />
-              <span>खर्च वर्गीकरण (Expense Split)</span>
+              <span>खर्च वर्गीकरण</span>
             </h3>
             <div className="space-y-2">
               {expenses_by_category.length === 0 ? (
@@ -240,7 +240,7 @@ export default function PublicTransparencyPage() {
           <div className="bg-white rounded-3xl p-5 border border-[#E5E1D8] shadow-sm flex items-center justify-between gap-4">
             <div>
               <span className="text-[10px] font-extrabold text-[#C2410C] uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
-                डिजिटल देणगी (Donate Online)
+                डिजिटल देणगी
               </span>
               <h3 className="text-base font-extrabold text-[#292118] mt-1">मंडळास देणगी द्या</h3>
               <p className="text-xs text-[#6B6459] mt-0.5">
@@ -276,7 +276,7 @@ export default function PublicTransparencyPage() {
             <div>
               <h3 className="text-base font-bold text-[#292118] flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#F97316]" />
-                <span>देणगीदार नामावली (Public Donor Roll)</span>
+                <span>देणगीदार नामावली</span>
               </h3>
               <p className="text-xs text-[#6B6459] mt-0.5">भक्तांच्या योगदानाचा पारदर्शक डिजिटल अभिलेख</p>
             </div>

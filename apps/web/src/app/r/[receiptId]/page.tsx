@@ -56,7 +56,7 @@ function ReceiptVerificationContent() {
             setReceipt(data.data);
             setSelectedLang((data.data.language as ReceiptLanguage) || 'mr');
           } else {
-            setError(data.message || 'पावती आढळली नाही (Receipt not found)');
+            setError(data.message || 'पावती आढळली नाही');
           }
         })
         .catch((err) => setError(err.message))
@@ -79,7 +79,7 @@ function ReceiptVerificationContent() {
             🚩
           </div>
           <div className="animate-spin rounded-full h-8 w-8 border-3 border-[#F97316] border-t-transparent mb-2"></div>
-          <p className="text-xs font-semibold text-[#6B6459]">पावती पडताळणी होत आहे...</p>
+          <p className="text-xs font-semibold text-[#6B6459]">{selectedLang === 'en' ? 'Verifying receipt...' : 'पावती पडताळणी होत आहे...'}</p>
         </div>
       </div>
     );
@@ -92,14 +92,16 @@ function ReceiptVerificationContent() {
           <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4 text-2xl font-black shadow-inner">
             ✕
           </div>
-          <h2 className="text-xl font-extrabold text-[#292118]">पावती आढळली नाही</h2>
+          <h2 className="text-xl font-extrabold text-[#292118]">{selectedLang === 'en' ? 'Receipt Not Found' : 'पावती आढळली नाही'}</h2>
           <p className="text-xs text-[#6B6459] mt-2 leading-relaxed">
-            पावती क्रमांक <strong className="text-[#C2410C]">{receiptNumber}</strong> साठी कोणतीही नोंद आढळली नाही. कृपया पावती क्रमांक तपासा.
+            {selectedLang === 'en'
+              ? <>No record found for receipt number <strong className="text-[#C2410C]">{receiptNumber}</strong>. Please verify the receipt number.</>
+              : <>पावती क्रमांक <strong className="text-[#C2410C]">{receiptNumber}</strong> साठी कोणतीही नोंद आढळली नाही. कृपया पावती क्रमांक तपासा.</>}
           </p>
           <div className="mt-6">
             <Link href="/">
               <Button variant="primary" size="md" className="font-bold">
-                मुख्यपृष्ठावर जा (Go Home)
+                {selectedLang === 'en' ? 'Go to Home' : 'मुख्यपृष्ठावर जा'}
               </Button>
             </Link>
           </div>
@@ -113,7 +115,7 @@ function ReceiptVerificationContent() {
   const amountVal = parseFloat(receipt.amount);
   const amountInWords = numberToWordsIndian(amountVal, selectedLang as Language);
 
-  const formattedDate = new Date(receipt.created_at).toLocaleString('en-IN', {
+  const formattedDate = new Date(receipt.created_at).toLocaleString(selectedLang === 'en' ? 'en-IN' : 'mr-IN', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -125,7 +127,7 @@ function ReceiptVerificationContent() {
   const handleCopyLink = () => {
     navigator.clipboard.writeText(verificationUrl);
     setCopied(true);
-    showToast('पावती लिंक कॉपी झाली! (Link Copied)');
+    showToast(selectedLang === 'en' ? 'Receipt link copied!' : 'पावती लिंक कॉपी झाली!');
     setTimeout(() => setCopied(false), 2500);
   };
 
@@ -201,10 +203,10 @@ function ReceiptVerificationContent() {
             <button
               onClick={handleCopyLink}
               className="p-2 rounded-xl border border-[#E5E1D8] bg-[#FAF9F6] hover:bg-[#F3F1EC] text-xs font-semibold text-[#6B6459] transition flex items-center gap-1.5"
-              title="Copy Receipt Link"
+              title={selectedLang === 'en' ? 'Copy Receipt Link' : 'पावती लिंक कॉपी करा'}
             >
               {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#6B6459]" />}
-              <span className="hidden sm:inline">{copied ? 'कॉपी झाले' : 'लिंक'}</span>
+              <span className="hidden sm:inline">{copied ? (selectedLang === 'en' ? 'Copied' : 'कॉपी झाले') : (selectedLang === 'en' ? 'Copy Link' : 'लिंक')}</span>
             </button>
           </div>
         </div>
@@ -220,16 +222,16 @@ function ReceiptVerificationContent() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
             </span>
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>अधिकृत व १००% प्रमाणित डिजिटल पावती</span>
+            <span>{selectedLang === 'en' ? 'Official & 100% Verified Digital Receipt' : 'अधिकृत व १००% प्रमाणित डिजिटल पावती'}</span>
           </div>
           <p className="text-[11px] text-[#6B6459]">
-            ही पावती डिजिटल वर्गणी प्लॅटफॉर्मद्वारे पडताळली गेली आहे.
+            {selectedLang === 'en' ? 'This receipt is digitally verified by the Digital Vargani platform.' : 'ही पावती डिजिटल वर्गणी प्लॅटफॉर्मद्वारे पडताळली गेली आहे.'}
           </p>
         </div>
 
         {/* Language Selector Bar */}
         <div className="flex justify-center items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-[#E5E1D8] shadow-2xs max-w-xs mx-auto text-xs">
-          <span className="text-[#6B6459] font-medium">भाषा (Language):</span>
+          <span className="text-[#6B6459] font-medium">{selectedLang === 'en' ? 'Language:' : 'भाषा:'}</span>
           <div className="flex gap-1">
             {[
               { code: 'mr', label: 'मराठी' },
@@ -282,7 +284,7 @@ function ReceiptVerificationContent() {
             className="font-extrabold text-sm gap-2 shadow-lg shadow-orange-500/25 min-h-[50px] bg-gradient-to-r from-[#C2410C] to-[#F97316] hover:from-[#9A3412] hover:to-[#EA580C]"
           >
             <Download className="w-4 h-4" />
-            <span>PDF पावती डाउनलोड करा (Download)</span>
+            <span>{selectedLang === 'en' ? 'Download PDF Receipt' : 'PDF पावती डाउनलोड करा'}</span>
           </Button>
 
           {/* Secondary Actions Row */}
@@ -296,7 +298,7 @@ function ReceiptVerificationContent() {
                 className="gap-2 font-bold bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300 text-xs"
               >
                 <Share2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>व्हॉट्सॲप शेअर</span>
+                <span>{selectedLang === 'en' ? 'Share WhatsApp' : 'व्हॉट्सॲप शेअर'}</span>
               </Button>
             )}
 
@@ -308,7 +310,7 @@ function ReceiptVerificationContent() {
               className="gap-2 font-bold bg-white border-[#E5E1D8] text-[#292118] hover:bg-[#F3F1EC] text-xs"
             >
               <Printer className="w-4 h-4 text-[#6B6459] shrink-0" />
-              <span>प्रिंट (Print)</span>
+              <span>{selectedLang === 'en' ? 'Print' : 'प्रिंट'}</span>
             </Button>
           </div>
         </div>
@@ -322,14 +324,16 @@ function ReceiptVerificationContent() {
             </h3>
           </div>
           <p className="text-[11px] text-[#6B6459] leading-relaxed">
-            आपली देणगी मंडळाच्या सार्वजनिक निधी खात्यात सुरक्षितपणे नोंदवली गेली आहे. जमा व खर्चाची पारदर्शक माहिती पाहण्यासाठी पोर्टलला भेट द्या.
+            {selectedLang === 'en'
+              ? 'Your contribution has been securely recorded in the official mandal treasury. Visit the transparency portal for full accounts.'
+              : 'आपली देणगी मंडळाच्या सार्वजनिक निधी खात्यात सुरक्षितपणे नोंदवली गेली आहे. जमा व खर्चाची पारदर्शक माहिती पाहण्यासाठी पोर्टलला भेट द्या.'}
           </p>
           <div className="mt-3 pt-2 border-t border-[#E5E1D8]/60 flex items-center justify-between">
             <Link
               href={`/mandal/${receipt.mandal_slug}/transparency`}
               className="text-xs font-bold text-[#F97316] hover:underline flex items-center gap-1"
             >
-              <span>सार्वजनिक पारदर्शकता पोर्टल पहा</span>
+              <span>{selectedLang === 'en' ? 'View Transparency Portal' : 'सार्वजनिक पारदर्शकता पोर्टल पहा'}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             <ExternalLink className="w-3.5 h-3.5 text-[#6B6459]" />
@@ -339,7 +343,7 @@ function ReceiptVerificationContent() {
 
       {/* Footer */}
       <footer className="w-full py-4 text-center text-[11px] text-[#6B6459] border-t border-[#E5E1D8] bg-white">
-        <p>© 2024 Digital Vargani. सर्व हक्क राखीव.</p>
+        <p>{selectedLang === 'en' ? '© 2024 Digital Vargani. All rights reserved.' : '© 2024 डिजिटल वर्गणी. सर्व हक्क राखीव.'}</p>
       </footer>
     </div>
   );

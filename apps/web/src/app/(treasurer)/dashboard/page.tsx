@@ -234,7 +234,7 @@ export default function UnifiedDashboardPage() {
                     : 'text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118]'
                 }`}
               >
-                <span>डॅशबोर्ड</span>
+                <span>{t.dashboard}</span>
               </button>
               <button
                 onClick={() => setVolunteerTab('donations')}
@@ -244,7 +244,7 @@ export default function UnifiedDashboardPage() {
                     : 'text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118]'
                 }`}
               >
-                <span>जमा पावत्या</span>
+                <span>{t.donations_tab}</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                   volunteerTab === 'donations' ? 'bg-white/25 text-white' : 'bg-orange-100 text-[#7C2D12]'
                 }`}>
@@ -259,7 +259,7 @@ export default function UnifiedDashboardPage() {
                     : 'text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118]'
                 }`}
               >
-                <span>मंडळ खर्च</span>
+                <span>{t.expenses_tab}</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                   volunteerTab === 'expenses' ? 'bg-white/25 text-white' : 'bg-[#E5E1D8] text-[#4A433A]'
                 }`}>
@@ -274,7 +274,7 @@ export default function UnifiedDashboardPage() {
                     : 'text-[#6B6459] hover:bg-[#FAF9F6] hover:text-[#292118]'
                 }`}
               >
-                अहवाल व पारदर्शकता
+                {t.reports_tab}
               </button>
             </div>
 
@@ -285,10 +285,10 @@ export default function UnifiedDashboardPage() {
                 onClick={handleExportDonations}
                 disabled={isExportingDonations}
                 className="text-xs h-7.5 gap-1 rounded-xl cursor-pointer"
-                title="पावत्यांची CSV फाईल डाउनलोड करा"
+                title={t.donations_csv}
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="hidden sm:inline">{isExportingDonations ? t.downloading : 'पावत्या CSV'}</span>
+                <span className="hidden sm:inline">{isExportingDonations ? t.downloading : t.donations_csv}</span>
               </Button>
               <Button
                 variant="outline"
@@ -296,14 +296,14 @@ export default function UnifiedDashboardPage() {
                 onClick={handleExportExpenses}
                 disabled={isExportingExpenses}
                 className="text-xs h-7.5 gap-1 rounded-xl cursor-pointer"
-                title="खर्चांची CSV फाईल डाउनलोड करा"
+                title={t.expenses_csv}
               >
                 <FileSpreadsheet className="w-3.5 h-3.5 text-rose-600" />
-                <span className="hidden sm:inline">{isExportingExpenses ? t.downloading : 'खर्च CSV'}</span>
+                <span className="hidden sm:inline">{isExportingExpenses ? t.downloading : t.expenses_csv}</span>
               </Button>
               <Link href={`/mandal/${activeMandal?.slug}/transparency`} target="_blank">
                 <Button variant="ghost" size="sm" className="text-xs h-7.5 gap-1 cursor-pointer">
-                  <span>पारदर्शकता</span>
+                  <span>{t.transparency}</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-[#C2410C]" />
                 </Button>
               </Link>
@@ -317,14 +317,14 @@ export default function UnifiedDashboardPage() {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-extrabold text-[#292118]">
-                  {activeMandal?.name || 'मंडळ'}
+                  {activeMandal?.name || (language === Language.ENGLISH ? 'Mandal' : 'मंडळ')}
                 </h2>
                 <span className="text-[10px] font-bold text-[#C2410C] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/70">
-                  कार्यकर्ता डॅशबोर्ड (Volunteer Portal)
+                  {t.volunteer_portal}
                 </span>
               </div>
               <p className="text-xs text-[#6B6459] mt-0.5">
-                खजिनदार व व्यवस्थापकांनी नोंदवलेली सर्व वर्गणी, पावत्या, खर्च आणि मंडळाचा ताळेबंद.
+                {t.volunteer_portal_sub}
               </p>
             </div>
           </div>
@@ -334,7 +334,7 @@ export default function UnifiedDashboardPage() {
           {/* ========================================================================= */}
           {volunteerTab === 'overview' && (
             <div className="space-y-6">
-              {/* 1. TODAY'S COLLECTION (खजिनदारांनी केलेली आजची जमा) */}
+              {/* 1. TODAY'S COLLECTION */}
               <div className="bg-white rounded-2xl p-5 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
@@ -342,45 +342,45 @@ export default function UnifiedDashboardPage() {
                       <Calendar className="w-4 h-4" />
                     </span>
                     <h3 className="text-sm font-bold text-[#292118]">
-                      आजची जमा (Today’s Collection by Treasurer)
+                      {t.today_collection_by_treasurer}
                     </h3>
                   </div>
                   <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-                    Live Today
+                    {t.live_today}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="p-3.5 bg-gradient-to-br from-orange-50/50 to-white rounded-xl border border-orange-200/60">
-                    <p className="text-xs font-semibold text-[#7C2D12]">आजची एकूण वर्गणी</p>
+                    <p className="text-xs font-semibold text-[#7C2D12]">{t.today_total_collection}</p>
                     <p className="text-xl font-black text-[#7C2D12] mt-1 tabular-nums">
                       ₹{(overview?.today_total_collected !== undefined && overview.today_total_collected !== null ? overview.today_total_collected : (todayTotalFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
-                    <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">आज जमा झालेली रक्कम</p>
+                    <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">{t.today_total_received}</p>
                   </div>
 
                   <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]/80">
-                    <p className="text-xs font-semibold text-[#6B6459]">आजची रोख (Cash)</p>
+                    <p className="text-xs font-semibold text-[#6B6459]">{t.today_cash}</p>
                     <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
                       ₹{(overview?.today_cash_collected !== undefined && overview.today_cash_collected !== null ? overview.today_cash_collected : (todayCashFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
-                    <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">आज रोख जमा</p>
+                    <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">{t.today_cash_sub}</p>
                   </div>
 
                   <div className="p-3.5 bg-sky-50/50 rounded-xl border border-sky-200/60">
-                    <p className="text-xs font-semibold text-sky-800">आजची UPI</p>
+                    <p className="text-xs font-semibold text-sky-800">{t.today_upi}</p>
                     <p className="text-xl font-black text-sky-800 mt-1 tabular-nums">
                       ₹{(overview?.today_upi_collected !== undefined && overview.today_upi_collected !== null ? overview.today_upi_collected : (todayUpiFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
-                    <p className="text-[10px] text-sky-600/70 mt-0.5 font-medium">आज ऑनलाइन जमा</p>
+                    <p className="text-[10px] text-sky-600/70 mt-0.5 font-medium">{t.today_upi_sub}</p>
                   </div>
 
                   <div className="p-3.5 bg-amber-50/50 rounded-xl border border-amber-200/60">
-                    <p className="text-xs font-semibold text-amber-800">आजची प्रलंबित</p>
+                    <p className="text-xs font-semibold text-amber-800">{t.today_pending}</p>
                     <p className="text-xl font-black text-amber-800 mt-1 tabular-nums">
                       ₹{(overview?.today_pending_collected !== undefined && overview.today_pending_collected !== null ? overview.today_pending_collected : (todayPendingFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
-                    <p className="text-[10px] text-amber-600/70 mt-0.5 font-medium">आज येणे बाकी</p>
+                    <p className="text-[10px] text-amber-600/70 mt-0.5 font-medium">{t.today_pending_sub}</p>
                   </div>
                 </div>
               </div>
@@ -391,7 +391,7 @@ export default function UnifiedDashboardPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-xs font-semibold text-[#6B6459] uppercase tracking-wider">
-                        एकूण जमा (Total)
+                        {t.total_collection}
                       </p>
                       <p className="text-2xl font-black text-[#7C2D12] mt-1 tabular-nums">
                         ₹{(overview?.festival_total_collected !== undefined && overview.festival_total_collected !== null ? overview.festival_total_collected : (allDonationsTotal || 0)).toLocaleString('en-IN')}
@@ -402,7 +402,7 @@ export default function UnifiedDashboardPage() {
                     </span>
                   </div>
                   <p className="text-[11px] text-[#6B6459] mt-2 font-medium">
-                    उत्सवाची संपूर्ण वर्गणी
+                    {t.total_collection_sub}
                   </p>
                 </div>
 
@@ -410,7 +410,7 @@ export default function UnifiedDashboardPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-xs font-semibold text-rose-700 uppercase tracking-wider">
-                        मंजूर खर्च (Expenses)
+                        {t.approved_expenses}
                       </p>
                       <p className="text-2xl font-black text-rose-700 mt-1 tabular-nums">
                         ₹{(overview?.total_approved_expenses !== undefined && overview.total_approved_expenses !== null ? overview.total_approved_expenses : (totalExpensesApproved || 0)).toLocaleString('en-IN')}
@@ -421,7 +421,7 @@ export default function UnifiedDashboardPage() {
                     </span>
                   </div>
                   <p className="text-[11px] text-[#6B6459] mt-2 font-medium">
-                    मंडळाने केलेला अधिकृत खर्च
+                    {t.approved_expenses_sub}
                   </p>
                 </div>
 
@@ -429,7 +429,7 @@ export default function UnifiedDashboardPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
-                        येणे वर्गणी (Pending)
+                        {t.pending_donations}
                       </p>
                       <p className="text-2xl font-black text-amber-700 mt-1 tabular-nums">
                         ₹{(overview?.total_pending_collected !== undefined && overview.total_pending_collected !== null ? overview.total_pending_collected : (pendingDonationsTotal || 0)).toLocaleString('en-IN')}
@@ -440,7 +440,7 @@ export default function UnifiedDashboardPage() {
                     </span>
                   </div>
                   <p className="text-[11px] text-amber-700 mt-2 font-medium">
-                    येणे बाकी देणगीदारांची वर्गणी
+                    {t.pending_donations_sub}
                   </p>
                 </div>
 
@@ -448,7 +448,7 @@ export default function UnifiedDashboardPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-xs font-semibold text-emerald-900 uppercase tracking-wider">
-                        शिल्लक निधी (Balance)
+                        {t.net_balance}
                       </p>
                       <p className="text-2xl font-black text-emerald-800 mt-1 tabular-nums">
                         ₹{(overview?.net_balance !== undefined && overview.net_balance !== null ? overview.net_balance : (allDonationsTotal - totalExpensesApproved)).toLocaleString('en-IN')}
@@ -459,35 +459,35 @@ export default function UnifiedDashboardPage() {
                     </span>
                   </div>
                   <p className="text-[11px] text-emerald-700 mt-2 font-medium">
-                    एकूण जमा − मंजूर खर्च
+                    {t.net_balance_sub}
                   </p>
                 </div>
               </div>
 
               {/* 3. PAYMENT MODE BREAKDOWN */}
               <div className="bg-white rounded-2xl p-5 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                <h3 className="text-sm font-bold text-[#292118] mb-3">पेमेंट पद्धतीनुसार वर्गीकरण (Payment Methods)</h3>
+                <h3 className="text-sm font-bold text-[#292118] mb-3">{t.payment_methods}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]/80">
-                    <span className="text-xs font-semibold text-[#6B6459]">रोख वर्गणी (Cash)</span>
+                    <span className="text-xs font-semibold text-[#6B6459]">{t.cash_donations}</span>
                     <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
                       ₹{(overview?.total_cash_collected !== undefined && overview.total_cash_collected !== null ? overview.total_cash_collected : (cashDonationsTotal || 0)).toLocaleString('en-IN')}
                     </p>
-                    <p className="text-[11px] text-[#A8A297] mt-1">खजिनदारांनी रोख स्वरूपात जमा केलेली वर्गणी</p>
+                    <p className="text-[11px] text-[#A8A297] mt-1">{t.cash_donations_sub}</p>
                   </div>
                   <div className="p-3.5 bg-sky-50/60 rounded-xl border border-sky-200/80">
-                    <span className="text-xs font-semibold text-sky-800">UPI वर्गणी (Online)</span>
+                    <span className="text-xs font-semibold text-sky-800">{t.upi_donations}</span>
                     <p className="text-xl font-black text-sky-900 mt-1 tabular-nums">
                       ₹{(overview?.total_upi_collected !== undefined && overview.total_upi_collected !== null ? overview.total_upi_collected : (upiDonationsTotal || 0)).toLocaleString('en-IN')}
                     </p>
-                    <p className="text-[11px] text-sky-700/80 mt-1">थेट बँक खात्यात / QR वर जमा वर्गणी</p>
+                    <p className="text-[11px] text-sky-700/80 mt-1">{t.upi_donations_sub}</p>
                   </div>
                   <div className="p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/80">
-                    <span className="text-xs font-semibold text-amber-800">येणे वर्गणी (Pending)</span>
+                    <span className="text-xs font-semibold text-amber-800">{t.pending_donations}</span>
                     <p className="text-xl font-black text-amber-900 mt-1 tabular-nums">
                       ₹{(overview?.total_pending_collected !== undefined && overview.total_pending_collected !== null ? overview.total_pending_collected : (pendingDonationsTotal || 0)).toLocaleString('en-IN')}
                     </p>
-                    <p className="text-[11px] text-amber-700/80 mt-1">देणगीदारांकडून जमा होणे बाकी रक्कम</p>
+                    <p className="text-[11px] text-amber-700/80 mt-1">{t.pending_donations_box_sub}</p>
                   </div>
                 </div>
               </div>
@@ -500,38 +500,38 @@ export default function UnifiedDashboardPage() {
                       <Wallet className="w-4 h-4" />
                     </span>
                     <h3 className="text-sm font-bold text-[#292118]">
-                      रोख रक्कमेचा हिशोब व ताळेबंद (Cash Handover & Reconciliation)
+                      {t.cash_handover_reconciliation_title}
                     </h3>
                   </div>
                   <span className="text-[10px] font-bold text-[#6B6459] bg-[#FAF9F6] px-2.5 py-0.5 rounded-full border border-[#E5E1D8]">
-                    पारदर्शक हिशोब
+                    {t.transparent_accounts_badge}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200/80">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-emerald-800">खजिनदारांकडे जमा झालेली रोख</span>
+                      <span className="text-xs font-semibold text-emerald-800">{t.reconciled_with_treasurer}</span>
                       <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     </div>
                     <p className="text-2xl font-black text-emerald-800 mt-1 tabular-nums">
                       ₹{(overview?.total_cash_reconciled || 0).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[11px] text-emerald-700/80 mt-1">
-                      कार्यकर्त्यांनी खजिनदारांकडे सुपूर्द केलेली अधिकृत रोख रक्कम
+                      {t.reconciled_desc}
                     </p>
                   </div>
 
                   <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200/80">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-amber-800">कार्यकर्त्यांकडे बाकी रोख (In Hand)</span>
+                      <span className="text-xs font-semibold text-amber-800">{t.cash_in_hand_volunteers}</span>
                       <Clock className="w-4 h-4 text-amber-600" />
                     </div>
                     <p className="text-2xl font-black text-amber-800 mt-1 tabular-nums">
                       ₹{(overview?.total_cash_in_hand_volunteers || 0).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[11px] text-amber-700/80 mt-1">
-                      खजिनदारांकडे जमा करणे प्रलंबित असलेली रोख रक्कम
+                      {t.cash_in_hand_desc}
                     </p>
                   </div>
                 </div>
@@ -539,16 +539,16 @@ export default function UnifiedDashboardPage() {
                 {/* Volunteer Tallies List if available */}
                 {overview?.volunteer_tallies && overview.volunteer_tallies.length > 0 && (
                   <div className="pt-2">
-                    <p className="text-xs font-bold text-[#6B6459] mb-2">कार्यकर्तेनिहाय वर्गणी व रोख हिशोब:</p>
+                    <p className="text-xs font-bold text-[#6B6459] mb-2">{t.volunteer_tally_breakdown}</p>
                     <div className="overflow-x-auto rounded-xl border border-[#E5E1D8]/80">
                       <table className="w-full text-left text-xs">
                         <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold border-b border-[#E5E1D8]/80">
                           <tr>
-                            <th className="px-3 py-2">कार्यकर्ता / खजिनदार</th>
-                            <th className="px-3 py-2 text-right">पावत्या</th>
-                            <th className="px-3 py-2 text-right">आजची रोख</th>
-                            <th className="px-3 py-2 text-right">आजची UPI</th>
-                            <th className="px-3 py-2 text-right">हातातील रोख</th>
+                            <th className="px-3 py-2">{t.volunteer_or_treasurer}</th>
+                            <th className="px-3 py-2 text-right">{t.receipts_count}</th>
+                            <th className="px-3 py-2 text-right">{t.today_cash}</th>
+                            <th className="px-3 py-2 text-right">{t.today_upi}</th>
+                            <th className="px-3 py-2 text-right">{t.cash_in_hand_col}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-[#E5E1D8]/60">
@@ -579,13 +579,13 @@ export default function UnifiedDashboardPage() {
                 <div className="p-4 border-b border-[#E5E1D8]/70 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Receipt className="w-4 h-4 text-[#7C2D12]" />
-                    <h3 className="text-sm font-extrabold text-[#292118]">खजिनदारांनी जमा केलेल्या ताज्या पावत्या</h3>
+                    <h3 className="text-sm font-extrabold text-[#292118]">{t.recent_receipts_by_treasurer}</h3>
                   </div>
                   <button
                     onClick={() => setVolunteerTab('donations')}
                     className="text-xs text-[#C2410C] font-bold hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    <span>सर्व पावत्या पहा ({donations.length || recentDonationsList.length})</span>
+                    <span>{t.view_all_receipts} ({donations.length || recentDonationsList.length})</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -594,19 +594,19 @@ export default function UnifiedDashboardPage() {
                   <table className="w-full text-left text-xs sm:text-sm">
                     <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                       <tr>
-                        <th className="px-4 py-2.5">पावती क्र.</th>
-                        <th className="px-4 py-2.5">देणगीदार</th>
-                        <th className="px-4 py-2.5">मोड</th>
-                        <th className="px-4 py-2.5 text-right">रक्कम</th>
-                        <th className="px-4 py-2.5">नोंदवणारा</th>
-                        <th className="px-4 py-2.5 text-center">पावती</th>
+                        <th className="px-4 py-2.5">{t.receipt_no}</th>
+                        <th className="px-4 py-2.5">{t.donor}</th>
+                        <th className="px-4 py-2.5">{t.payment_mode}</th>
+                        <th className="px-4 py-2.5 text-right">{t.amount}</th>
+                        <th className="px-4 py-2.5">{t.recorder}</th>
+                        <th className="px-4 py-2.5 text-center">{t.receipt_language}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E1D8]/60">
                       {recentDonationsList.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-4 py-6 text-center text-[#A8A297]">
-                            अद्याप कोणतीही पावती जमा झालेली नाही.
+                            {t.no_receipts_yet}
                           </td>
                         </tr>
                       ) : (
@@ -627,14 +627,14 @@ export default function UnifiedDashboardPage() {
                                     : 'bg-amber-50 text-amber-700 border-amber-200'
                                 }`}
                               >
-                                {d.payment_mode}
+                                {d.payment_mode === 'CASH' ? t.cash : d.payment_mode === 'UPI' ? t.upi : t.pending}
                               </span>
                             </td>
                             <td className="px-4 py-2.5 text-right font-black text-[#292118] tabular-nums">
                               ₹{parseFloat(d.amount).toLocaleString('en-IN')}
                             </td>
                             <td className="px-4 py-2.5 text-xs text-[#6B6459]">
-                              {d.volunteer_name || 'खजिनदार'}
+                              {d.volunteer_name || t.treasurer_role}
                             </td>
                             <td className="px-4 py-2.5 text-center">
                               <div className="flex items-center justify-center gap-1.5">
@@ -642,16 +642,16 @@ export default function UnifiedDashboardPage() {
                                   <button
                                     onClick={() => setCollectingDonation(d)}
                                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
-                                    title="येणे वर्गणी जमा करा"
+                                    title={t.collect_pending_title}
                                   >
                                     <Wallet className="w-3 h-3" />
-                                    <span>जमा करा</span>
+                                    <span>{t.confirm_collect_btn}</span>
                                   </button>
                                 )}
                                 <button
                                   onClick={() => openReceipt(d)}
                                   className="p-1 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
-                                  title="पावती पहा"
+                                  title={t.receipt_language}
                                 >
                                   <Eye className="w-4 h-4 inline" />
                                 </button>
@@ -670,13 +670,13 @@ export default function UnifiedDashboardPage() {
                 <div className="p-4 border-b border-[#E5E1D8]/70 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileText className="w-4 h-4 text-rose-700" />
-                    <h3 className="text-sm font-extrabold text-[#292118]">मंडळाचे ताजे खर्च (Recent Expenses)</h3>
+                    <h3 className="text-sm font-extrabold text-[#292118]">{t.recent_expenses}</h3>
                   </div>
                   <button
                     onClick={() => setVolunteerTab('expenses')}
                     className="text-xs text-[#C2410C] font-bold hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    <span>सर्व खर्च पहा ({expenses.length})</span>
+                    <span>{t.view_all_expenses} ({expenses.length})</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -685,19 +685,19 @@ export default function UnifiedDashboardPage() {
                   <table className="w-full text-left text-xs sm:text-sm">
                     <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                       <tr>
-                        <th className="px-4 py-2.5">वर्गवारी</th>
-                        <th className="px-4 py-2.5">तपशील</th>
-                        <th className="px-4 py-2.5">मोड</th>
-                        <th className="px-4 py-2.5 text-right">रक्कम</th>
-                        <th className="px-4 py-2.5">नोंदवणारा</th>
-                        <th className="px-4 py-2.5 text-center">स्थिती</th>
+                        <th className="px-4 py-2.5">{t.category}</th>
+                        <th className="px-4 py-2.5">{t.description}</th>
+                        <th className="px-4 py-2.5">{t.payment_mode}</th>
+                        <th className="px-4 py-2.5 text-right">{t.amount}</th>
+                        <th className="px-4 py-2.5">{t.recorder}</th>
+                        <th className="px-4 py-2.5 text-center">{t.status}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E1D8]/60">
                       {expenses.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-4 py-6 text-center text-[#A8A297]">
-                            अद्याप कोणताही खर्च नोंदवलेला नाही.
+                            {t.no_expenses_yet}
                           </td>
                         </tr>
                       ) : (
@@ -717,7 +717,7 @@ export default function UnifiedDashboardPage() {
                                     : 'bg-amber-50 text-amber-700 border-amber-200'
                                 }`}
                               >
-                                {e.payment_mode || 'CASH'}
+                                {e.payment_mode === PaymentMode.UPI ? t.upi : t.cash}
                               </span>
                             </td>
                             <td className="px-4 py-2.5 text-right font-black text-rose-700 tabular-nums">
@@ -727,7 +727,7 @@ export default function UnifiedDashboardPage() {
                             <td className="px-4 py-2.5 text-center">
                               <StatusBadge
                                 status={e.status === 'APPROVED' ? 'success' : e.status === 'REJECTED' ? 'error' : 'warning'}
-                                label={e.status === 'APPROVED' ? 'मंजूर' : e.status === 'REJECTED' ? 'नाकारले' : 'प्रलंबित'}
+                                label={e.status === 'APPROVED' ? t.approved : e.status === 'REJECTED' ? t.rejected : t.pending_status}
                                 size="sm"
                               />
                             </td>
@@ -749,35 +749,35 @@ export default function UnifiedDashboardPage() {
               {/* Summary Stats Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-[#6B6459] uppercase">एकूण वर्गणी (Collected)</span>
+                  <span className="text-xs font-semibold text-[#6B6459] uppercase">{t.total_collection}</span>
                   <p className="text-xl font-black text-[#7C2D12] mt-1 tabular-nums">
                     ₹{allDonationsTotal.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">{cashDonationsList.length + upiDonationsList.length} जमा पावत्या</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{cashDonationsList.length + upiDonationsList.length} {t.collected_receipts_badge}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-emerald-700 uppercase">रोख वर्गणी (Cash)</span>
+                  <span className="text-xs font-semibold text-emerald-700 uppercase">{t.cash_donations}</span>
                   <p className="text-xl font-black text-emerald-800 mt-1 tabular-nums">
                     ₹{cashDonationsTotal.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">{cashDonationsList.length} रोख पावत्या</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{cashDonationsList.length} {t.cash_receipts_badge}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-sky-800 uppercase">UPI वर्गणी (Online)</span>
+                  <span className="text-xs font-semibold text-sky-800 uppercase">{t.upi_donations}</span>
                   <p className="text-xl font-black text-sky-900 mt-1 tabular-nums">
                     ₹{upiDonationsTotal.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">{upiDonationsList.length} UPI पावत्या</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{upiDonationsList.length} {t.upi_receipts_badge}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-amber-800 uppercase">प्रलंबित वर्गणी</span>
+                  <span className="text-xs font-semibold text-amber-800 uppercase">{t.pending_donations}</span>
                   <p className="text-xl font-black text-amber-900 mt-1 tabular-nums">
                     ₹{pendingDonationsTotal.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">{pendingDonationsList.length} येणे पावत्या</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{pendingDonationsList.length} {t.pending_receipts_badge}</p>
                 </div>
               </div>
 
@@ -786,8 +786,8 @@ export default function UnifiedDashboardPage() {
                 <div className="p-4 border-b border-[#E5E1D8]/70 flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-sm font-extrabold text-[#292118]">खजिनदारांनी जमा केलेल्या सर्व पावत्या</h3>
-                      <p className="text-xs text-[#6B6459] mt-0.5">मंडळातील सर्व देणग्यांची संपूर्ण माहिती (वाचण्यासाठी उपलब्ध)</p>
+                      <h3 className="text-sm font-extrabold text-[#292118]">{t.all_receipts_by_treasurer}</h3>
+                      <p className="text-xs text-[#6B6459] mt-0.5">{t.all_donations_info}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -815,7 +815,7 @@ export default function UnifiedDashboardPage() {
                             : 'text-[#6B6459] hover:text-[#292118]'
                         }`}
                       >
-                        सर्व ({donations.length})
+                        {t.all} ({donations.length})
                       </button>
                       <button
                         onClick={() => setVolunteerDonationFilter('CASH')}
@@ -825,7 +825,7 @@ export default function UnifiedDashboardPage() {
                             : 'text-[#6B6459] hover:text-[#292118]'
                         }`}
                       >
-                        रोख ({cashDonationsList.length})
+                        {t.cash} ({cashDonationsList.length})
                       </button>
                       <button
                         onClick={() => setVolunteerDonationFilter('UPI')}
@@ -835,7 +835,7 @@ export default function UnifiedDashboardPage() {
                             : 'text-[#6B6459] hover:text-[#292118]'
                         }`}
                       >
-                        UPI ({upiDonationsList.length})
+                        {t.upi} ({upiDonationsList.length})
                       </button>
                       <button
                         onClick={() => setVolunteerDonationFilter('PENDING')}
@@ -845,14 +845,14 @@ export default function UnifiedDashboardPage() {
                             : 'text-[#6B6459] hover:text-[#292118]'
                         }`}
                       >
-                        प्रलंबित ({pendingDonationsList.length})
+                        {t.pending} ({pendingDonationsList.length})
                       </button>
                     </div>
 
                     <div className="w-full sm:w-72 relative">
                       <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-[#A8A297]" />
                       <Input
-                        placeholder="नाव, पावती क्र., फोन किंवा खजिनदार..."
+                        placeholder={t.search_placeholder_donations}
                         value={donationSearch}
                         onChange={(e) => setDonationSearch(e.target.value)}
                         className="pl-8 text-xs"
@@ -865,20 +865,20 @@ export default function UnifiedDashboardPage() {
                   <table className="w-full text-left text-xs sm:text-sm">
                     <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                       <tr>
-                        <th className="px-4 py-3">पावती क्र.</th>
-                        <th className="px-4 py-3">देणगीदार</th>
-                        <th className="px-4 py-3">पेमेंट मोड</th>
-                        <th className="px-4 py-3 text-right">रक्कम (₹)</th>
-                        <th className="px-4 py-3">नोंदवणारा</th>
-                        <th className="px-4 py-3">तारीख व वेळ</th>
-                        <th className="px-4 py-3 text-center">पावती</th>
+                        <th className="px-4 py-3">{t.receipt_no}</th>
+                        <th className="px-4 py-3">{t.donor}</th>
+                        <th className="px-4 py-3">{t.payment_mode}</th>
+                        <th className="px-4 py-3 text-right">{t.amount}</th>
+                        <th className="px-4 py-3">{t.recorder}</th>
+                        <th className="px-4 py-3">{t.date_and_time}</th>
+                        <th className="px-4 py-3 text-center">{t.receipt_language}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E1D8]/60">
                       {filteredDonations.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="px-4 py-8 text-center text-[#A8A297]">
-                            कोणतीही पावती आढळली नाही.
+                            {t.no_receipts_found}
                           </td>
                         </tr>
                       ) : (
@@ -903,17 +903,17 @@ export default function UnifiedDashboardPage() {
                                     : 'bg-amber-50 text-amber-700 border-amber-200'
                                 }`}
                               >
-                                {d.payment_mode}
+                                {d.payment_mode === 'CASH' ? t.cash : d.payment_mode === 'UPI' ? t.upi : t.pending}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-right font-black text-[#292118] tabular-nums">
                               ₹{parseFloat(d.amount).toLocaleString('en-IN')}
                             </td>
                             <td className="px-4 py-3 text-xs text-[#6B6459]">
-                              {d.volunteer_name || 'खजिनदार'}
+                              {d.volunteer_name || t.treasurer_role}
                             </td>
                             <td className="px-4 py-3 text-xs text-[#6B6459] whitespace-nowrap">
-                              {new Date(d.created_at).toLocaleDateString('mr-IN', {
+                              {new Date(d.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
                                 day: '2-digit',
                                 month: 'short',
                                 year: 'numeric',
@@ -927,16 +927,16 @@ export default function UnifiedDashboardPage() {
                                   <button
                                     onClick={() => setCollectingDonation(d)}
                                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
-                                    title="येणे वर्गणी जमा करा"
+                                    title={t.collect_pending_title}
                                   >
                                     <Wallet className="w-3.5 h-3.5" />
-                                    <span>वर्गणी जमा करा</span>
+                                    <span>{t.confirm_collect_btn}</span>
                                   </button>
                                 )}
                                 <button
                                   onClick={() => openReceipt(d)}
                                   className="p-1.5 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
-                                  title="पावती पहा / शेअर करा"
+                                  title={t.receipt_language}
                                 >
                                   <Eye className="w-4 h-4 inline" />
                                 </button>
@@ -960,35 +960,35 @@ export default function UnifiedDashboardPage() {
               {/* Summary Cards */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-rose-700 uppercase">मंजूर खर्च</span>
+                  <span className="text-xs font-semibold text-rose-700 uppercase">{t.approved_expenses}</span>
                   <p className="text-xl font-black text-rose-700 mt-1 tabular-nums">
                     ₹{totalExpensesApproved.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">{approvedExpensesList.length} मंजूर नोंदी</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{approvedExpensesList.length} {t.approved_entries_badge}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-amber-800 uppercase">प्रलंबित खर्च</span>
+                  <span className="text-xs font-semibold text-amber-800 uppercase">{t.pending_approvals}</span>
                   <p className="text-xl font-black text-amber-800 mt-1 tabular-nums">
                     ₹{totalExpensesPending.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">{pendingExpensesList.length} पडताळणी बाकी</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{pendingExpensesList.length} {t.pending_verification_badge}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-[#6B6459] uppercase">रोखीने खर्च</span>
+                  <span className="text-xs font-semibold text-[#6B6459] uppercase">{t.cash_donations}</span>
                   <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
                     ₹{cashExpensesApproved.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">रोख स्वरूपात दिलेला खर्च</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{t.cash_expense_desc}</p>
                 </div>
 
                 <div className="bg-white rounded-2xl p-4 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                  <span className="text-xs font-semibold text-sky-800 uppercase">UPI द्वारे खर्च</span>
+                  <span className="text-xs font-semibold text-sky-800 uppercase">{t.upi_donations}</span>
                   <p className="text-xl font-black text-sky-800 mt-1 tabular-nums">
                     ₹{upiExpensesApproved.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-[11px] text-[#6B6459] mt-0.5">ऑनलाइन दिलेला खर्च</p>
+                  <p className="text-[11px] text-[#6B6459] mt-0.5">{t.upi_expense_desc}</p>
                 </div>
               </div>
 
@@ -997,8 +997,8 @@ export default function UnifiedDashboardPage() {
                 <div className="p-4 border-b border-[#E5E1D8]/70 flex flex-col gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-sm font-extrabold text-[#292118]">उत्सव खर्च नोंदी (Expenses Ledger)</h3>
-                      <p className="text-xs text-[#6B6459] mt-0.5">खजिनदार व व्यवस्थापकांनी नोंदवलेला सर्व खर्च व बिले</p>
+                      <h3 className="text-sm font-extrabold text-[#292118]">{t.expenses_ledger}</h3>
+                      <p className="text-xs text-[#6B6459] mt-0.5">{t.expenses_ledger_sub}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -1010,7 +1010,7 @@ export default function UnifiedDashboardPage() {
                         className="text-xs h-8 gap-1.5 rounded-xl cursor-pointer"
                       >
                         <FileSpreadsheet className="w-3.5 h-3.5 text-rose-600" />
-                        <span>{isExportingExpenses ? t.downloading : 'खर्च CSV Export'}</span>
+                        <span>{isExportingExpenses ? t.downloading : t.expenses_csv}</span>
                       </Button>
                     </div>
                   </div>
@@ -1026,7 +1026,7 @@ export default function UnifiedDashboardPage() {
                             : 'text-[#6B6459] hover:text-[#292118]'
                         }`}
                       >
-                        सर्व ({expenses.length})
+                        {t.all} ({expenses.length})
                       </button>
                       <button
                         onClick={() => setExpenseFilter('APPROVED')}
@@ -1036,7 +1036,7 @@ export default function UnifiedDashboardPage() {
                             : 'text-[#6B6459] hover:text-[#292118]'
                         }`}
                       >
-                        मंजूर ({approvedExpensesList.length})
+                        {t.approved} ({approvedExpensesList.length})
                       </button>
                       <button
                         onClick={() => setExpenseFilter('PENDING')}
@@ -1046,14 +1046,14 @@ export default function UnifiedDashboardPage() {
                             : 'text-[#6B6459] hover:text-[#292118]'
                         }`}
                       >
-                        प्रलंबित ({pendingExpensesList.length})
+                        {t.pending_status} ({pendingExpensesList.length})
                       </button>
                     </div>
 
                     <div className="w-full sm:w-72 relative">
                       <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-[#A8A297]" />
                       <Input
-                        placeholder="वर्गवारी, तपशील किंवा नाव..."
+                        placeholder={t.search_placeholder_expenses}
                         value={expenseSearch}
                         onChange={(e) => setExpenseSearch(e.target.value)}
                         className="pl-8 text-xs"
@@ -1066,22 +1066,22 @@ export default function UnifiedDashboardPage() {
                   <table className="w-full text-left text-xs sm:text-sm">
                     <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                       <tr>
-                        <th className="px-4 py-3">वर्गवारी</th>
-                        <th className="px-4 py-3">तपशील</th>
-                        <th className="px-4 py-3">पेमेंट मोड</th>
-                        <th className="px-4 py-3 text-right">रक्कम (₹)</th>
-                        <th className="px-4 py-3">नोंदवणारा</th>
-                        <th className="px-4 py-3">मंजूर करणारा</th>
-                        <th className="px-4 py-3 text-center">पावती / बिल</th>
-                        <th className="px-4 py-3">तारीख</th>
-                        <th className="px-4 py-3 text-center">स्थिती</th>
+                        <th className="px-4 py-3">{t.category}</th>
+                        <th className="px-4 py-3">{t.description}</th>
+                        <th className="px-4 py-3">{t.payment_mode}</th>
+                        <th className="px-4 py-3 text-right">{t.amount}</th>
+                        <th className="px-4 py-3">{t.recorder}</th>
+                        <th className="px-4 py-3">{t.approver}</th>
+                        <th className="px-4 py-3 text-center">{t.bill_receipt}</th>
+                        <th className="px-4 py-3">{t.date}</th>
+                        <th className="px-4 py-3 text-center">{t.status}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E1D8]/60">
                       {filteredExpenses.length === 0 ? (
                         <tr>
                           <td colSpan={9} className="px-4 py-8 text-center text-[#A8A297]">
-                            कोणताही खर्च आढळला नाही.
+                            {t.no_expenses_found}
                           </td>
                         </tr>
                       ) : (
@@ -1101,7 +1101,7 @@ export default function UnifiedDashboardPage() {
                                     : 'bg-amber-50 text-amber-700 border-amber-200'
                                 }`}
                               >
-                                {e.payment_mode || 'CASH'}
+                                {e.payment_mode === PaymentMode.UPI ? t.upi : t.cash}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-right font-black text-rose-700 tabular-nums">
@@ -1110,7 +1110,7 @@ export default function UnifiedDashboardPage() {
                             <td className="px-4 py-3 text-xs text-[#6B6459]">{e.logged_by_name}</td>
                             <td className="px-4 py-3 text-xs text-[#6B6459]">
                               {e.approved_by_name || (
-                                <span className="text-amber-700 text-[11px] font-semibold">प्रलंबित</span>
+                                <span className="text-amber-700 text-[11px] font-semibold">{t.pending_status}</span>
                               )}
                             </td>
                             <td className="px-4 py-3 text-center">
@@ -1120,14 +1120,14 @@ export default function UnifiedDashboardPage() {
                                   className="inline-flex items-center gap-1 text-[11px] font-bold text-[#C2410C] hover:underline cursor-pointer bg-orange-50 px-2 py-0.5 rounded border border-orange-200"
                                 >
                                   <ImageIcon className="w-3 h-3" />
-                                  <span>बिल पहा</span>
+                                  <span>{t.view_bill}</span>
                                 </button>
                               ) : (
                                 <span className="text-[#A8A297] text-[11px]">-</span>
                               )}
                             </td>
                             <td className="px-4 py-3 text-xs text-[#6B6459] whitespace-nowrap">
-                              {new Date(e.created_at).toLocaleDateString('mr-IN', {
+                              {new Date(e.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
                                 day: '2-digit',
                                 month: 'short',
                                 year: 'numeric',
@@ -1136,7 +1136,7 @@ export default function UnifiedDashboardPage() {
                             <td className="px-4 py-3 text-center">
                               <StatusBadge
                                 status={e.status === 'APPROVED' ? 'success' : e.status === 'REJECTED' ? 'error' : 'warning'}
-                                label={e.status === 'APPROVED' ? 'मंजूर' : e.status === 'REJECTED' ? 'नाकारले' : 'प्रलंबित'}
+                                label={e.status === 'APPROVED' ? t.approved : e.status === 'REJECTED' ? t.rejected : t.pending_status}
                                 size="sm"
                               />
                             </td>
@@ -1163,9 +1163,9 @@ export default function UnifiedDashboardPage() {
                     </span>
                     <div>
                       <h3 className="text-sm font-bold text-[#292118]">
-                        {activeMandal?.ahwal_title || 'वार्षिक अहवाल (Annual Report)'}
+                        {activeMandal?.ahwal_title || t.annual_report}
                       </h3>
-                      <p className="text-xs text-[#6B6459]">मंडळाचा अधिकृत वार्षिक जमा-खर्च अहवाल</p>
+                      <p className="text-xs text-[#6B6459]">{t.annual_report_sub}</p>
                     </div>
                   </div>
 
@@ -1179,12 +1179,12 @@ export default function UnifiedDashboardPage() {
                         className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#7C2D12] text-white rounded-xl text-xs font-bold hover:bg-[#5C220E] transition shadow-xs"
                       >
                         <Download className="w-4 h-4" />
-                        <span>वार्षिक अहवाल डाउनलोड करा</span>
+                        <span>{t.download_annual_report}</span>
                       </a>
                     </div>
                   ) : (
                     <div className="p-4 bg-[#FAF9F6] rounded-xl text-xs text-[#6B6459] border border-[#E5E1D8]">
-                      मंडळाने अद्याप वार्षिक अहवाल फाईल अपलोड केलेली नाही.
+                      {t.no_annual_report_uploaded}
                     </div>
                   )}
                 </div>
@@ -1195,8 +1195,8 @@ export default function UnifiedDashboardPage() {
                       <ShieldCheck className="w-5 h-5" />
                     </span>
                     <div>
-                      <h3 className="text-sm font-bold text-[#292118]">सार्वजनिक पारदर्शकता पोर्टल</h3>
-                      <p className="text-xs text-[#6B6459]">नागरिकांसाठी थेट जमा-खर्च पडताळणी पोर्टल</p>
+                      <h3 className="text-sm font-bold text-[#292118]">{t.public_transparency_portal}</h3>
+                      <p className="text-xs text-[#6B6459]">{t.public_transparency_sub}</p>
                     </div>
                   </div>
 
@@ -1206,7 +1206,7 @@ export default function UnifiedDashboardPage() {
                       target="_blank"
                       className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold hover:bg-emerald-800 transition shadow-xs"
                     >
-                      <span>पारदर्शकता पोर्टल उघडा</span>
+                      <span>{t.open_transparency_portal}</span>
                       <ExternalLink className="w-4 h-4" />
                     </Link>
                   </div>
@@ -1215,22 +1215,22 @@ export default function UnifiedDashboardPage() {
 
               {/* Summary Balance Sheet */}
               <div className="bg-white rounded-2xl p-5 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
-                <h3 className="text-sm font-bold text-[#292118] mb-3">उत्सव आर्थिक ताळेबंद (Balance Sheet Summary)</h3>
+                <h3 className="text-sm font-bold text-[#292118] mb-3">{t.balance_sheet_summary}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-4 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]">
-                    <span className="text-xs font-semibold text-[#6B6459]">एकूण जमा झालेली वर्गणी</span>
+                    <span className="text-xs font-semibold text-[#6B6459]">{t.total_collected_donations}</span>
                     <p className="text-xl font-black text-[#7C2D12] mt-1 tabular-nums">
                       ₹{(overview?.festival_total_collected || 0).toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div className="p-4 bg-rose-50/50 rounded-xl border border-rose-200">
-                    <span className="text-xs font-semibold text-rose-800">एकूण अधिकृत खर्च</span>
+                    <span className="text-xs font-semibold text-rose-800">{t.total_official_expenses}</span>
                     <p className="text-xl font-black text-rose-800 mt-1 tabular-nums">
                       ₹{totalExpensesApproved.toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
-                    <span className="text-xs font-semibold text-emerald-800">शिल्लक निधी (Net Balance)</span>
+                    <span className="text-xs font-semibold text-emerald-800">{t.net_balance}</span>
                     <p className="text-xl font-black text-emerald-800 mt-1 tabular-nums">
                       ₹{(overview?.net_balance || 0).toLocaleString('en-IN')}
                     </p>
@@ -1258,7 +1258,7 @@ export default function UnifiedDashboardPage() {
               <div className="p-3 border-b border-[#E5E1D8] flex items-center justify-between bg-[#FAF9F6]">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-[#7C2D12]" />
-                  <span className="text-xs font-bold text-[#292118]">खर्च पावती / बिल फोटो</span>
+                  <span className="text-xs font-bold text-[#292118]">{t.bill_preview_title}</span>
                 </div>
                 <button
                   onClick={() => setSelectedBillUrl(null)}
@@ -1270,7 +1270,7 @@ export default function UnifiedDashboardPage() {
               <div className="p-4 flex items-center justify-center bg-zinc-100 max-h-[70vh] overflow-auto">
                 <img
                   src={selectedBillUrl}
-                  alt="खर्च बिल पावती"
+                  alt={t.bill_preview_title}
                   className="max-h-[60vh] w-auto object-contain rounded-lg shadow-xs"
                 />
               </div>
@@ -1281,7 +1281,7 @@ export default function UnifiedDashboardPage() {
                   rel="noopener noreferrer"
                   className="text-xs text-[#C2410C] font-bold hover:underline inline-flex items-center gap-1"
                 >
-                  <span>मूळ आकारात पहा</span>
+                  <span>{t.view_original_size}</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
                 <Button
@@ -1290,7 +1290,7 @@ export default function UnifiedDashboardPage() {
                   onClick={() => setSelectedBillUrl(null)}
                   className="text-xs h-7.5 rounded-xl cursor-pointer"
                 >
-                  बंद करा
+                  {t.close}
                 </Button>
               </div>
             </div>
@@ -1389,16 +1389,14 @@ export default function UnifiedDashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-extrabold text-[#292118]">
-                {activeMandal?.name || 'मंडळ'}
+                {activeMandal?.name || (language === Language.ENGLISH ? 'Mandal' : 'मंडळ')}
               </h2>
               <span className="text-[10px] font-bold text-[#7C2D12] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/70">
-                {role === Role.ADMIN ? 'व्यवस्थापक (Admin) डॅशबोर्ड' : 'खजिनदार (Treasurer) डॅशबोर्ड'}
+                {role === Role.ADMIN ? t.admin_portal : t.treasurer_portal}
               </span>
             </div>
             <p className="text-xs text-[#6B6459] mt-0.5">
-              {language === Language.ENGLISH
-                ? 'Live festival collections, approved expenses, and cash reconciliation.'
-                : 'थेट उत्सव जमा, खर्च आणि कार्यकर्त्यांकडील रोख रक्कमेचा हिशोब'}
+              {t.treasurer_dashboard_sub}
             </p>
           </div>
 
@@ -1413,7 +1411,7 @@ export default function UnifiedDashboardPage() {
           )}
         </div>
 
-        {/* 1. TODAY'S COLLECTION (आजची जमा) */}
+        {/* 1. TODAY'S COLLECTION */}
         <div className="bg-white rounded-2xl p-5 border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)]">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -1421,56 +1419,56 @@ export default function UnifiedDashboardPage() {
                 <Calendar className="w-4 h-4" />
               </span>
               <h3 className="text-sm font-bold text-[#292118]">
-                आजची जमा (Today’s Collection)
+                {t.today_collection}
               </h3>
             </div>
             <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-              Live Today
+              {t.live_today}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3.5 bg-gradient-to-br from-orange-50/50 to-white rounded-xl border border-orange-200/60">
-              <p className="text-xs font-semibold text-[#7C2D12]">आजची एकूण वर्गणी</p>
+              <p className="text-xs font-semibold text-[#7C2D12]">{t.today_total_collection}</p>
               <p className="text-xl font-black text-[#7C2D12] mt-1 tabular-nums">
                 ₹{(overview?.today_total_collected || 0).toLocaleString('en-IN')}
               </p>
-              <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">आज जमा झालेली रक्कम</p>
+              <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">{t.today_total_received}</p>
             </div>
 
             <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]/80">
-              <p className="text-xs font-semibold text-[#6B6459]">आजची रोख (Cash)</p>
+              <p className="text-xs font-semibold text-[#6B6459]">{t.today_cash}</p>
               <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
                 ₹{(overview?.today_cash_collected || 0).toLocaleString('en-IN')}
               </p>
-              <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">आज रोख जमा</p>
+              <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">{t.today_cash_sub}</p>
             </div>
 
             <div className="p-3.5 bg-sky-50/50 rounded-xl border border-sky-200/70">
-              <p className="text-xs font-semibold text-sky-800">आजचे UPI (Online)</p>
+              <p className="text-xs font-semibold text-sky-800">{t.today_upi}</p>
               <p className="text-xl font-black text-sky-900 mt-1 tabular-nums">
                 ₹{(overview?.today_upi_collected || 0).toLocaleString('en-IN')}
               </p>
-              <p className="text-[10px] text-sky-700 mt-0.5 font-medium">थेट बँक खात्यात</p>
+              <p className="text-[10px] text-sky-700 mt-0.5 font-medium">{t.today_upi_sub}</p>
             </div>
 
             <div className="p-3.5 bg-amber-50/50 rounded-xl border border-amber-200/70">
-              <p className="text-xs font-semibold text-amber-800">आजचे येणे (Pending)</p>
+              <p className="text-xs font-semibold text-amber-800">{t.today_pending}</p>
               <p className="text-xl font-black text-amber-900 mt-1 tabular-nums">
                 ₹{(overview?.today_pending_collected || 0).toLocaleString('en-IN')}
               </p>
-              <p className="text-[10px] text-amber-700 mt-0.5 font-medium">भविष्यात येणे बाकी</p>
+              <p className="text-[10px] text-amber-700 mt-0.5 font-medium">{t.today_pending_sub}</p>
             </div>
           </div>
         </div>
 
-        {/* 2. OVERALL FESTIVAL COLLECTION (उत्सव एकूण जमा-खर्च) */}
+        {/* 2. OVERALL FESTIVAL COLLECTION */}
         <div>
           <h3 className="text-sm font-bold text-[#292118] mb-3 flex items-center gap-2">
             <span className="p-1.5 rounded-lg bg-orange-50 text-[#C2410C]">
               <TrendingUp className="w-4 h-4" />
             </span>
-            उत्सव एकूण जमा-खर्च (Overall Festival Collection)
+            {t.overall_festival_collection}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1490,7 +1488,7 @@ export default function UnifiedDashboardPage() {
                 </span>
               </div>
               <p className="text-[11px] text-[#6B6459] mt-2.5">
-                एकूण नोंदवलेली उत्सव वर्गणी
+                {t.total_collection_sub}
               </p>
             </div>
 
@@ -1510,7 +1508,7 @@ export default function UnifiedDashboardPage() {
                 </span>
               </div>
               <Link href="/reconciliation" className="text-[11px] text-[#C2410C] font-bold hover:underline mt-2.5 inline-block">
-                हिशोब पडताळणी करा →
+                {t.reconcile_btn} →
               </Link>
             </div>
 
@@ -1530,7 +1528,7 @@ export default function UnifiedDashboardPage() {
                 </span>
               </div>
               <p className="text-[11px] text-[#6B6459] mt-2.5">
-                प्रलंबित खर्च: ₹{overview?.total_pending_expenses.toLocaleString('en-IN') || '0'}
+                {t.pending_approvals}: ₹{overview?.total_pending_expenses.toLocaleString('en-IN') || '0'}
               </p>
             </div>
 
@@ -1550,7 +1548,7 @@ export default function UnifiedDashboardPage() {
                 </span>
               </div>
               <p className="text-[11px] text-emerald-700 mt-2.5 font-medium">
-                एकूण जमा − मंजूर खर्च
+                {t.net_balance_sub}
               </p>
             </div>
           </div>
@@ -1558,34 +1556,34 @@ export default function UnifiedDashboardPage() {
           {/* Mode Breakdown Sub-row */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
             <div className="p-3.5 bg-white rounded-xl border border-[#E5E1D8]/80">
-              <span className="text-xs font-semibold text-[#6B6459]">एकूण रोख (Total Cash)</span>
+              <span className="text-xs font-semibold text-[#6B6459]">{t.total_cash_title}</span>
               <p className="text-lg font-black text-[#292118] mt-0.5 tabular-nums">
                 ₹{overview?.total_cash_collected.toLocaleString('en-IN') || '0'}
               </p>
               <p className="text-[11px] text-[#6B6459] mt-1 font-medium">
-                खजिनदारांकडे ताळमेळ: <span className="font-bold text-emerald-700">₹{overview?.total_cash_reconciled.toLocaleString('en-IN') || '0'}</span>
+                {t.reconciled_with_treasurer}: <span className="font-bold text-emerald-700">₹{overview?.total_cash_reconciled.toLocaleString('en-IN') || '0'}</span>
               </p>
             </div>
 
             <div className="p-3.5 bg-sky-50/60 rounded-xl border border-sky-200/80">
-              <span className="text-xs font-semibold text-sky-800">एकूण UPI (Total UPI)</span>
+              <span className="text-xs font-semibold text-sky-800">{t.total_upi_title}</span>
               <p className="text-lg font-black text-sky-900 mt-0.5 tabular-nums">
                 ₹{overview?.total_upi_collected.toLocaleString('en-IN') || '0'}
               </p>
-              <p className="text-[11px] text-sky-700 mt-1 font-medium">थेट मंडळाच्या बँक खात्यात जमा</p>
+              <p className="text-[11px] text-sky-700 mt-1 font-medium">{t.upi_donations_sub}</p>
             </div>
 
             <div className="p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/80">
-              <span className="text-xs font-semibold text-amber-800">एकूण येणे बाकी (Total Pending)</span>
+              <span className="text-xs font-semibold text-amber-800">{t.total_pending_title}</span>
               <p className="text-lg font-black text-amber-900 mt-0.5 tabular-nums">
                 ₹{overview?.total_pending_collected?.toLocaleString('en-IN') || '0'}
               </p>
-              <p className="text-[11px] text-amber-700 mt-1 font-medium">भविष्यात जमा होणे बाकी वर्गणी</p>
+              <p className="text-[11px] text-amber-700 mt-1 font-medium">{t.pending_donations_box_sub}</p>
             </div>
           </div>
         </div>
 
-        {/* 3. RECENT DONATIONS (नुकत्याच जमा झालेल्या पावत्या) */}
+        {/* 3. RECENT DONATIONS */}
         <div className="bg-white rounded-2xl border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)] overflow-hidden">
           <div className="p-4 border-b border-[#E5E1D8]/70 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -1594,9 +1592,9 @@ export default function UnifiedDashboardPage() {
               </span>
               <div>
                 <h3 className="text-sm font-extrabold text-[#292118]">
-                  नुकत्याच जमा झालेल्या पावत्या (Recent Donations)
+                  {t.recent_donations_title}
                 </h3>
-                <p className="text-xs text-[#6B6459] mt-0.5">नुकतीच नोंदवलेली देणगी व पावत्या</p>
+                <p className="text-xs text-[#6B6459] mt-0.5">{t.recent_donations_sub}</p>
               </div>
             </div>
 
@@ -1606,7 +1604,7 @@ export default function UnifiedDashboardPage() {
                 size="sm"
                 className="text-xs font-bold gap-1.5 rounded-xl cursor-pointer hover:bg-orange-50 hover:text-[#7C2D12] transition shadow-2xs"
               >
-                <span>अधिक पहा (View More)</span>
+                <span>{t.view_more}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             </Link>
@@ -1617,13 +1615,13 @@ export default function UnifiedDashboardPage() {
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                   <tr>
-                    <th className="px-4 py-2.5">पावती क्र.</th>
-                    <th className="px-4 py-2.5">देणगीदार</th>
-                    <th className="px-4 py-2.5">पेमेंट मोड</th>
-                    <th className="px-4 py-2.5 text-right">रक्कम</th>
-                    <th className="px-4 py-2.5">कार्यकर्ता</th>
-                    <th className="px-4 py-2.5">वेळ</th>
-                    <th className="px-4 py-2.5 text-center">कृती</th>
+                    <th className="px-4 py-2.5">{t.receipt_no}</th>
+                    <th className="px-4 py-2.5">{t.donor}</th>
+                    <th className="px-4 py-2.5">{t.payment_mode}</th>
+                    <th className="px-4 py-2.5 text-right">{t.amount}</th>
+                    <th className="px-4 py-2.5">{t.volunteer_role}</th>
+                    <th className="px-4 py-2.5">{t.time}</th>
+                    <th className="px-4 py-2.5 text-center">{t.action}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E1D8]/60">
@@ -1644,7 +1642,7 @@ export default function UnifiedDashboardPage() {
                               : 'bg-amber-50 text-amber-700 border-amber-200'
                           }`}
                         >
-                          {d.payment_mode}
+                          {d.payment_mode === 'CASH' ? t.cash : d.payment_mode === 'UPI' ? t.upi : t.pending}
                         </span>
                       </td>
                       <td className="px-4 py-2.5 text-right font-black text-[#292118] tabular-nums">
@@ -1652,7 +1650,7 @@ export default function UnifiedDashboardPage() {
                       </td>
                       <td className="px-4 py-2.5 text-xs text-[#6B6459] font-medium">{d.volunteer_name || '—'}</td>
                       <td className="px-4 py-2.5 text-[11px] text-[#A8A297] whitespace-nowrap">
-                        {new Date(d.created_at).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(d.created_at).toLocaleTimeString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', { hour: '2-digit', minute: '2-digit' })}
                       </td>
                       <td className="px-4 py-2.5 text-center">
                         <div className="flex items-center justify-center gap-1.5">
@@ -1660,16 +1658,16 @@ export default function UnifiedDashboardPage() {
                             <button
                               onClick={() => setCollectingDonation(d)}
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
-                              title="येणे वर्गणी जमा करा"
+                              title={t.collect_pending_title}
                             >
                               <Wallet className="w-3.5 h-3.5" />
-                              <span className="hidden sm:inline">वर्गणी जमा करा</span>
+                              <span className="hidden sm:inline">{t.confirm_collect_btn}</span>
                             </button>
                           )}
                           <button
                             onClick={() => openReceipt(d)}
                             className="p-1.5 rounded-lg text-[#C2410C] hover:bg-orange-50 transition cursor-pointer"
-                            title="पावती पहा"
+                            title={t.receipt_language}
                           >
                             <Eye className="w-4 h-4 inline" />
                           </button>
@@ -1681,22 +1679,22 @@ export default function UnifiedDashboardPage() {
               </table>
             ) : (
               <div className="p-8 text-center text-[#6B6459] text-xs">
-                अजून कोणत्याही पावत्या नोंदवलेल्या नाहीत.
+                {t.no_receipts_yet}
               </div>
             )}
           </div>
         </div>
 
-        {/* 4. LIVE CASH IN HAND (कार्यकर्त्यांकडील रोख शिल्लक) */}
+        {/* 4. LIVE CASH IN HAND */}
         <div className="bg-white rounded-2xl border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)] overflow-hidden">
           <div className="p-4 border-b border-[#E5E1D8]/70 flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-extrabold text-[#292118]">कार्यकर्त्यांकडील रोख शिल्लक (Live Cash In Hand)</h3>
-              <p className="text-xs text-[#6B6459] mt-0.5">ज्या कार्यकर्त्यांनी अजून खजिनदारांकडे रोख रक्कम जमा केलेली नाही</p>
+              <h3 className="text-sm font-extrabold text-[#292118]">{t.live_cash_in_hand_title}</h3>
+              <p className="text-xs text-[#6B6459] mt-0.5">{t.live_cash_in_hand_sub}</p>
             </div>
             <Link href="/reconciliation">
               <Button variant="primary" size="sm" className="text-xs font-bold rounded-xl cursor-pointer">
-                हिशोब घ्या (Reconcile)
+                {t.reconcile_btn}
               </Button>
             </Link>
           </div>
@@ -1705,12 +1703,12 @@ export default function UnifiedDashboardPage() {
             <table className="w-full text-left text-xs sm:text-sm">
               <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                 <tr>
-                  <th className="px-4 py-3">कार्यकर्ता नाव</th>
-                  <th className="px-4 py-3 text-right">आजची रोख</th>
-                  <th className="px-4 py-3 text-right">आजचे UPI</th>
-                  <th className="px-4 py-3 text-right">एकूण पावत्या</th>
-                  <th className="px-4 py-3 text-right">शिल्लक रोख (Handover Due)</th>
-                  <th className="px-4 py-3 text-center">कृती</th>
+                  <th className="px-4 py-3">{t.volunteer_role}</th>
+                  <th className="px-4 py-3 text-right">{t.today_cash}</th>
+                  <th className="px-4 py-3 text-right">{t.today_upi}</th>
+                  <th className="px-4 py-3 text-right">{t.receipts_count}</th>
+                  <th className="px-4 py-3 text-right">{t.handover_due}</th>
+                  <th className="px-4 py-3 text-center">{t.action}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E1D8]/60">
@@ -1727,7 +1725,7 @@ export default function UnifiedDashboardPage() {
                         </span>
                       ) : (
                         <span className="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80 text-xs font-semibold">
-                          ₹0 (Clear)
+                          ₹0 ({t.clear_status})
                         </span>
                       )}
                     </td>
@@ -1735,7 +1733,7 @@ export default function UnifiedDashboardPage() {
                       {v.total_cash_unreconciled > 0 ? (
                         <Link href={`/reconciliation?volunteerId=${v.volunteer_id}`}>
                           <button className="px-3 py-1 bg-gradient-to-r from-[#7C2D12] to-[#C2410C] text-white rounded-xl text-xs font-bold hover:from-[#5C220E] hover:to-[#9A3412] transition shadow-2xs cursor-pointer">
-                            जमा करा
+                            {t.confirm_collect_btn}
                           </button>
                         </Link>
                       ) : (

@@ -188,21 +188,21 @@ export default function HomePage() {
               {/* Card Receipt Details */}
               <div className="p-5 space-y-3 bg-[#FCFBF9]">
                 <div className="flex justify-between items-center text-xs pb-2 border-b border-[#E5E1D8]/60">
-                  <span className="text-[#6B6459] font-medium">पावती क्र. (Receipt No)</span>
+                  <span className="text-[#6B6459] font-medium">पावती क्रमांक</span>
                   <span className="font-mono font-bold text-[#7C2D12] bg-orange-50 px-2.5 py-0.5 rounded-md border border-orange-200/70 text-xs">
                     SSMM-2026-001
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center text-xs pb-2 border-b border-[#E5E1D8]/60">
-                  <span className="text-[#6B6459] font-medium">देणगीदार (Donor)</span>
+                  <span className="text-[#6B6459] font-medium">देणगीदार नाव</span>
                   <span className="font-bold text-[#292118]">आनंद जोशी (A-204)</span>
                 </div>
 
                 <div className="flex justify-between items-center text-xs pb-2 border-b border-[#E5E1D8]/60">
-                  <span className="text-[#6B6459] font-medium">पेमेंट प्रकार (Mode)</span>
+                  <span className="text-[#6B6459] font-medium">पेमेंट पद्धत</span>
                   <span className="font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80 text-[11px]">
-                    रोख (Cash)
+                    रोख
                   </span>
                 </div>
 
