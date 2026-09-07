@@ -52,20 +52,14 @@ export default function UnifiedDashboardPage() {
   const [isExportingDonations, setIsExportingDonations] = useState(false);
   const [isExportingExpenses, setIsExportingExpenses] = useState(false);
 
-  // Admin & Treasurer "View More" All Donations state
-  const [showAllAdminDonations, setShowAllAdminDonations] = useState(false);
-  const [adminDonationSearch, setAdminDonationSearch] = useState('');
-  const [adminDonationFilter, setAdminDonationFilter] = useState<'ALL' | 'CASH' | 'UPI' | 'PENDING'>('ALL');
-  const [isLoadingAllDonations, setIsLoadingAllDonations] = useState(false);
-
   const fetchDashboardData = () => {
     if (activeMandal && token) {
       const calls: Promise<any>[] = [
         apiRequest<TreasurerOverview>('/reconciliation/overview'),
-        apiRequest<any[]>('/donations?limit=500'),
       ];
 
       if (role === Role.VOLUNTEER) {
+        calls.push(apiRequest<any[]>('/donations?limit=100'));
         calls.push(apiRequest<any[]>('/expenses'));
       }
 
@@ -79,39 +73,6 @@ export default function UnifiedDashboardPage() {
         .finally(() => setIsLoading(false));
     }
   };
-
-  const handleToggleViewMore = async () => {
-    if (!showAllAdminDonations) {
-      setShowAllAdminDonations(true);
-      if (donations.length === 0) {
-        setIsLoadingAllDonations(true);
-        try {
-          const res = await apiRequest<any[]>('/donations?limit=500');
-          setDonations(res || []);
-        } catch (err) {
-          console.error('Failed to load all donations:', err);
-        } finally {
-          setIsLoadingAllDonations(false);
-        }
-      }
-    } else {
-      setShowAllAdminDonations(false);
-    }
-  };
-
-  const filteredAdminDonations = donations.filter((d) => {
-    if (adminDonationFilter !== 'ALL' && d.payment_mode !== adminDonationFilter) {
-      return false;
-    }
-    if (!adminDonationSearch.trim()) return true;
-    const term = adminDonationSearch.toLowerCase();
-    return (
-      (d.donor_name && d.donor_name.toLowerCase().includes(term)) ||
-      (d.receipt_number && d.receipt_number.toLowerCase().includes(term)) ||
-      (d.flat_wing && d.flat_wing.toLowerCase().includes(term)) ||
-      (d.volunteer_name && d.volunteer_name.toLowerCase().includes(term))
-    );
-  });
 
   useEffect(() => {
     fetchDashboardData();
@@ -924,126 +885,49 @@ export default function UnifiedDashboardPage() {
           </div>
         </div>
 
-        {/* 3. RECENT DONATIONS & ALL DONATIONS (जमा झालेल्या पावत्या) */}
+        {/* 3. RECENT DONATIONS (नुकत्याच जमा झालेल्या पावत्या) */}
         <div className="bg-white rounded-2xl border border-[#E5E1D8]/80 shadow-[0_4px_16px_-4px_rgba(41,33,24,0.04)] overflow-hidden">
-          <div className="p-4 border-b border-[#E5E1D8]/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-4 border-b border-[#E5E1D8]/70 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <span className="p-2 rounded-xl bg-emerald-50 text-emerald-700">
                 <Receipt className="w-4 h-4" />
               </span>
               <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-extrabold text-[#292118]">
-                    {showAllAdminDonations
-                      ? 'सर्व जमा झालेल्या पावत्या (All Collected Donations)'
-                      : 'नुकत्याच जमा झालेल्या पावत्या (Recent Donations)'}
-                  </h3>
-                  {showAllAdminDonations && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {filteredAdminDonations.length} पावत्या
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-[#6B6459] mt-0.5">
-                  {showAllAdminDonations
-                    ? 'मंडळात आतापर्यंत जमा झालेल्या सर्व पावत्यांची यादी'
-                    : 'नुकतीच नोंदवलेली देणगी व पावत्या'}
-                </p>
+                <h3 className="text-sm font-extrabold text-[#292118]">
+                  नुकत्याच जमा झालेल्या पावत्या (Recent Donations)
+                </h3>
+                <p className="text-xs text-[#6B6459] mt-0.5">नुकतीच नोंदवलेली देणगी व पावत्या</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              {showAllAdminDonations && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportDonations}
-                  disabled={isExportingDonations}
-                  className="text-xs font-bold gap-1 rounded-xl cursor-pointer"
-                  title="CSV Export"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">CSV Export</span>
-                </Button>
-              )}
+            <Link href="/donations">
               <Button
-                variant={showAllAdminDonations ? 'secondary' : 'outline'}
+                variant="outline"
                 size="sm"
-                onClick={handleToggleViewMore}
-                className="text-xs font-bold gap-1.5 rounded-xl cursor-pointer hover:bg-orange-50 hover:text-[#7C2D12] transition"
+                className="text-xs font-bold gap-1.5 rounded-xl cursor-pointer hover:bg-orange-50 hover:text-[#7C2D12] transition shadow-2xs"
               >
-                <span>{showAllAdminDonations ? 'कमी करा (Show Less)' : 'अधिक पहा (View More)'}</span>
-                {showAllAdminDonations ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+                <span>अधिक पहा (View More)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </Button>
-            </div>
+            </Link>
           </div>
 
-          {/* Search & Filters (Shown when View More is active) */}
-          {showAllAdminDonations && (
-            <div className="p-3 bg-[#FAF9F6]/80 border-b border-[#E5E1D8]/70 flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="w-3.5 h-3.5 text-[#A8A297] absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={adminDonationSearch}
-                  onChange={(e) => setAdminDonationSearch(e.target.value)}
-                  placeholder="नाव, पावती क्र. किंवा फ्लॅट क्र. शोधा..."
-                  className="w-full pl-8 pr-3 py-1.5 bg-white border border-[#E5E1D8] rounded-xl text-xs text-[#292118] placeholder:text-[#A8A297] focus:outline-none focus:border-[#F97316] transition"
-                />
-              </div>
-
-              {/* Filter Tabs */}
-              <div className="flex items-center gap-1 overflow-x-auto text-[11px] font-bold">
-                {[
-                  { key: 'ALL', label: 'सर्व', count: donations.length },
-                  { key: 'CASH', label: 'रोख', count: donations.filter((d) => d.payment_mode === 'CASH').length },
-                  { key: 'UPI', label: 'UPI', count: donations.filter((d) => d.payment_mode === 'UPI').length },
-                  { key: 'PENDING', label: 'प्रलंबित', count: donations.filter((d) => d.payment_mode === 'PENDING').length },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setAdminDonationFilter(tab.key as any)}
-                    className={`px-2.5 py-1 rounded-lg transition cursor-pointer flex items-center gap-1 ${
-                      adminDonationFilter === tab.key
-                        ? 'bg-[#7C2D12] text-white shadow-2xs'
-                        : 'bg-white text-[#6B6459] border border-[#E5E1D8] hover:bg-[#F3F1EC]'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    <span
-                      className={`text-[9px] px-1 py-0.2 rounded-full ${
-                        adminDonationFilter === tab.key ? 'bg-white/20 text-white' : 'bg-stone-100 text-[#6B6459]'
-                      }`}
-                    >
-                      {tab.count}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Table */}
-          <div className="overflow-x-auto max-h-[500px]">
-            {isLoadingAllDonations ? (
-              <div className="p-8 text-center text-[#6B6459] text-xs">
-                पावत्या लोड होत आहेत...
-              </div>
-            ) : (showAllAdminDonations ? filteredAdminDonations : (overview?.recent_donations || [])).length > 0 ? (
+          <div className="overflow-x-auto">
+            {overview?.recent_donations && overview.recent_donations.length > 0 ? (
               <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70 sticky top-0 z-10">
+                <thead className="bg-[#FAF9F6] text-[#6B6459] font-bold text-[11px] uppercase tracking-wider border-b border-[#E5E1D8]/70">
                   <tr>
                     <th className="px-4 py-2.5">पावती क्र.</th>
                     <th className="px-4 py-2.5">देणगीदार</th>
                     <th className="px-4 py-2.5">पेमेंट मोड</th>
                     <th className="px-4 py-2.5 text-right">रक्कम</th>
                     <th className="px-4 py-2.5">कार्यकर्ता</th>
-                    <th className="px-4 py-2.5">दिनांक / वेळ</th>
+                    <th className="px-4 py-2.5">वेळ</th>
                     <th className="px-4 py-2.5 text-center">कृती</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E1D8]/60">
-                  {(showAllAdminDonations ? filteredAdminDonations : (overview?.recent_donations || [])).map((d: any) => (
+                  {overview.recent_donations.map((d: any) => (
                     <tr key={d.id} className="hover:bg-orange-50/20 transition-colors">
                       <td className="px-4 py-2.5 font-mono font-bold text-[#7C2D12]">#{d.receipt_number}</td>
                       <td className="px-4 py-2.5 font-semibold text-[#292118]">
@@ -1068,7 +952,6 @@ export default function UnifiedDashboardPage() {
                       </td>
                       <td className="px-4 py-2.5 text-xs text-[#6B6459] font-medium">{d.volunteer_name || '—'}</td>
                       <td className="px-4 py-2.5 text-[11px] text-[#A8A297] whitespace-nowrap">
-                        {new Date(d.created_at).toLocaleDateString('mr-IN', { month: 'short', day: 'numeric' })}{' '}
                         {new Date(d.created_at).toLocaleTimeString('mr-IN', { hour: '2-digit', minute: '2-digit' })}
                       </td>
                       <td className="px-4 py-2.5 text-center">
@@ -1086,9 +969,7 @@ export default function UnifiedDashboardPage() {
               </table>
             ) : (
               <div className="p-8 text-center text-[#6B6459] text-xs">
-                {showAllAdminDonations && adminDonationSearch.trim()
-                  ? 'शोधलेल्या निकषांनुसार कोणतीही पावती सापडली नाही.'
-                  : 'अजून कोणत्याही पावत्या नोंदवलेल्या नाहीत.'}
+                अजून कोणत्याही पावत्या नोंदवलेल्या नाहीत.
               </div>
             )}
           </div>
