@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Wallet, QrCode, X, CheckCircle2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Wallet, QrCode, X, CheckCircle2, Copy, Check } from 'lucide-react';
+import QRCode from 'qrcode';
+import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../lib/api-client';
 
 interface CollectPendingModalProps {
@@ -23,12 +25,70 @@ export function CollectPendingModal({
   donation,
   onSuccess,
 }: CollectPendingModalProps) {
+  const { activeMandal } = useAuth();
   const [paymentMode, setPaymentMode] = useState<'CASH' | 'UPI'>('UPI');
   const [paymentRef, setPaymentRef] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Admin Uploaded QR & UPI Details
+  const [adminQrUrl, setAdminQrUrl] = useState<string | null>(activeMandal?.upi_qr_url || null);
+  const [upiId, setUpiId] = useState<string>(activeMandal?.upi_id || '');
+  const [dynamicQr, setDynamicQr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Fetch the latest mandal data to ensure we have the Admin's uploaded QR code
+  useEffect(() => {
+    if (isOpen) {
+      if (activeMandal?.upi_qr_url) {
+        setAdminQrUrl(activeMandal.upi_qr_url);
+      }
+      if (activeMandal?.upi_id) {
+        setUpiId(activeMandal.upi_id);
+      }
+
+      // Fetch fresh mandal profile to catch any newly uploaded QR code
+      apiRequest<{ data: any }>('/mandals/current')
+        .then((res) => {
+          const m = res?.data || res;
+          if (m?.upi_qr_url) setAdminQrUrl(m.upi_qr_url);
+          if (m?.upi_id) setUpiId(m.upi_id);
+        })
+        .catch((err) => {
+          console.warn('Could not refresh mandal QR code:', err);
+        });
+    }
+  }, [isOpen, activeMandal]);
+
+  // Generate dynamic QR code fallback if needed
+  useEffect(() => {
+    if (paymentMode === 'UPI' && donation) {
+      const targetUpi = upiId || activeMandal?.upi_id || 'shivneri@upi';
+      const mandalName = activeMandal?.name || 'Digital Vargani';
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(targetUpi)}&pn=${encodeURIComponent(mandalName)}&am=${donation.amount}&cu=INR&tn=${encodeURIComponent('Vargani - #' + donation.receipt_number)}`;
+      
+      QRCode.toDataURL(upiUrl, {
+        margin: 1,
+        width: 220,
+        color: { dark: '#1E293B', light: '#FFFFFF' },
+      })
+        .then((url) => setDynamicQr(url))
+        .catch((err) => console.error('Failed to generate UPI QR:', err));
+    }
+  }, [paymentMode, donation, upiId, activeMandal]);
+
   if (!isOpen || !donation) return null;
+
+  const handleCopyUpi = async () => {
+    const targetUpi = upiId || activeMandal?.upi_id || 'shivneri@upi';
+    try {
+      await navigator.clipboard.writeText(targetUpi);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy UPI ID:', err);
+    }
+  };
 
   const handleConfirmCollect = async () => {
     try {
@@ -56,8 +116,9 @@ export function CollectPendingModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-[#E5E1D8] shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white rounded-3xl p-5 sm:p-6 max-w-md w-full border border-[#E5E1D8] shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150 my-auto">
+        {/* Header */}
         <div className="flex justify-between items-center pb-3 border-b border-[#E5E1D8]">
           <div>
             <h3 className="text-base font-extrabold text-[#292118] flex items-center gap-2">
@@ -74,6 +135,7 @@ export function CollectPendingModal({
           </button>
         </div>
 
+        {/* Donation Details Card */}
         <div className="bg-[#FAF9F6] p-3.5 rounded-2xl border border-[#E5E1D8] space-y-1">
           <div className="flex justify-between items-center text-xs">
             <span className="text-[#6B6459]">देणगीदार:</span>
@@ -97,6 +159,7 @@ export function CollectPendingModal({
           </div>
         </div>
 
+        {/* Payment Mode Selection */}
         <div className="space-y-2">
           <label className="text-xs font-bold text-[#292118] block">भरणा प्रकार निवडा (Payment Mode)</label>
           <div className="grid grid-cols-2 gap-2">
@@ -127,6 +190,79 @@ export function CollectPendingModal({
           </div>
         </div>
 
+        {/* UPI QR Code Container (Displayed when UPI is selected) */}
+        {paymentMode === 'UPI' && (
+          <div className="p-3.5 bg-gradient-to-br from-orange-50/60 to-amber-50/40 rounded-2xl border border-orange-200/80 text-center space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#7C2D12]">
+                <QrCode className="w-4 h-4 text-[#C2410C]" />
+                <span>
+                  {adminQrUrl ? 'मंडळाचा अधिकृत UPI QR कोड' : 'स्कॅन करून भरा (Scan & Pay)'}
+                </span>
+              </div>
+              <span className="text-xs font-black text-[#7C2D12] bg-white px-2.5 py-0.5 rounded-full border border-orange-200 shadow-2xs">
+                ₹{parseFloat(String(donation.amount)).toLocaleString('en-IN')}
+              </span>
+            </div>
+
+            {/* QR Image Box */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="p-2.5 bg-white rounded-2xl border-2 border-orange-200/90 shadow-xs inline-block">
+                {adminQrUrl ? (
+                  <img
+                    src={adminQrUrl}
+                    alt="Admin Uploaded Mandal QR Code"
+                    className="w-44 h-44 sm:w-48 sm:h-48 object-contain rounded-xl"
+                  />
+                ) : dynamicQr ? (
+                  <img
+                    src={dynamicQr}
+                    alt="UPI Payment QR Code"
+                    className="w-44 h-44 sm:w-48 sm:h-48 object-contain rounded-xl"
+                  />
+                ) : (
+                  <div className="w-44 h-44 flex flex-col items-center justify-center bg-gray-50 rounded-xl text-xs text-gray-400">
+                    <QrCode className="w-8 h-8 mb-1 animate-pulse text-orange-400" />
+                    <span>QR कोड लोड होत आहे...</span>
+                  </div>
+                )}
+              </div>
+
+              {adminQrUrl ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100/90 px-2.5 py-0.5 rounded-full border border-emerald-200 mt-2">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  <span>ॲडमिनने अपलोड केलेला अधिकृत QR कोड</span>
+                </span>
+              ) : (
+                <p className="text-[10px] text-[#6B6459] mt-1.5 font-medium">
+                  Google Pay • PhonePe • Paytm • BHIM द्वारे स्कॅन करा
+                </p>
+              )}
+            </div>
+
+            {/* UPI ID & Copy Row */}
+            {(upiId || activeMandal?.upi_id) && (
+              <div className="flex items-center justify-between bg-white px-3 py-1.5 rounded-xl border border-orange-200 text-xs">
+                <div className="text-left truncate mr-2">
+                  <span className="text-[10px] text-[#8C857B] font-medium block">UPI ID:</span>
+                  <span className="font-mono font-bold text-[#292118] truncate block">
+                    {upiId || activeMandal?.upi_id}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyUpi}
+                  className="px-2.5 py-1 text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100 rounded-lg border border-orange-200 transition cursor-pointer flex items-center gap-1 shrink-0"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'कॉपी झाले!' : 'कॉपी करा'}</span>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* UPI UTR Reference Input */}
         {paymentMode === 'UPI' && (
           <div>
             <label className="text-xs font-bold text-[#292118] block mb-1">
@@ -148,6 +284,7 @@ export function CollectPendingModal({
           </p>
         )}
 
+        {/* Action Buttons */}
         <div className="flex gap-2 pt-2">
           <button
             type="button"
