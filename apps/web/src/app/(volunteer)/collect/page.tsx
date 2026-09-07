@@ -22,12 +22,14 @@ export default function CollectDonationPage() {
   const router = useRouter();
 
   const handleBack = () => {
-    if (role === Role.TREASURER) {
-      router.push('/dashboard');
-    } else {
-      router.back();
-    }
+    router.push('/dashboard');
   };
+
+  useEffect(() => {
+    if (role && role !== Role.TREASURER) {
+      router.replace('/dashboard');
+    }
+  }, [role, router]);
 
   const [donorName, setDonorName] = useState('');
   const [donorPhone, setDonorPhone] = useState('');
