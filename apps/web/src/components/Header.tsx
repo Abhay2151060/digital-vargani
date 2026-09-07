@@ -6,6 +6,7 @@ import { Language, Role } from '@vargani/types';
 import { getT } from '../lib/i18n';
 import { LogOut, Globe, Sparkles, User } from 'lucide-react';
 import Link from 'next/link';
+import { formatDisplayName } from '../lib/format';
 
 export const Header: React.FC = () => {
   const { user, activeMandal, role, memberships, language, setLanguage, logout, switchMandal } = useAuth();
@@ -107,7 +108,7 @@ export const Header: React.FC = () => {
           {user && (
             <Link
               href="/profile"
-              title={language === Language.ENGLISH ? 'My Profile' : 'माझे प्रोफाईल'}
+              title={formatDisplayName(user?.full_name) || (language === Language.ENGLISH ? 'My Profile' : 'माझे प्रोफाईल')}
               className="p-2 rounded-xl text-[#6B6459] hover:bg-orange-50 hover:text-[#7C2D12] transition min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer"
             >
               <User className="w-4 h-4" />

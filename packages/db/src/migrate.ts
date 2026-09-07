@@ -28,6 +28,16 @@ export async function runMigrations() {
     await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS ahwal_url TEXT;");
     await client.query("ALTER TABLE mandals ADD COLUMN IF NOT EXISTS ahwal_title VARCHAR(200);");
     await client.query("ALTER TABLE expenses ADD COLUMN IF NOT EXISTS payment_mode payment_mode NOT NULL DEFAULT 'CASH';");
+    try {
+      await client.query("ALTER TABLE expenses ALTER COLUMN category TYPE TEXT;");
+    } catch (e) {
+      console.warn('expenses category type warning:', e);
+    }
+    try {
+      await client.query("UPDATE users SET full_name = REPLACE(full_name, '_', ' ') WHERE full_name LIKE '%_%';");
+    } catch (e) {
+      console.warn('clean full_name warning:', e);
+    }
     console.log('Successfully applied database schema and added all columns.');
   } catch (error) {
     console.error('Migration failed:', error);

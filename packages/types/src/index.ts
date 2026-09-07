@@ -397,7 +397,7 @@ export type CollectPendingDonationInput = z.infer<typeof collectPendingDonationS
 
 export const createExpenseSchema = z.object({
   mandal_id: z.string().uuid(),
-  category: z.nativeEnum(ExpenseCategory),
+  category: z.string().min(1, 'खर्च वर्गवारी आवश्यक आहे (Category is required)'),
   amount: z.number().positive('Expense amount must be greater than zero'),
   description: z.string().min(3, 'Description is required'),
   bill_photo_url: z.string().url().optional().or(z.literal('')),

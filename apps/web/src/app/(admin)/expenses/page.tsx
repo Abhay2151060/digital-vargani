@@ -10,6 +10,7 @@ import { getT } from '../../../lib/i18n';
 import { ExpenseCategory, ExpenseStatus, Role, PaymentMode, Language } from '@vargani/types';
 import Link from 'next/link';
 import { PlusCircle, Image as ImageIcon, Wallet, QrCode, Building, CheckCircle2, Clock } from 'lucide-react';
+import { formatDisplayName } from '../../../lib/format';
 
 export default function ExpensesPage() {
   const { activeMandal, role, token, language } = useAuth();
@@ -20,7 +21,7 @@ export default function ExpensesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Form State
-  const [category, setCategory] = useState<ExpenseCategory>(ExpenseCategory.MANDAP);
+  const [category, setCategory] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
   const [description, setDescription] = useState('');
   const [billUrl, setBillUrl] = useState('');
@@ -57,6 +58,10 @@ export default function ExpensesPage() {
       setError('कृपया वैध खर्च रक्कम टाका');
       return;
     }
+    if (!category.trim()) {
+      setError('कृपया खर्च वर्गवारी टाका (Category is required)');
+      return;
+    }
     if (!description.trim()) {
       setError('खर्चाचा तपशील आवश्यक आहे');
       return;
@@ -68,7 +73,7 @@ export default function ExpensesPage() {
       await apiRequest('/expenses', {
         method: 'POST',
         body: JSON.stringify({
-          category,
+          category: category.trim(),
           amount: parsedAmount,
           description: description.trim(),
           bill_photo_url: billUrl.trim() || undefined,
@@ -77,6 +82,7 @@ export default function ExpensesPage() {
       });
 
       setIsModalOpen(false);
+      setCategory('');
       setAmount('');
       setDescription('');
       setBillUrl('');
@@ -270,7 +276,7 @@ export default function ExpensesPage() {
                       <td className="px-4 py-3 text-right font-black text-[#7C2D12] tabular-nums">
                         ₹{parseFloat(e.amount).toLocaleString('en-IN')}
                       </td>
-                      <td className="px-4 py-3 text-[#6B6459] text-xs">{e.logged_by_name}</td>
+                      <td className="px-4 py-3 text-[#6B6459] text-xs">{formatDisplayName(e.logged_by_name)}</td>
                       <td className="px-4 py-3 text-center">
                         {e.bill_photo_url ? (
                           <a
@@ -375,23 +381,13 @@ export default function ExpensesPage() {
             </div>
           </div>
 
-          <div className="space-y-1 text-left">
-            <label className="text-sm font-medium text-[#292118]">खर्च वर्गवारी (Category)</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as ExpenseCategory)}
-              className="w-full min-h-[48px] rounded-xl border-2 border-[#E5E1D8] bg-white px-3.5 text-base text-[#292118] focus:border-[#F97316] focus:outline-none"
-            >
-              <option value={ExpenseCategory.MANDAP}>मंडप डेकोरेशन (Mandap)</option>
-              <option value={ExpenseCategory.IDOL}>मूर्ती (Idol / Murti)</option>
-              <option value={ExpenseCategory.SOUND_LIGHTING}>साऊंड व लाईटिंग (Sound & Lighting)</option>
-              <option value={ExpenseCategory.PRASAD}>प्रसाद व पूजा साहित्य (Prasad & Puja)</option>
-              <option value={ExpenseCategory.SECURITY}>सुरक्षा व सीसीटीव्ही (Security)</option>
-              <option value={ExpenseCategory.PERMISSIONS}>परवानग्या व शासकीय शुल्क (Permissions)</option>
-              <option value={ExpenseCategory.MARKETING}>बॅनर व प्रचार (Marketing)</option>
-              <option value={ExpenseCategory.OTHER}>इतर किरकोळ खर्च (Other)</option>
-            </select>
-          </div>
+          <Input
+            label="खर्च वर्गवारी (Category)"
+            placeholder="उदा. मंडप डेकोरेशन, जनरेटर डिझेल, मूर्ती, साऊंड सिस्टीम"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+          />
 
           <Input
             label="खर्च रक्कम (₹)"

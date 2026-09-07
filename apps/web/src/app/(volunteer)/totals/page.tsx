@@ -11,6 +11,7 @@ import { Card, Button, BottomNav } from '@vargani/ui';
 import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { Wallet, IndianRupee, QrCode, PlusCircle, Receipt, ArrowRight, ShieldCheck } from 'lucide-react';
+import { formatDisplayName } from '../../../lib/format';
 
 export default function VolunteerTotalsPage() {
   const { user, activeMandal, role, language } = useAuth();
@@ -59,7 +60,7 @@ export default function VolunteerTotalsPage() {
       <main className="max-w-md mx-auto w-full px-4 pt-4 flex-1 space-y-4">
         <div className="flex justify-between items-center px-1">
           <h2 className="text-lg font-extrabold text-[#292118]">{t.my_totals}</h2>
-          <span className="text-xs font-semibold text-[#6B6459]">{user?.full_name}</span>
+          <span className="text-xs font-semibold text-[#6B6459]">{formatDisplayName(user?.full_name)}</span>
         </div>
 
         {/* Big Cash In Hand Card */}

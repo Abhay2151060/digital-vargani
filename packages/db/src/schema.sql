@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     mandal_id UUID NOT NULL REFERENCES mandals(id) ON DELETE RESTRICT,
     logged_by UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    category expense_category NOT NULL,
+    category TEXT NOT NULL,
     amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
     description TEXT NOT NULL,
     bill_photo_url TEXT,

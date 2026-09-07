@@ -13,6 +13,7 @@ import { getT } from '../../../lib/i18n';
 import { generateWhatsAppShareUrl } from '../../../lib/whatsapp';
 import { PlusCircle, Wallet, Receipt, Share2, Eye, User, Phone, Home, Calendar, Users, QrCode, CheckCircle2, X, Clock } from 'lucide-react';
 import { Language, Role, PaymentMode } from '@vargani/types';
+import { formatDisplayName } from '../../../lib/format';
 
 export default function VolunteerHistoryPage() {
   const { user, role, activeMandal, language } = useAuth();
@@ -70,7 +71,7 @@ export default function VolunteerHistoryPage() {
       paymentMode: d.payment_mode,
       flatWing: d.flat_wing,
       date: new Date(d.created_at).toLocaleDateString('en-IN'),
-      volunteerName: user?.full_name || 'कार्यकर्ता',
+      volunteerName: formatDisplayName(user?.full_name) || 'कार्यकर्ता',
       language: d.language || Language.MARATHI,
     });
     setIsModalOpen(true);

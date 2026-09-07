@@ -30,19 +30,25 @@ export class AuthService {
     if (!term || !passwordInput) {
       throw new BadRequestException({
         code: 'INVALID_INPUT',
-        message: 'युझरनेम आणि पासवर्ड आवश्यक आहे (Username and password are required)',
+        message: 'नाव किंवा मोबाईल नंबर आणि पासवर्ड आवश्यक आहे (Name/Phone and password are required)',
       });
     }
 
-    // 1. Find user by case-insensitive username, phone, full_name, or stripped variants
+    // 1. Find user by case-insensitive full_name, phone, username, or normalized variants
     const userRes = await this.db.query(
       `SELECT * FROM users 
-       WHERE LOWER(username) = LOWER($1) 
+       WHERE LOWER(full_name) = LOWER($1)
+          OR LOWER(username) = LOWER($1) 
           OR phone = $1 
-          OR LOWER(full_name) = LOWER($1)
+          OR REPLACE(LOWER(full_name), '_', ' ') = LOWER($1)
+          OR REPLACE(LOWER(full_name), ' ', '') = REPLACE(LOWER($1), ' ', '')
+          OR REPLACE(LOWER(full_name), '_', '') = REPLACE(LOWER($1), ' ', '')
           OR REPLACE(LOWER(username), '_', ' ') = LOWER($1)
           OR REPLACE(LOWER(username), '_', '') = REPLACE(LOWER($1), ' ', '')
-          OR REPLACE(LOWER(full_name), ' ', '') = REPLACE(LOWER($1), ' ', '')
+          OR (
+            LENGTH(REGEXP_REPLACE($1, '\\D', '', 'g')) >= 10 
+            AND RIGHT(REGEXP_REPLACE(COALESCE(phone, ''), '\\D', '', 'g'), 10) = RIGHT(REGEXP_REPLACE($1, '\\D', '', 'g'), 10)
+          )
        ORDER BY created_at ASC 
        LIMIT 1`,
       [term]
@@ -52,7 +58,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
-        message: 'अवैध युझरनेम किंवा पासवर्ड (Invalid username or password)',
+        message: 'अवैध नाव/मोबाईल किंवा पासवर्ड (Invalid credentials)',
       });
     }
 

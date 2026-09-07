@@ -10,6 +10,7 @@ import { getT } from '../../../lib/i18n';
 import { Role, MemberStatus } from '@vargani/types';
 import Link from 'next/link';
 import { UserPlus, Users, Phone, UserCheck, Share2, Copy, Check, Lock, ExternalLink, Shield } from 'lucide-react';
+import { formatDisplayName } from '../../../lib/format';
 
 interface CreatedCredentials {
   user: {
@@ -86,11 +87,12 @@ export default function MembersPage() {
     setError(null);
     setIsSubmitting(true);
     try {
+      const finalUsername = (username.trim() || autoSlug(fullName) || 'user_' + Date.now()).toLowerCase();
       const res = await apiRequest<any>('/members/invite', {
         method: 'POST',
         body: JSON.stringify({
           full_name: fullName.trim(),
-          username: username.trim() || undefined,
+          username: finalUsername,
           phone: phone.trim() || undefined,
           role: selectedRole,
         }),
@@ -135,7 +137,7 @@ export default function MembersPage() {
   const handleOpenExistingShare = (m: any) => {
     const mandalName = activeMandal?.name || 'मंडळ';
     const loginUrl = 'https://digital-vargani-mu.vercel.app/login';
-    const message = `🚩 *${mandalName} - डिजिटल वर्गणी लॉगिन माहिती*\n\nनमस्कार ${m.full_name},\nआपणांस डिजिटल वर्गणी प्रणालीमध्ये *${m.role}* म्हणून समाविष्ट करण्यात आले आहे.\n\n🔗 *लॉगिन लिंक:* ${loginUrl}\n👤 *युझरनेम (Username):* ${m.username || m.phone || m.full_name}\n🔑 *डिफॉल्ट पासवर्ड:* user123\n\n⚠️ पहिल्या लॉगिननंतर कृपया आपला पासवर्ड बदलून घ्या.`;
+    const message = `🚩 *${mandalName} - डिजिटल वर्गणी लॉगिन माहिती*\n\nनमस्कार ${formatDisplayName(m.full_name)},\nआपणांस डिजिटल वर्गणी प्रणालीमध्ये *${m.role}* म्हणून समाविष्ट करण्यात आले आहे.\n\n🔗 *लॉगिन लिंक:* ${loginUrl}\n👤 *लॉगिन नाव / मोबाईल:* ${m.full_name}${m.phone ? ` / ${m.phone}` : ''}\n🔑 *डिफॉल्ट पासवर्ड:* user123\n\n⚠️ लॉगिन करण्यासाठी आपले नाव किंवा मोबाईल नंबर टाका व पहिल्या लॉगिननंतर पासवर्ड बदलून घ्या.`;
 
     setCredentialsModal({
       user: {
@@ -241,7 +243,7 @@ export default function MembersPage() {
               <tbody className="divide-y divide-[#E5E1D8]">
                 {members.map((m) => (
                   <tr key={m.id} className="hover:bg-orange-50/20 transition">
-                    <td className="px-4 py-3 font-semibold text-[#292118]">{m.full_name}</td>
+                    <td className="px-4 py-3 font-semibold text-[#292118]">{formatDisplayName(m.full_name)}</td>
                     <td className="px-4 py-3 font-mono text-xs font-semibold text-[#C2410C]">
                       {m.username || '—'}
                     </td>
@@ -325,15 +327,6 @@ export default function MembersPage() {
           />
 
           <Input
-            label="युझरनेम (Username)"
-            placeholder="उदा. rahul_jadhav"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, '_'))}
-            leftIcon={<span className="text-xs font-bold text-[#8C827A]">@</span>}
-            required
-          />
-
-          <Input
             label="मोबाईल नंबर (ऐच्छिक - व्हॉट्सॲपसाठी)"
             type="tel"
             maxLength={10}
@@ -363,7 +356,7 @@ export default function MembersPage() {
               size="lg"
               fullWidth
               isLoading={isSubmitting}
-              className="font-bold shadow-md shadow-orange-500/20"
+              className="font-bold shadow-md shadow-orange-500/20 cursor-pointer"
             >
               <span>कार्यकर्ता जोडा व लॉगिन तयार करा</span>
             </Button>
@@ -384,7 +377,7 @@ export default function MembersPage() {
               <div>
                 <p className="font-bold text-emerald-900">युझर यशस्वीरीत्या तयार झाला!</p>
                 <p className="mt-0.5">
-                  खालील युझरनेम व पासवर्ड संबंधितांना पाठवा. पहिल्या लॉगिननंतर ते आपला पासवर्ड बदलू शकतील.
+                  खालील लॉगिन माहिती संबंधितांना पाठवा. लॉगिन करताना ते आपले पूर्ण नाव किंवा मोबाईल नंबर वापरू शकतात.
                 </p>
               </div>
             </div>
@@ -392,15 +385,17 @@ export default function MembersPage() {
             {/* Credentials Card */}
             <div className="bg-[#FAF9F6] border-2 border-[#E5E1D8] rounded-2xl p-4 space-y-3">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-[#6B6459] font-medium">नाव:</span>
-                <span className="font-bold text-[#292118]">{credentialsModal.user.full_name}</span>
+                <span className="text-[#6B6459] font-medium">नाव (Full Name):</span>
+                <span className="font-bold text-[#292118]">{formatDisplayName(credentialsModal.user.full_name)}</span>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-[#6B6459] font-medium">युझरनेम (Username):</span>
-                <span className="font-mono font-bold text-[#C2410C] bg-orange-100/60 px-2 py-0.5 rounded">
-                  {credentialsModal.user.username}
-                </span>
-              </div>
+              {credentialsModal.user.phone && (
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-[#6B6459] font-medium">मोबाईल नंबर (Phone):</span>
+                  <span className="font-mono font-bold text-[#C2410C] bg-orange-100/60 px-2 py-0.5 rounded">
+                    {credentialsModal.user.phone}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center text-xs">
                 <span className="text-[#6B6459] font-medium">डिफॉल्ट पासवर्ड:</span>
                 <span className="font-mono font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded">

@@ -15,6 +15,7 @@ import { enqueueOfflineDonation } from '../../../lib/offline-queue';
 import { PlusCircle, Wallet, QrCode, IndianRupee, User, Phone, Home, Sparkles, Receipt, ArrowLeft, Clock, Copy, Check, ShieldCheck, ExternalLink } from 'lucide-react';
 import QRCode from 'qrcode';
 import Link from 'next/link';
+import { formatDisplayName } from '../../../lib/format';
 
 export default function CollectDonationPage() {
   const { user, role, activeMandal, language, token } = useAuth();
@@ -150,7 +151,7 @@ export default function CollectDonationPage() {
           paymentMode: donation.payment_mode,
           flatWing: donation.flat_wing,
           date: dateFormatted,
-          volunteerName: user?.full_name || 'कार्यकर्ता',
+          volunteerName: formatDisplayName(user?.full_name) || 'कार्यकर्ता',
           language: receiptLang,
         });
       } else {
@@ -188,7 +189,7 @@ export default function CollectDonationPage() {
           paymentMode: paymentMode,
           flatWing: flatWing.trim(),
           date: dateFormatted,
-          volunteerName: user?.full_name || 'कार्यकर्ता',
+          volunteerName: formatDisplayName(user?.full_name) || 'कार्यकर्ता',
           language: receiptLang,
         });
       }

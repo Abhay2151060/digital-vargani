@@ -12,6 +12,7 @@ import { apiRequest } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { DiscrepancyStatus, Role } from '@vargani/types';
 import Link from 'next/link';
+import { formatDisplayName } from '../../../lib/format';
 import {
   HandCoins,
   CheckCircle2,
@@ -215,7 +216,7 @@ function ReconciliationContent() {
                   <option value="">-- कार्यकर्ता निवडा --</option>
                   {volunteers.map((m) => (
                     <option key={m.user_id} value={m.user_id}>
-                      {m.full_name} ({m.phone})
+                      {formatDisplayName(m.full_name)} ({m.phone})
                     </option>
                   ))}
                 </select>
@@ -363,8 +364,8 @@ function ReconciliationContent() {
                             minute: '2-digit',
                           })}
                         </td>
-                        <td className="px-4 py-3 font-semibold text-[#292118]">{h.volunteer_name}</td>
-                        <td className="px-4 py-3 text-[#6B6459]">{h.treasurer_name}</td>
+                        <td className="px-4 py-3 font-semibold text-[#292118]">{formatDisplayName(h.volunteer_name)}</td>
+                        <td className="px-4 py-3 text-[#6B6459]">{formatDisplayName(h.treasurer_name)}</td>
                         <td className="px-4 py-3 text-right font-medium">₹{parseFloat(h.expected_amount).toLocaleString('en-IN')}</td>
                         <td className="px-4 py-3 text-right font-bold text-[#292118]">₹{parseFloat(h.received_amount).toLocaleString('en-IN')}</td>
                         <td className="px-4 py-3 text-center">

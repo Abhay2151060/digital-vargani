@@ -9,6 +9,7 @@ import { Card, Input, Button } from '@vargani/ui';
 import { getT } from '../../lib/i18n';
 import { Role, Language } from '@vargani/types';
 import Link from 'next/link';
+import { formatDisplayName } from '../../lib/format';
 import {
   User,
   Shield,
@@ -99,7 +100,7 @@ export default function ProfilePage() {
             </div>
             <div className="min-w-0">
               <h2 className="text-lg font-extrabold text-[#292118] truncate">
-                {user?.full_name || 'वापरकर्ता'}
+                {formatDisplayName(user?.full_name) || 'वापरकर्ता'}
               </h2>
               <p className="text-xs text-[#6B6459] font-mono">@{user?.username}</p>
               <div className="flex items-center gap-2 mt-1">

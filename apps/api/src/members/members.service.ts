@@ -92,7 +92,7 @@ export class MembersService {
       );
 
       const loginUrl = 'https://digital-vargani-mu.vercel.app/login';
-      const shareableMessage = `🚩 *${mandalName} - डिजिटल वर्गणी लॉगिन माहिती*\n\nनमस्कार ${input.full_name},\nआपणांस डिजिटल वर्गणी प्रणालीमध्ये *${input.role}* म्हणून समाविष्ट करण्यात आले आहे.\n\n🔗 *लॉगिन लिंक:* ${loginUrl}\n👤 *युझरनेम (Username):* ${user.username}\n🔑 *पासवर्ड (Password):* ${DEFAULT_PASSWORD}\n\n⚠️ पहिल्या लॉगिननंतर कृपया आपला पासवर्ड बदलून घ्या.`;
+      const shareableMessage = `🚩 *${mandalName} - डिजिटल वर्गणी लॉगिन माहिती*\n\nनमस्कार ${input.full_name},\nआपणांस डिजिटल वर्गणी प्रणालीमध्ये *${input.role}* म्हणून समाविष्ट करण्यात आले आहे.\n\n🔗 *लॉगिन लिंक:* ${loginUrl}\n👤 *लॉगिन नाव / मोबाईल:* ${input.full_name}${user.phone ? ' / ' + user.phone : ''}\n🔑 *पासवर्ड (Password):* ${DEFAULT_PASSWORD}\n\n⚠️ लॉगिन करण्यासाठी आपले नाव किंवा मोबाईल नंबर टाका व पहिल्या लॉगिननंतर पासवर्ड बदलून घ्या.`;
 
       return {
         member: memberRes.rows[0],

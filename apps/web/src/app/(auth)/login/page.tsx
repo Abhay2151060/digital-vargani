@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../context/AuthContext';
 import { Input, Button, Card, Modal } from '@vargani/ui';
 import { Role } from '@vargani/types';
-import Link from 'next/link';
-import { User, Lock, Eye, EyeOff, ArrowRight, Home, ArrowLeft, ShieldCheck, KeyRound } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
 import { getT } from '../../../lib/i18n';
 
 export default function LoginPage() {
@@ -48,7 +47,7 @@ export default function LoginPage() {
     if (e) e.preventDefault();
 
     if (!username.trim()) {
-      setError('कृपया युझरनेम किंवा मोबाईल नंबर टाका');
+      setError('कृपया पूर्ण नाव किंवा मोबाईल नंबर टाका');
       return;
     }
     if (!password) {
@@ -104,17 +103,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-[#FAF9F6] relative">
-      {/* Top Back to Home Button */}
-      <div className="w-full max-w-md flex justify-start mb-4">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#6B6459] hover:text-[#C2410C] bg-white hover:bg-[#F3F1EC] px-3 py-1.5 rounded-xl border border-[#E5E1D8] shadow-2xs transition"
-        >
-          <ArrowLeft className="w-4 h-4 text-[#F97316]" />
-          <span>मुख्यपृष्ठ (Home)</span>
-        </Link>
-      </div>
-
       <div className="w-full max-w-md">
         {/* Brand Header */}
         <div className="text-center mb-6" suppressHydrationWarning>
@@ -149,9 +137,9 @@ export default function LoginPage() {
           <form onSubmit={(e) => handleLogin(e)} className="space-y-4">
             <div>
               <Input
-                label={mounted ? t.username_label || 'युझरनेम किंवा मोबाईल नंबर' : 'युझरनेम किंवा मोबाईल नंबर'}
+                label={mounted ? t.username_label || 'पूर्ण नाव किंवा मोबाईल नंबर' : 'पूर्ण नाव किंवा मोबाईल नंबर'}
                 type="text"
-                placeholder={mounted ? t.username_placeholder || 'उदा. abhay किंवा 8421692967' : 'उदा. abhay किंवा 8421692967'}
+                placeholder={mounted ? t.username_placeholder || 'उदा. धीरज कांबळे किंवा 9822012345' : 'उदा. धीरज कांबळे किंवा 9822012345'}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 leftIcon={<User className="w-4 h-4" />}
@@ -175,16 +163,12 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-[38px] text-[#8C827A] hover:text-[#292118] p-1 transition"
+                  className="absolute right-3 top-[38px] text-[#8C827A] hover:text-[#292118] p-1 transition cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-[11px] text-[#8C827A] mt-1.5 flex items-center gap-1">
-                <span>💡</span>
-                <span>{mounted ? t.default_password_hint : 'नवीन युझर्ससाठी डिफॉल्ट पासवर्ड: user123'}</span>
-              </p>
             </div>
 
             <Button
@@ -193,7 +177,7 @@ export default function LoginPage() {
               size="lg"
               fullWidth
               isLoading={isLoading}
-              className="font-bold gap-2 shadow-md shadow-orange-500/20"
+              className="font-bold gap-2 shadow-md shadow-orange-500/20 cursor-pointer"
             >
               <span>{mounted ? t.login_btn || 'लॉगिन करा' : 'लॉगिन करा'}</span>
               <ArrowRight className="w-4 h-4" />
@@ -206,17 +190,6 @@ export default function LoginPage() {
             </p>
           </div>
         </Card>
-
-        {/* Bottom Home Page Navigation Link */}
-        <div className="mt-5 text-center">
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center gap-2 text-xs font-bold text-[#6B6459] hover:text-[#C2410C] bg-white hover:bg-[#F3F1EC] px-4 py-2.5 rounded-2xl border border-[#E5E1D8] shadow-2xs transition w-full"
-          >
-            <Home className="w-4 h-4 text-[#F97316]" />
-            <span>होम पेजवर जा (Go to Home Page)</span>
-          </Link>
-        </div>
       </div>
 
       {/* First-Login Password Change Modal */}

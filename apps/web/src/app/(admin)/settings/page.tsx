@@ -11,6 +11,7 @@ import { getT } from '../../../lib/i18n';
 import { FestivalType, Role, UpdateMandalProfileInput } from '@vargani/types';
 import Link from 'next/link';
 import { Save, CheckCircle2, Upload, Trash2, Sparkles, Image as ImageIcon, QrCode, FileText, ExternalLink, FileCheck, User, KeyRound, AlertCircle, Building } from 'lucide-react';
+import { formatDisplayName } from '../../../lib/format';
 
 export default function SettingsPage() {
   const { user, role, activeMandal, language, setLanguage, updateActiveMandal, changePassword, isLoading: authLoading } = useAuth();
@@ -798,7 +799,7 @@ export default function SettingsPage() {
               </div>
               <div className="min-w-0">
                 <h2 className="text-lg font-extrabold text-[#292118] truncate">
-                  {user?.full_name || 'व्यवस्थापक'}
+                  {formatDisplayName(user?.full_name) || 'व्यवस्थापक'}
                 </h2>
                 <p className="text-xs text-[#6B6459] font-mono">@{user?.username}</p>
                 <div className="flex items-center gap-2 mt-1">
