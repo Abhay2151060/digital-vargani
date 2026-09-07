@@ -38,6 +38,8 @@ export const Header: React.FC = () => {
     }
   };
 
+  const userName = formatDisplayName(user?.full_name || (user as any)?.fullName) || user?.phone || '';
+
   return (
     <header className="sticky top-0 z-30 glass-panel border-b border-[#E5E1D8]/80 shadow-[0_2px_15px_rgba(0,0,0,0.03)]">
       <div className="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
@@ -58,15 +60,20 @@ export const Header: React.FC = () => {
             <h1 className="text-sm font-extrabold text-[#292118] truncate leading-tight">
               {activeMandal?.name || t.app_title}
             </h1>
-            <div className="flex items-center gap-1.5 text-[11px] text-[#6B6459] mt-0.5">
+            <div className="flex items-center gap-1.5 text-[11px] text-[#6B6459] mt-0.5 min-w-0">
               {role && (
-                <span className="font-semibold text-[#7C2D12] bg-orange-50 px-2 py-0.2 rounded-full border border-orange-200/70">
+                <span className="font-semibold text-[#7C2D12] bg-orange-50 px-2 py-0.2 rounded-full border border-orange-200/70 shrink-0">
                   {getRoleLabel(role)}
                 </span>
               )}
               {activeMandal?.city && (
-                <span className="hidden sm:inline-block truncate font-medium">
+                <span className="hidden sm:inline-block truncate font-medium shrink-0">
                   • {activeMandal.city} {activeMandal.area ? `(${activeMandal.area})` : ''}
+                </span>
+              )}
+              {userName && (
+                <span className="truncate font-medium text-[#6B6459]" title={userName}>
+                  • {userName}
                 </span>
               )}
             </div>
