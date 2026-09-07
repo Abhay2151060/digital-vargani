@@ -9,7 +9,7 @@ import { Role } from '@vargani/types';
 
 @Controller('reports')
 @UseGuards(AuthGuard, RolesGuard)
-@Roles(Role.TREASURER, Role.ADMIN)
+@Roles(Role.TREASURER, Role.ADMIN, Role.VOLUNTEER)
 export class ReportsController {
   constructor(private reportsService: ReportsService) {}
 

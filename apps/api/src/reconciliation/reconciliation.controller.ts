@@ -13,14 +13,14 @@ export class ReconciliationController {
   constructor(private reconciliationService: ReconciliationService) {}
 
   @Get('overview')
-  @Roles(Role.TREASURER, Role.ADMIN)
+  @Roles(Role.TREASURER, Role.ADMIN, Role.VOLUNTEER)
   async getOverview(@CurrentUser('mandalId') mandalId: string) {
     const overview = await this.reconciliationService.getTreasurerOverview(mandalId);
     return { success: true, code: 'OVERVIEW_FETCHED', data: overview };
   }
 
   @Get('volunteer-summary/:volunteerId')
-  @Roles(Role.TREASURER, Role.ADMIN)
+  @Roles(Role.TREASURER, Role.ADMIN, Role.VOLUNTEER)
   async getVolunteerSummary(
     @CurrentUser('mandalId') mandalId: string,
     @Param('volunteerId') volunteerId: string
@@ -30,7 +30,7 @@ export class ReconciliationController {
   }
 
   @Get('history')
-  @Roles(Role.TREASURER, Role.ADMIN)
+  @Roles(Role.TREASURER, Role.ADMIN, Role.VOLUNTEER)
   async listHistory(@CurrentUser('mandalId') mandalId: string) {
     const history = await this.reconciliationService.listReconciliations(mandalId);
     return { success: true, code: 'HISTORY_FETCHED', data: history };

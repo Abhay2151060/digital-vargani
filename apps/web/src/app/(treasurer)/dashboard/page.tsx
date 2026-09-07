@@ -61,23 +61,39 @@ export default function UnifiedDashboardPage() {
 
   const fetchDashboardData = () => {
     if (activeMandal && token) {
-      const calls: Promise<any>[] = [
-        apiRequest<TreasurerOverview>('/reconciliation/overview'),
-      ];
-
-      if (role === Role.VOLUNTEER) {
-        calls.push(apiRequest<any[]>('/donations?limit=1000'));
-        calls.push(apiRequest<any[]>('/expenses'));
-      }
-
-      Promise.all(calls)
-        .then(([overviewData, donationsData, expensesData]) => {
-          setOverview(overviewData);
-          if (donationsData) setDonations(donationsData);
-          if (expensesData) setExpenses(expensesData);
+      const pOverview = apiRequest<TreasurerOverview>('/reconciliation/overview')
+        .then((data) => {
+          if (data) setOverview(data);
+          return data;
         })
-        .catch(console.error)
-        .finally(() => setIsLoading(false));
+        .catch((err) => {
+          console.warn('Overview fetch error:', err);
+          return null;
+        });
+
+      const pDonations = apiRequest<any[]>('/donations?limit=1000')
+        .then((data) => {
+          if (Array.isArray(data)) setDonations(data);
+          return data;
+        })
+        .catch((err) => {
+          console.warn('Donations fetch error:', err);
+          return [];
+        });
+
+      const pExpenses = apiRequest<any[]>('/expenses')
+        .then((data) => {
+          if (Array.isArray(data)) setExpenses(data);
+          return data;
+        })
+        .catch((err) => {
+          console.warn('Expenses fetch error:', err);
+          return [];
+        });
+
+      Promise.allSettled([pOverview, pDonations, pExpenses]).finally(() => {
+        setIsLoading(false);
+      });
     }
   };
 
@@ -181,6 +197,17 @@ export default function UnifiedDashboardPage() {
   const upiDonationsTotal = upiDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const pendingDonationsTotal = pendingDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const allDonationsTotal = donations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+
+  const todayDateStr = new Date().toISOString().split('T')[0];
+  const todayDonations = donations.filter((d) => {
+    const dDate = d.created_at ? new Date(d.created_at).toISOString().split('T')[0] : '';
+    return dDate === todayDateStr;
+  });
+  const todayTotalFromDonations = todayDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  const todayCashFromDonations = todayDonations.filter((d) => d.payment_mode === 'CASH').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  const todayUpiFromDonations = todayDonations.filter((d) => d.payment_mode === 'UPI').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  const todayPendingFromDonations = todayDonations.filter((d) => d.payment_mode === 'PENDING').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  const recentDonationsList = overview?.recent_donations && overview.recent_donations.length > 0 ? overview.recent_donations : donations.slice(0, 5);
 
   // =========================================================================
   // VOLUNTEER VIEW (Comprehensive View of Data Submitted by Treasurer & Admin)
@@ -323,7 +350,7 @@ export default function UnifiedDashboardPage() {
                   <div className="p-3.5 bg-gradient-to-br from-orange-50/50 to-white rounded-xl border border-orange-200/60">
                     <p className="text-xs font-semibold text-[#7C2D12]">आजची एकूण वर्गणी</p>
                     <p className="text-xl font-black text-[#7C2D12] mt-1 tabular-nums">
-                      ₹{(overview?.today_total_collected || 0).toLocaleString('en-IN')}
+                      ₹{(overview?.today_total_collected !== undefined && overview.today_total_collected !== null ? overview.today_total_collected : (todayTotalFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">आज जमा झालेली रक्कम</p>
                   </div>
@@ -331,7 +358,7 @@ export default function UnifiedDashboardPage() {
                   <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]/80">
                     <p className="text-xs font-semibold text-[#6B6459]">आजची रोख (Cash)</p>
                     <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
-                      ₹{(overview?.today_cash_collected || 0).toLocaleString('en-IN')}
+                      ₹{(overview?.today_cash_collected !== undefined && overview.today_cash_collected !== null ? overview.today_cash_collected : (todayCashFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[10px] text-[#A8A297] mt-0.5 font-medium">आज रोख जमा</p>
                   </div>
@@ -339,7 +366,7 @@ export default function UnifiedDashboardPage() {
                   <div className="p-3.5 bg-sky-50/50 rounded-xl border border-sky-200/60">
                     <p className="text-xs font-semibold text-sky-800">आजची UPI</p>
                     <p className="text-xl font-black text-sky-800 mt-1 tabular-nums">
-                      ₹{(overview?.today_upi_collected || 0).toLocaleString('en-IN')}
+                      ₹{(overview?.today_upi_collected !== undefined && overview.today_upi_collected !== null ? overview.today_upi_collected : (todayUpiFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[10px] text-sky-600/70 mt-0.5 font-medium">आज ऑनलाइन जमा</p>
                   </div>
@@ -347,7 +374,7 @@ export default function UnifiedDashboardPage() {
                   <div className="p-3.5 bg-amber-50/50 rounded-xl border border-amber-200/60">
                     <p className="text-xs font-semibold text-amber-800">आजची प्रलंबित</p>
                     <p className="text-xl font-black text-amber-800 mt-1 tabular-nums">
-                      ₹{(overview?.today_pending_collected || 0).toLocaleString('en-IN')}
+                      ₹{(overview?.today_pending_collected !== undefined && overview.today_pending_collected !== null ? overview.today_pending_collected : (todayPendingFromDonations || 0)).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[10px] text-amber-600/70 mt-0.5 font-medium">आज येणे बाकी</p>
                   </div>
@@ -363,7 +390,7 @@ export default function UnifiedDashboardPage() {
                         एकूण जमा (Total)
                       </p>
                       <p className="text-2xl font-black text-[#7C2D12] mt-1 tabular-nums">
-                        ₹{(overview?.festival_total_collected || 0).toLocaleString('en-IN')}
+                        ₹{(overview?.festival_total_collected !== undefined && overview.festival_total_collected !== null ? overview.festival_total_collected : (allDonationsTotal || 0)).toLocaleString('en-IN')}
                       </p>
                     </div>
                     <span className="p-2 rounded-xl bg-orange-50 text-[#C2410C] border border-orange-200/60">
@@ -382,7 +409,7 @@ export default function UnifiedDashboardPage() {
                         मंजूर खर्च (Expenses)
                       </p>
                       <p className="text-2xl font-black text-rose-700 mt-1 tabular-nums">
-                        ₹{(overview?.total_approved_expenses || totalExpensesApproved || 0).toLocaleString('en-IN')}
+                        ₹{(overview?.total_approved_expenses !== undefined && overview.total_approved_expenses !== null ? overview.total_approved_expenses : (totalExpensesApproved || 0)).toLocaleString('en-IN')}
                       </p>
                     </div>
                     <span className="p-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200/60">
@@ -401,7 +428,7 @@ export default function UnifiedDashboardPage() {
                         येणे वर्गणी (Pending)
                       </p>
                       <p className="text-2xl font-black text-amber-700 mt-1 tabular-nums">
-                        ₹{(overview?.total_pending_collected || 0).toLocaleString('en-IN')}
+                        ₹{(overview?.total_pending_collected !== undefined && overview.total_pending_collected !== null ? overview.total_pending_collected : (pendingDonationsTotal || 0)).toLocaleString('en-IN')}
                       </p>
                     </div>
                     <span className="p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/60">
@@ -420,7 +447,7 @@ export default function UnifiedDashboardPage() {
                         शिल्लक निधी (Balance)
                       </p>
                       <p className="text-2xl font-black text-emerald-800 mt-1 tabular-nums">
-                        ₹{(overview?.net_balance || 0).toLocaleString('en-IN')}
+                        ₹{(overview?.net_balance !== undefined && overview.net_balance !== null ? overview.net_balance : (allDonationsTotal - totalExpensesApproved)).toLocaleString('en-IN')}
                       </p>
                     </div>
                     <span className="p-2 rounded-xl bg-emerald-100 text-emerald-700 border border-emerald-300/60">
@@ -440,21 +467,21 @@ export default function UnifiedDashboardPage() {
                   <div className="p-3.5 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8]/80">
                     <span className="text-xs font-semibold text-[#6B6459]">रोख वर्गणी (Cash)</span>
                     <p className="text-xl font-black text-[#292118] mt-1 tabular-nums">
-                      ₹{(overview?.total_cash_collected || 0).toLocaleString('en-IN')}
+                      ₹{(overview?.total_cash_collected !== undefined && overview.total_cash_collected !== null ? overview.total_cash_collected : (cashDonationsTotal || 0)).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[11px] text-[#A8A297] mt-1">खजिनदारांनी रोख स्वरूपात जमा केलेली वर्गणी</p>
                   </div>
                   <div className="p-3.5 bg-sky-50/60 rounded-xl border border-sky-200/80">
                     <span className="text-xs font-semibold text-sky-800">UPI वर्गणी (Online)</span>
                     <p className="text-xl font-black text-sky-900 mt-1 tabular-nums">
-                      ₹{(overview?.total_upi_collected || 0).toLocaleString('en-IN')}
+                      ₹{(overview?.total_upi_collected !== undefined && overview.total_upi_collected !== null ? overview.total_upi_collected : (upiDonationsTotal || 0)).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[11px] text-sky-700/80 mt-1">थेट बँक खात्यात / QR वर जमा वर्गणी</p>
                   </div>
                   <div className="p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/80">
                     <span className="text-xs font-semibold text-amber-800">येणे वर्गणी (Pending)</span>
                     <p className="text-xl font-black text-amber-900 mt-1 tabular-nums">
-                      ₹{(overview?.total_pending_collected || 0).toLocaleString('en-IN')}
+                      ₹{(overview?.total_pending_collected !== undefined && overview.total_pending_collected !== null ? overview.total_pending_collected : (pendingDonationsTotal || 0)).toLocaleString('en-IN')}
                     </p>
                     <p className="text-[11px] text-amber-700/80 mt-1">देणगीदारांकडून जमा होणे बाकी रक्कम</p>
                   </div>
@@ -554,7 +581,7 @@ export default function UnifiedDashboardPage() {
                     onClick={() => setVolunteerTab('donations')}
                     className="text-xs text-[#C2410C] font-bold hover:underline cursor-pointer flex items-center gap-1"
                   >
-                    <span>सर्व पावत्या पहा ({donations.length})</span>
+                    <span>सर्व पावत्या पहा ({donations.length || recentDonationsList.length})</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -572,14 +599,14 @@ export default function UnifiedDashboardPage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E5E1D8]/60">
-                      {donations.length === 0 ? (
+                      {recentDonationsList.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="px-4 py-6 text-center text-[#A8A297]">
                             अद्याप कोणतीही पावती जमा झालेली नाही.
                           </td>
                         </tr>
                       ) : (
-                        donations.slice(0, 5).map((d) => (
+                        recentDonationsList.slice(0, 5).map((d: any) => (
                           <tr key={d.id} className="hover:bg-orange-50/20 transition-colors">
                             <td className="px-4 py-2.5 font-mono font-bold text-[#7C2D12]">#{d.receipt_number}</td>
                             <td className="px-4 py-2.5">
