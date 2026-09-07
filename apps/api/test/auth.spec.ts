@@ -33,9 +33,9 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('should reject missing username or password', async () => {
+    it('should reject missing identifier or password', async () => {
       await expect(authService.login('', 'user123')).rejects.toThrow(BadRequestException);
-      await expect(authService.login('abhay', '')).rejects.toThrow(BadRequestException);
+      await expect(authService.login('Abhay Solapure', '')).rejects.toThrow(BadRequestException);
     });
 
     it('should throw UnauthorizedException when user is not found', async () => {
@@ -49,14 +49,13 @@ describe('AuthService', () => {
       const passwordHash = hashPassword('correctPassword');
       const mockUser = {
         id: 'user-1',
-        username: 'abhay',
         full_name: 'Abhay Solapure',
         password_hash: passwordHash,
         must_change_password: false,
       };
 
       mockDbService.query.mockResolvedValueOnce({ rows: [mockUser], rowCount: 1 });
-      await expect(authService.login('abhay', 'wrongPassword')).rejects.toThrow(
+      await expect(authService.login('Abhay Solapure', 'wrongPassword')).rejects.toThrow(
         UnauthorizedException
       );
     });
@@ -65,7 +64,6 @@ describe('AuthService', () => {
       const passwordHash = hashPassword('user123');
       const mockUser = {
         id: 'user-1',
-        username: 'abhay',
         phone: '8421692967',
         full_name: 'Abhay Solapure',
         password_hash: passwordHash,
@@ -81,10 +79,10 @@ describe('AuthService', () => {
           rowCount: 1,
         }); // SELECT memberships
 
-      const res = await authService.login('abhay', 'user123');
+      const res = await authService.login('Abhay Solapure', 'user123');
 
       expect(res.accessToken).toBe('mocked-jwt-token');
-      expect(res.user.username).toBe('abhay');
+      expect(res.user.full_name).toBe('Abhay Solapure');
       expect(res.mustChangePassword).toBe(true);
       expect(mockJwtService.sign).toHaveBeenCalled();
     });

@@ -17,7 +17,7 @@ export default function SettingsPage() {
   const { user, role, activeMandal, language, setLanguage, updateActiveMandal, changePassword, isLoading: authLoading } = useAuth();
   const t = getT(language);
   const router = useRouter();
-  const userDisplayName = formatDisplayName(user?.full_name || (user as any)?.fullName || user?.username) || 'व्यवस्थापक';
+  const userDisplayName = formatDisplayName(user?.full_name || (user as any)?.fullName) || 'व्यवस्थापक';
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const qrFileInputRef = useRef<HTMLInputElement>(null);

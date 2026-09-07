@@ -10,16 +10,16 @@ import {
 
 describe('Validation Schemas (Zod)', () => {
   describe('loginSchema', () => {
-    it('should validate valid username and password', () => {
-      const valid = loginSchema.safeParse({ username: 'abhay', password: 'user123' });
+    it('should validate valid name/phone and password', () => {
+      const valid = loginSchema.safeParse({ name_or_phone: 'Abhay Solapure', password: 'user123' });
       expect(valid.success).toBe(true);
     });
 
-    it('should reject empty username or short password', () => {
-      const invalidUname = loginSchema.safeParse({ username: 'a', password: 'user123' });
-      expect(invalidUname.success).toBe(false);
+    it('should reject empty identifier or short password', () => {
+      const invalidIdentifier = loginSchema.safeParse({ name_or_phone: '', password: 'user123' });
+      expect(invalidIdentifier.success).toBe(false);
 
-      const invalidPass = loginSchema.safeParse({ username: 'abhay', password: '12' });
+      const invalidPass = loginSchema.safeParse({ name_or_phone: 'Abhay Solapure', password: '12' });
       expect(invalidPass.success).toBe(false);
     });
   });

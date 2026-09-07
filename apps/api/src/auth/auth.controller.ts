@@ -13,7 +13,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() body: unknown) {
     const input = parseRequest(loginSchema, body);
-    const identifier = input.identifier || input.name_or_phone || input.username || '';
+    const identifier = input.identifier || input.name_or_phone || '';
     const result = await this.authService.login(identifier, input.password);
     return {
       success: true,

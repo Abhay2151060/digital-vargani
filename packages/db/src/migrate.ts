@@ -34,10 +34,11 @@ export async function runMigrations() {
       console.warn('expenses category type warning:', e);
     }
     try {
-      await client.query("UPDATE users SET full_name = username WHERE (full_name IS NULL OR TRIM(full_name) = '') AND username IS NOT NULL;");
       await client.query("UPDATE users SET full_name = REPLACE(full_name, '_', ' ') WHERE full_name LIKE '%_%';");
+      await client.query("ALTER TABLE users DROP COLUMN IF EXISTS username CASCADE;");
+      console.log('Successfully confirmed username column is dropped from users table.');
     } catch (e) {
-      console.warn('clean full_name warning:', e);
+      console.warn('clean full_name / drop username warning:', e);
     }
     console.log('Successfully applied database schema and added all columns.');
   } catch (error) {

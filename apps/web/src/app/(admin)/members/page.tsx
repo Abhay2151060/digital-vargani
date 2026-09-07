@@ -15,7 +15,6 @@ import { formatDisplayName } from '../../../lib/format';
 interface CreatedCredentials {
   user: {
     id: string;
-    username: string;
     full_name: string;
     phone?: string | null;
   };
@@ -34,7 +33,6 @@ export default function MembersPage() {
 
   // Invite Form
   const [fullName, setFullName] = useState('');
-  const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [selectedRole, setSelectedRole] = useState<Role>(Role.VOLUNTEER);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,18 +57,6 @@ export default function MembersPage() {
 
   const handleNameChange = (val: string) => {
     setFullName(val);
-    if (!username || username === autoSlug(fullName)) {
-      setUsername(autoSlug(val));
-    }
-  };
-
-  const autoSlug = (str: string) => {
-    return str
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]/gi, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '');
   };
 
   const handleInvite = async (e: React.FormEvent) => {
@@ -87,12 +73,10 @@ export default function MembersPage() {
     setError(null);
     setIsSubmitting(true);
     try {
-      const finalUsername = (username.trim() || autoSlug(fullName) || 'user_' + Date.now()).toLowerCase();
       const res = await apiRequest<any>('/members/invite', {
         method: 'POST',
         body: JSON.stringify({
           full_name: fullName.trim(),
-          username: finalUsername,
           phone: phone.trim() || undefined,
           role: selectedRole,
         }),
@@ -100,7 +84,6 @@ export default function MembersPage() {
 
       setIsModalOpen(false);
       setFullName('');
-      setUsername('');
       setPhone('');
       fetchMembers();
 
@@ -142,7 +125,6 @@ export default function MembersPage() {
     setCredentialsModal({
       user: {
         id: m.user_id,
-        username: m.username || m.phone || m.full_name,
         full_name: m.full_name,
         phone: m.phone,
       },

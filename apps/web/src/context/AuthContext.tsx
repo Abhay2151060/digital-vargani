@@ -106,7 +106,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (savedToken && savedUser) {
         setToken(savedToken);
         const parsedUser = JSON.parse(savedUser);
-        const resolvedName = parsedUser.full_name || parsedUser.fullName || parsedUser.username || '';
+        const resolvedName = parsedUser.full_name || parsedUser.fullName || '';
         const normalizedUser = {
           ...parsedUser,
           full_name: resolvedName,
@@ -147,7 +147,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       body: JSON.stringify({
         identifier: trimmed,
         name_or_phone: trimmed,
-        username: trimmed,
         password,
       }),
     });
@@ -175,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const requiresPassChange = !!userData?.must_change_password;
     setMustChangePassword(requiresPassChange);
     setToken(accessToken);
-    const resolvedName = userData?.full_name || userData?.fullName || userData?.username || '';
+    const resolvedName = userData?.full_name || userData?.fullName || '';
     const normalizedUser = {
       ...userData,
       full_name: resolvedName,

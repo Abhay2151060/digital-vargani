@@ -34,14 +34,12 @@ export class AuthService {
       });
     }
 
-    // 1. Find user by case-insensitive full_name, phone, username, or normalized variants
+    // 1. Find user by case-insensitive full_name, phone, or normalized variants
     const userRes = await this.db.query(
       `SELECT * FROM users 
        WHERE LOWER(full_name) = LOWER($1)
-          OR LOWER(username) = LOWER($1) 
           OR phone = $1 
           OR REPLACE(REPLACE(LOWER(full_name), '_', ''), ' ', '') = REPLACE(REPLACE(LOWER($1), '_', ''), ' ', '')
-          OR REPLACE(REPLACE(LOWER(username), '_', ''), ' ', '') = REPLACE(REPLACE(LOWER($1), '_', ''), ' ', '')
           OR (
             LENGTH(REGEXP_REPLACE($1, '\\D', '', 'g')) >= 10 
             AND RIGHT(REGEXP_REPLACE(COALESCE(phone, ''), '\\D', '', 'g'), 10) = RIGHT(REGEXP_REPLACE($1, '\\D', '', 'g'), 10)
@@ -124,7 +122,7 @@ export class AuthService {
       if (defaultMandalRes?.rows?.length > 0) {
         const defaultMandalId = defaultMandalRes.rows[0].id;
         const assignedRole =
-          user.phone === '8421692967' || user.username === 'abhay' || user.phone === '8574968596'
+          user.phone === '8421692967' || user.phone === '8574968596' || user.full_name?.toLowerCase().includes('abhay')
             ? 'ADMIN'
             : 'VOLUNTEER';
 
@@ -161,8 +159,8 @@ export class AuthService {
 
     const tokenPayload = {
       userId: user.id,
-      full_name: user.full_name || user.username,
-      fullName: user.full_name || user.username,
+      full_name: user.full_name,
+      fullName: user.full_name,
       phone: user.phone,
       mandalId: primaryMembership ? primaryMembership.id : null,
       role: primaryMembership ? primaryMembership.role : null,
@@ -178,8 +176,8 @@ export class AuthService {
     return {
       user: {
         id: user.id,
-        full_name: user.full_name || user.username,
-        fullName: user.full_name || user.username,
+        full_name: user.full_name,
+        fullName: user.full_name,
         phone: user.phone,
         preferredLanguage: user.preferred_language,
         mustChangePassword: Boolean(user.must_change_password),
@@ -271,9 +269,8 @@ export class AuthService {
 
     const tokenPayload = {
       userId: user.id,
-      full_name: user.full_name || user.username,
-      fullName: user.full_name || user.username,
-      username: user.username,
+      full_name: user.full_name,
+      fullName: user.full_name,
       phone: user.phone,
       mandalId: membership.mandal_id,
       role: membership.role,

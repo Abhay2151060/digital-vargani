@@ -72,7 +72,6 @@ export enum FestivalType {
 
 export interface User {
   id: string;
-  username?: string | null;
   phone?: string | null;
   full_name: string;
   preferred_language: Language;
@@ -327,9 +326,8 @@ export interface PublicTransparencyReport {
 export const loginSchema = z.object({
   identifier: z.string().trim().optional(),
   name_or_phone: z.string().trim().optional(),
-  username: z.string().trim().optional(),
   password: z.string().min(4, 'पासवर्ड किमान ४ अक्षरांचा असणे आवश्यक आहे (Password must be at least 4 characters)'),
-}).refine((data) => !!(data.identifier || data.name_or_phone || data.username), {
+}).refine((data) => !!(data.identifier || data.name_or_phone), {
   message: 'पूर्ण नाव किंवा मोबाईल नंबर आवश्यक आहे (Name or Phone Number is required)',
   path: ['identifier'],
 });
@@ -344,12 +342,11 @@ export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 // Legacy schema aliases for backward compatibility
 export const loginOtpRequestSchema = z.object({
   phone: z.string().optional(),
-  username: z.string().optional(),
+  full_name: z.string().optional(),
 });
 export type LoginOtpRequestInput = z.infer<typeof loginOtpRequestSchema>;
 export const loginOtpVerifySchema = z.object({
   phone: z.string().optional(),
-  username: z.string().optional(),
   password: z.string().optional(),
   otp: z.string().optional(),
   full_name: z.string().optional(),
@@ -453,7 +450,6 @@ export type CreateMandalInput = z.infer<typeof createMandalSchema>;
 export const inviteMemberSchema = z.object({
   mandal_id: z.string().uuid(),
   full_name: z.string().trim().min(2, 'Name must be at least 2 characters'),
-  username: z.string().trim().min(2).max(50).optional(),
   phone: z.string().regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number').optional().or(z.literal('')),
   role: z.nativeEnum(Role),
 });

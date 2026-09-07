@@ -10,7 +10,7 @@ export class MembersService {
   async listMembers(mandalId: string) {
     const res = await this.db.query(
       `SELECT mm.id, mm.mandal_id, mm.user_id, mm.role, mm.status, mm.created_at,
-              u.full_name, u.username, u.phone, u.preferred_language, u.must_change_password
+              u.full_name, u.phone, u.preferred_language, u.must_change_password
        FROM mandal_members mm
        JOIN users u ON u.id = mm.user_id
        WHERE mm.mandal_id = $1
@@ -26,62 +26,47 @@ export class MembersService {
       const mandalRes = await client.query(`SELECT name FROM mandals WHERE id = $1`, [input.mandal_id]);
       const mandalName = mandalRes.rows[0]?.name || 'मंडळ';
 
-      // 1. Determine or generate unique username
-      let username = (input.username || '').trim().toLowerCase().replace(/\s+/g, '_');
-      if (!username) {
-        // Derive from full name
-        const base = input.full_name
-          .trim()
-          .toLowerCase()
-          .replace(/[^a-z0-9]/gi, '_')
-          .replace(/_+/g, '_')
-          .replace(/^_|_$/g, '') || 'member';
-        username = base;
-
-        // Check if taken, append random number if collision
-        const checkRes = await client.query(`SELECT id FROM users WHERE LOWER(username) = LOWER($1)`, [username]);
-        if (checkRes.rowCount && checkRes.rowCount > 0) {
-          username = `${base}_${Math.floor(100 + Math.random() * 900)}`;
-        }
-      }
-
-      // 2. Find or create user
+      // 1. Find or create user by phone or full name
       let user: any = null;
       if (input.phone && input.phone.trim()) {
         const phoneCheck = await client.query(`SELECT * FROM users WHERE phone = $1`, [input.phone.trim()]);
         if (phoneCheck.rowCount && phoneCheck.rowCount > 0) {
           user = phoneCheck.rows[0];
-          // Update username and full_name if not set
           await client.query(
             `UPDATE users 
-             SET username = COALESCE(username, $1), 
-                 full_name = $2, 
-                 password_hash = COALESCE(password_hash, $3),
+             SET full_name = $1, 
+                 password_hash = COALESCE(password_hash, $2),
                  updated_at = NOW() 
-             WHERE id = $4`,
-            [username, input.full_name.trim(), DEFAULT_PASSWORD_HASH, user.id]
+             WHERE id = $3`,
+            [input.full_name.trim(), DEFAULT_PASSWORD_HASH, user.id]
           );
-          user.username = user.username || username;
           user.full_name = input.full_name.trim();
         }
       }
 
       if (!user) {
-        const userByUname = await client.query(`SELECT * FROM users WHERE LOWER(username) = LOWER($1)`, [username]);
-        if (userByUname.rowCount && userByUname.rowCount > 0) {
-          user = userByUname.rows[0];
+        const userByName = await client.query(
+          `SELECT * FROM users WHERE LOWER(full_name) = LOWER($1) ORDER BY created_at ASC LIMIT 1`,
+          [input.full_name.trim()]
+        );
+        if (userByName.rowCount && userByName.rowCount > 0) {
+          user = userByName.rows[0];
+          if (input.phone && input.phone.trim() && !user.phone) {
+            await client.query(`UPDATE users SET phone = $1, updated_at = NOW() WHERE id = $2`, [input.phone.trim(), user.id]);
+            user.phone = input.phone.trim();
+          }
         } else {
           const newUserRes = await client.query(
-            `INSERT INTO users (username, phone, full_name, password_hash, must_change_password)
-             VALUES ($1, $2, $3, $4, TRUE)
+            `INSERT INTO users (phone, full_name, password_hash, must_change_password)
+             VALUES ($1, $2, $3, TRUE)
              RETURNING *`,
-            [username, input.phone?.trim() || null, input.full_name.trim(), DEFAULT_PASSWORD_HASH]
+            [input.phone?.trim() || null, input.full_name.trim(), DEFAULT_PASSWORD_HASH]
           );
           user = newUserRes.rows[0];
         }
       }
 
-      // 3. Add or update mandal member
+      // 2. Add or update mandal member
       const memberRes = await client.query(
         `INSERT INTO mandal_members (mandal_id, user_id, role, status, invited_by)
          VALUES ($1, $2, $3, 'ACTIVE', $4)
@@ -98,7 +83,6 @@ export class MembersService {
         member: memberRes.rows[0],
         user: {
           id: user.id,
-          username: user.username,
           full_name: user.full_name,
           phone: user.phone,
         },

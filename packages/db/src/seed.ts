@@ -7,20 +7,20 @@ export async function seedDatabase() {
     const defaultHash = 'a1b2c3d4e5f60718293a4b5c6d7e8f90:9c90fa9b1f9184ac23d9da426f479e347dc64936df6a1b9b2e17ab59647db2e4ca3b567252adb83761231a6332f821a6e4f608e844914b5bd935363758140bbf';
 
     // 1. Create or Update Primary Admin User (Abhay Solapure)
-    let adminRes = await client.query(`SELECT id FROM users WHERE username = 'abhay' OR phone = '8421692967' OR full_name = 'Abhay Solapure'`);
+    let adminRes = await client.query(`SELECT id FROM users WHERE phone = '8421692967' OR full_name = 'Abhay Solapure'`);
     let adminId: string;
     if ((adminRes.rowCount ?? 0) > 0) {
       adminId = adminRes.rows[0].id;
       await client.query(`
         UPDATE users 
-        SET username = 'abhay', phone = '8421692967', full_name = 'Abhay Solapure',
+        SET phone = '8421692967', full_name = 'Abhay Solapure',
             password_hash = COALESCE(password_hash, $1)
         WHERE id = $2
       `, [defaultHash, adminId]);
     } else {
       const inserted = await client.query(`
-        INSERT INTO users (username, phone, full_name, password_hash, must_change_password, preferred_language)
-        VALUES ('abhay', '8421692967', 'Abhay Solapure', $1, TRUE, 'mr')
+        INSERT INTO users (phone, full_name, password_hash, must_change_password, preferred_language)
+        VALUES ('8421692967', 'Abhay Solapure', $1, TRUE, 'mr')
         RETURNING id
       `, [defaultHash]);
       adminId = inserted.rows[0].id;
@@ -50,20 +50,20 @@ export async function seedDatabase() {
     `, [mandalId, adminId]);
 
     // 4. Backward-compatible secondary admin (Omkar Bhagat)
-    let secondaryRes = await client.query(`SELECT id FROM users WHERE username = 'omkar' OR phone = '8574968596'`);
+    let secondaryRes = await client.query(`SELECT id FROM users WHERE phone = '8574968596' OR full_name = 'Omkar Bhagat'`);
     let secondaryId: string;
     if ((secondaryRes.rowCount ?? 0) > 0) {
       secondaryId = secondaryRes.rows[0].id;
       await client.query(`
         UPDATE users
-        SET username = 'omkar', phone = '8574968596', full_name = 'Omkar Bhagat',
+        SET phone = '8574968596', full_name = 'Omkar Bhagat',
             password_hash = COALESCE(password_hash, $1)
         WHERE id = $2
       `, [defaultHash, secondaryId]);
     } else {
       const inserted = await client.query(`
-        INSERT INTO users (username, phone, full_name, password_hash, must_change_password, preferred_language)
-        VALUES ('omkar', '8574968596', 'Omkar Bhagat', $1, TRUE, 'mr')
+        INSERT INTO users (phone, full_name, password_hash, must_change_password, preferred_language)
+        VALUES ('8574968596', 'Omkar Bhagat', $1, TRUE, 'mr')
         RETURNING id
       `, [defaultHash]);
       secondaryId = inserted.rows[0].id;

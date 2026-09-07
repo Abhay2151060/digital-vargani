@@ -66,7 +66,6 @@ END $$;
 -- 1. USERS TABLE
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    username VARCHAR(50) UNIQUE,
     password_hash TEXT,
     must_change_password BOOLEAN NOT NULL DEFAULT TRUE,
     phone VARCHAR(15),
@@ -76,13 +75,12 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50) UNIQUE;
+ALTER TABLE users DROP COLUMN IF EXISTS username CASCADE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS must_change_password BOOLEAN NOT NULL DEFAULT TRUE;
 ALTER TABLE users ALTER COLUMN phone DROP NOT NULL;
 
--- Backfill username and default password for existing users if missing
-UPDATE users SET username = phone WHERE username IS NULL AND phone IS NOT NULL;
+-- Backfill default password for existing users if missing
 UPDATE users SET password_hash = 'a1b2c3d4e5f60718293a4b5c6d7e8f90:9c90fa9b1f9184ac23d9da426f479e347dc64936df6a1b9b2e17ab59647db2e4ca3b567252adb83761231a6332f821a6e4f608e844914b5bd935363758140bbf' WHERE password_hash IS NULL;
 
 

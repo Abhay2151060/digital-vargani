@@ -27,7 +27,7 @@ export default function ProfilePage() {
   const { user, activeMandal, role, language, setLanguage, changePassword } = useAuth();
   const t = getT(language);
   const router = useRouter();
-  const userDisplayName = formatDisplayName(user?.full_name || (user as any)?.fullName || user?.username) || 'वापरकर्ता';
+  const userDisplayName = formatDisplayName(user?.full_name || (user as any)?.fullName) || 'वापरकर्ता';
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
