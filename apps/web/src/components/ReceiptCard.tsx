@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { PaymentMode } from '@vargani/types';
+import { PaymentMode, Language } from '@vargani/types';
+import { formatBuildingDisplay } from '../lib/buildings';
 
 export type ReceiptLanguage = 'mr' | 'en';
 
@@ -36,6 +37,8 @@ export interface ReceiptData {
   remainingAmount?: number;
   paymentStatus?: 'PENDING' | 'PARTIAL' | 'PAID' | string;
   payments?: ReceiptPaymentItem[];
+  flatWing?: string;
+  donorPhone?: string;
 }
 
 const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
@@ -43,6 +46,7 @@ const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
     receiptNo: 'पावती क्र.',
     date: 'दिनांक',
     donor: 'देणगीदार',
+    building: 'इमारत / पत्ता',
     mode: 'पेमेंट पद्धत',
     amount: 'एकूण देणगी रक्कम',
     totalContribution: 'एकूण वर्गणी',
@@ -63,6 +67,7 @@ const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
     receiptNo: 'Receipt No.',
     date: 'Date',
     donor: 'Donor',
+    building: 'Building / Address',
     mode: 'Payment Mode',
     amount: 'Total Contribution',
     totalContribution: 'Total Contribution',
@@ -194,6 +199,15 @@ export const ReceiptCard: React.FC<{ data: ReceiptData; className?: string }> = 
             {data.donorName}
           </span>
         </div>
+
+        {data.flatWing && (
+          <div className="flex justify-between items-baseline text-xs pb-1.5 border-b border-[#E5E1D8]/60">
+            <span className="text-[#6B6459] font-medium">{t.building}</span>
+            <span className="font-semibold text-[#292118] text-right max-w-[220px]">
+              {formatBuildingDisplay(data.flatWing, langKey === 'en' ? Language.ENGLISH : Language.MARATHI)}
+            </span>
+          </div>
+        )}
 
         <div className="flex justify-between items-center text-xs pt-0.5">
           <span className="text-[#6B6459] font-medium">{t.mode}</span>

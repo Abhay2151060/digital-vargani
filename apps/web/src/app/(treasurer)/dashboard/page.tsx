@@ -10,12 +10,14 @@ import { Card, Button, Input, StatusBadge } from '@vargani/ui';
 import { apiRequest, downloadFile } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { TreasurerOverview, Role, Language, PaymentMode } from '@vargani/types';
+import { formatBuildingDisplay } from '../../../lib/buildings';
 import Link from 'next/link';
 import {
   IndianRupee,
   Wallet,
   TrendingUp,
   Building,
+  Building2,
   ArrowUpRight,
   FileSpreadsheet,
   Clock,
@@ -661,6 +663,7 @@ export default function UnifiedDashboardPage() {
                       <tr>
                         <th className="px-4 py-2.5">{t.receipt_no}</th>
                         <th className="px-4 py-2.5">{t.donor}</th>
+                        <th className="px-4 py-2.5">{t.building || 'Building'}</th>
                         <th className="px-4 py-2.5">{t.payment_mode}</th>
                         <th className="px-4 py-2.5 text-right">{t.amount}</th>
                         <th className="px-4 py-2.5">{t.recorder}</th>
@@ -670,7 +673,7 @@ export default function UnifiedDashboardPage() {
                     <tbody className="divide-y divide-[#E5E1D8]/60">
                       {recentDonationsList.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="px-4 py-6 text-center text-[#A8A297]">
+                          <td colSpan={7} className="px-4 py-6 text-center text-[#A8A297]">
                             {t.no_receipts_yet}
                           </td>
                         </tr>
@@ -678,9 +681,18 @@ export default function UnifiedDashboardPage() {
                         recentDonationsList.slice(0, 5).map((d: any) => (
                           <tr key={d.id} className="hover:bg-orange-50/20 transition-colors">
                             <td className="px-4 py-2.5 font-mono font-bold text-[#7C2D12]">#{d.receipt_number}</td>
-                            <td className="px-4 py-2.5">
-                              <span className="font-semibold text-[#292118]">{d.donor_name}</span>
-                              {d.flat_wing && <span className="text-[11px] text-[#A8A297] ml-1">({d.flat_wing})</span>}
+                            <td className="px-4 py-2.5 font-semibold text-[#292118]">
+                              {d.donor_name}
+                            </td>
+                            <td className="px-4 py-2.5 text-xs">
+                              {d.flat_wing ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50/70 border border-orange-200/60 text-[#7C2D12] font-semibold text-xs shadow-2xs">
+                                  <Building2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
+                                  <span>{formatBuildingDisplay(d.flat_wing, language)}</span>
+                                </span>
+                              ) : (
+                                <span className="text-[#A8A297] text-xs italic">—</span>
+                              )}
                             </td>
                             <td className="px-4 py-2.5">
                               <span
@@ -1707,6 +1719,7 @@ export default function UnifiedDashboardPage() {
                   <tr>
                     <th className="px-4 py-2.5">{t.receipt_no}</th>
                     <th className="px-4 py-2.5">{t.donor}</th>
+                    <th className="px-4 py-2.5">{t.building || 'Building'}</th>
                     <th className="px-4 py-2.5">{t.payment_mode}</th>
                     <th className="px-4 py-2.5 text-right">{t.amount}</th>
                     <th className="px-4 py-2.5">{t.volunteer_role}</th>
@@ -1720,7 +1733,16 @@ export default function UnifiedDashboardPage() {
                       <td className="px-4 py-2.5 font-mono font-bold text-[#7C2D12]">#{d.receipt_number}</td>
                       <td className="px-4 py-2.5 font-semibold text-[#292118]">
                         {d.donor_name}
-                        {d.flat_wing && <span className="text-xs text-[#A8A297] ml-1.5 font-normal">({d.flat_wing})</span>}
+                      </td>
+                      <td className="px-4 py-2.5 text-xs">
+                        {d.flat_wing ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-50/70 border border-orange-200/60 text-[#7C2D12] font-semibold text-xs shadow-2xs">
+                            <Building2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
+                            <span>{formatBuildingDisplay(d.flat_wing, language)}</span>
+                          </span>
+                        ) : (
+                          <span className="text-[#A8A297] text-xs italic">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-2.5">
                         {d.payment_status === 'PARTIAL' ? (

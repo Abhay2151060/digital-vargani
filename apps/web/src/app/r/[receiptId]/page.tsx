@@ -283,6 +283,7 @@ function ReceiptVerificationContent() {
               remainingAmount: remainingVal,
               paymentStatus: paymentStatusVal,
               payments: paymentsVal,
+              flatWing: receipt.flat_wing,
             }}
             className="relative shadow-xl"
           />

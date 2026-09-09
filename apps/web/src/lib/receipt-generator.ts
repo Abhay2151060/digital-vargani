@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import { Language, PaymentMode } from '@vargani/types';
+import { formatBuildingDisplay } from './buildings';
 
 export function numberToWordsIndian(num: number, lang: Language = Language.MARATHI): string {
   if (num === 0) return 'शून्य';
@@ -87,6 +88,7 @@ export async function generateReceiptPdf(data: ReceiptData): Promise<Blob> {
     : Math.max(0, totalAmount - totalPaid);
   const status = (data.paymentStatus || (totalPaid === 0 ? 'PENDING' : remaining <= 0.01 ? 'PAID' : 'PARTIAL')).toUpperCase();
   const isPartialFlow = totalPaid < totalAmount || (data.payments && data.payments.length > 0) || status !== 'PAID';
+  const isEnglish = data.language === Language.ENGLISH;
 
   // Deep Maroon / Saffron header banner
   doc.setFillColor(124, 45, 18);
@@ -141,7 +143,8 @@ export async function generateReceiptPdf(data: ReceiptData): Promise<Blob> {
   if (data.flatWing || data.donorPhone) {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    const subText = [data.flatWing ? `Flat/Wing: ${data.flatWing}` : '', data.donorPhone ? `Phone: ${data.donorPhone}` : ''].filter(Boolean).join(' | ');
+    const formattedAddr = data.flatWing ? formatBuildingDisplay(data.flatWing, isEnglish ? Language.ENGLISH : Language.MARATHI) : '';
+    const subText = [formattedAddr ? `${isEnglish ? 'Building / Flat' : 'इमारत / पत्ता'}: ${formattedAddr}` : '', data.donorPhone ? `Phone: ${data.donorPhone}` : ''].filter(Boolean).join(' | ');
     doc.text(subText, 8, 51);
   }
 

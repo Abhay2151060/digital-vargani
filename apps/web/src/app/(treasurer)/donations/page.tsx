@@ -26,6 +26,7 @@ import {
   User,
   Phone,
   Filter,
+  Building2,
 } from 'lucide-react';
 
 export default function AllDonationsPage() {
@@ -348,6 +349,7 @@ export default function AllDonationsPage() {
                   <tr>
                     <th className="px-4 py-3">{t.receipt_no}</th>
                     <th className="px-4 py-3">{t.donor}</th>
+                    <th className="px-4 py-3">{t.building || 'Building'}</th>
                     <th className="px-4 py-3">{t.payment_mode}</th>
                     <th className="px-4 py-3 text-right">{t.amount}</th>
                     <th className="px-4 py-3">{t.recorded_by}</th>
@@ -373,10 +375,21 @@ export default function AllDonationsPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="font-semibold text-[#292118]">{d.donor_name}</div>
-                          <div className="text-[11px] text-[#A8A297] flex items-center gap-2 mt-0.5">
-                            {d.flat_wing && <span>{t.flat_wing_short}: {formatBuildingDisplay(d.flat_wing, language)}</span>}
-                            {d.donor_phone && <span>{t.phone_short}: {d.donor_phone}</span>}
-                          </div>
+                          {d.donor_phone && (
+                            <div className="text-[11px] text-[#A8A297] flex items-center gap-1 mt-0.5">
+                              <span>{t.phone_short}: {d.donor_phone}</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-xs">
+                          {d.flat_wing ? (
+                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-50/70 border border-orange-200/60 text-[#7C2D12] font-semibold text-xs shadow-2xs">
+                              <Building2 className="w-3.5 h-3.5 text-[#C2410C] shrink-0" />
+                              <span>{formatBuildingDisplay(d.flat_wing, language)}</span>
+                            </span>
+                          ) : (
+                            <span className="text-[#A8A297] text-xs italic">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           {isPartial ? (

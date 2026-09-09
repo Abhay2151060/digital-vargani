@@ -172,6 +172,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             remainingAmount: donation.remainingAmount,
             paymentStatus: donation.paymentStatus,
             payments: donation.payments,
+            flatWing: donation.flatWing,
           }}
         />
 
