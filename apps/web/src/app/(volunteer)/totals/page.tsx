@@ -30,26 +30,62 @@ export default function VolunteerTotalsPage() {
     }
   }, [activeMandal, user, role]);
 
-  const todayDonations = donations.filter((d) => {
-    const dDate = new Date(d.created_at).toDateString();
-    return dDate === new Date().toDateString() && !d.is_voided;
-  });
+  const todayDateStr = new Date().toISOString().split('T')[0];
+  const nonVoided = donations.filter((d) => !d.is_voided);
 
-  const todayCash = todayDonations
-    .filter((d) => d.payment_mode === 'CASH')
-    .reduce((sum, d) => sum + parseFloat(d.amount), 0);
+  // Extract all cash and upi payments collected by this user
+  let todayCash = 0;
+  let todayCashCount = 0;
+  let todayUpi = 0;
+  let todayUpiCount = 0;
+  let totalUnreconciledCash = 0;
+  let totalReconciledCash = 0;
 
-  const todayUpi = todayDonations
-    .filter((d) => d.payment_mode === 'UPI')
-    .reduce((sum, d) => sum + parseFloat(d.amount), 0);
-
-  const totalUnreconciledCash = donations
-    .filter((d) => d.payment_mode === 'CASH' && !d.is_reconciled && !d.is_voided)
-    .reduce((sum, d) => sum + parseFloat(d.amount), 0);
-
-  const totalReconciledCash = donations
-    .filter((d) => d.payment_mode === 'CASH' && d.is_reconciled && !d.is_voided)
-    .reduce((sum, d) => sum + parseFloat(d.amount), 0);
+  for (const d of nonVoided) {
+    if (d.payments && d.payments.length > 0) {
+      for (const p of d.payments) {
+        if (p.collected_by === user?.id || !p.collected_by) {
+          const pDate = p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : '';
+          const amt = parseFloat(p.amount || 0);
+          if (p.payment_mode === 'CASH') {
+            if (pDate === todayDateStr) {
+              todayCash += amt;
+              todayCashCount++;
+            }
+            if (p.is_reconciled) {
+              totalReconciledCash += amt;
+            } else {
+              totalUnreconciledCash += amt;
+            }
+          } else if (p.payment_mode === 'UPI') {
+            if (pDate === todayDateStr) {
+              todayUpi += amt;
+              todayUpiCount++;
+            }
+          }
+        }
+      }
+    } else {
+      const isToday = d.created_at && new Date(d.created_at).toISOString().split('T')[0] === todayDateStr;
+      const amt = parseFloat(d.total_paid != null ? d.total_paid : d.amount || 0);
+      if (d.payment_mode === 'CASH') {
+        if (isToday) {
+          todayCash += amt;
+          todayCashCount++;
+        }
+        if (d.is_reconciled) {
+          totalReconciledCash += amt;
+        } else {
+          totalUnreconciledCash += amt;
+        }
+      } else if (d.payment_mode === 'UPI') {
+        if (isToday) {
+          todayUpi += amt;
+          todayUpiCount++;
+        }
+      }
+    }
+  }
 
   return (
     <AuthGuard allowedRoles={[Role.ADMIN, Role.TREASURER]}>
@@ -100,7 +136,7 @@ export default function VolunteerTotalsPage() {
               ₹{todayCash.toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] text-[#6B6459] mt-0.5">
-              {todayDonations.filter((d) => d.payment_mode === 'CASH').length} {t.receipts_suffix}
+              {todayCashCount} {t.receipts_suffix}
             </p>
           </div>
 
@@ -113,7 +149,7 @@ export default function VolunteerTotalsPage() {
               ₹{todayUpi.toLocaleString('en-IN')}
             </p>
             <p className="text-[11px] text-[#6B6459] mt-0.5">
-              {todayDonations.filter((d) => d.payment_mode === 'UPI').length} {t.receipts_suffix}
+              {todayUpiCount} {t.receipts_suffix}
             </p>
           </div>
         </div>

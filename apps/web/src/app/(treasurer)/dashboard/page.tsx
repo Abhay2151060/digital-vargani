@@ -200,26 +200,82 @@ export default function UnifiedDashboardPage() {
     .filter((e) => e.payment_mode === 'UPI')
     .reduce((sum, e) => sum + parseFloat(e.amount || 0), 0);
 
-  const cashDonationsList = donations.filter((d) => d.payment_mode === 'CASH');
-  const upiDonationsList = donations.filter((d) => d.payment_mode === 'UPI');
-  const pendingDonationsList = donations.filter((d) => d.payment_mode === 'PENDING');
+  const getDonationCashPaid = (d: any): number => {
+    if (d.paid_cash != null) return parseFloat(d.paid_cash);
+    if (d.payments && d.payments.length > 0) {
+      return d.payments.reduce((s: number, p: any) => p.payment_mode === 'CASH' ? s + parseFloat(p.amount || 0) : s, 0);
+    }
+    if (d.payment_mode === 'CASH') {
+      return d.total_paid != null ? parseFloat(d.total_paid) : parseFloat(d.amount || 0);
+    }
+    return 0;
+  };
 
-  const cashDonationsTotal = cashDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
-  const upiDonationsTotal = upiDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
-  const pendingDonationsTotal = pendingDonationsList.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  const getDonationUpiPaid = (d: any): number => {
+    if (d.paid_upi != null) return parseFloat(d.paid_upi);
+    if (d.payments && d.payments.length > 0) {
+      return d.payments.reduce((s: number, p: any) => p.payment_mode === 'UPI' ? s + parseFloat(p.amount || 0) : s, 0);
+    }
+    if (d.payment_mode === 'UPI') {
+      return d.total_paid != null ? parseFloat(d.total_paid) : parseFloat(d.amount || 0);
+    }
+    return 0;
+  };
+
+  const getDonationRemaining = (d: any): number => {
+    if (d.remaining_amount != null) return parseFloat(d.remaining_amount);
+    const tot = parseFloat(d.amount || 0);
+    const paid = d.total_paid != null ? parseFloat(d.total_paid) : (d.payment_mode !== 'PENDING' ? tot : 0);
+    return Math.max(0, tot - paid);
+  };
+
+  const getDonationTotalPaid = (d: any): number => {
+    if (d.total_paid != null) return parseFloat(d.total_paid);
+    const cash = getDonationCashPaid(d);
+    const upi = getDonationUpiPaid(d);
+    if (cash > 0 || upi > 0) return cash + upi;
+    return d.payment_mode !== 'PENDING' ? parseFloat(d.amount || 0) : 0;
+  };
+
+  const nonVoidedDonations = donations.filter((d) => !d.is_voided);
+  const cashDonationsList = nonVoidedDonations.filter((d) => getDonationCashPaid(d) > 0 || d.payment_mode === 'CASH');
+  const upiDonationsList = nonVoidedDonations.filter((d) => getDonationUpiPaid(d) > 0 || d.payment_mode === 'UPI');
+  const pendingDonationsList = nonVoidedDonations.filter((d) => getDonationRemaining(d) > 0);
+
+  const cashDonationsTotal = nonVoidedDonations.reduce((sum, d) => sum + getDonationCashPaid(d), 0);
+  const upiDonationsTotal = nonVoidedDonations.reduce((sum, d) => sum + getDonationUpiPaid(d), 0);
+  const pendingDonationsTotal = nonVoidedDonations.reduce((sum, d) => sum + getDonationRemaining(d), 0);
   // Only actual collected donations (Cash + UPI) are counted in total collection:
   const allDonationsTotal = cashDonationsTotal + upiDonationsTotal;
 
   const todayDateStr = new Date().toISOString().split('T')[0];
-  const todayDonations = donations.filter((d) => {
-    const dDate = d.created_at ? new Date(d.created_at).toISOString().split('T')[0] : '';
-    return dDate === todayDateStr;
-  });
-  const todayCashFromDonations = todayDonations.filter((d) => d.payment_mode === 'CASH').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
-  const todayUpiFromDonations = todayDonations.filter((d) => d.payment_mode === 'UPI').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+
+  // Today's collections derived accurately from payments
+  let todayCashFromDonations = 0;
+  let todayUpiFromDonations = 0;
+  let todayPendingFromDonations = 0;
+
+  for (const d of nonVoidedDonations) {
+    const isCreatedToday = d.created_at && new Date(d.created_at).toISOString().split('T')[0] === todayDateStr;
+    if (isCreatedToday) {
+      todayPendingFromDonations += getDonationRemaining(d);
+    }
+    if (d.payments && d.payments.length > 0) {
+      for (const p of d.payments) {
+        const pDate = p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : '';
+        if (pDate === todayDateStr) {
+          if (p.payment_mode === 'CASH') todayCashFromDonations += parseFloat(p.amount || 0);
+          else if (p.payment_mode === 'UPI') todayUpiFromDonations += parseFloat(p.amount || 0);
+        }
+      }
+    } else if (isCreatedToday) {
+      if (d.payment_mode === 'CASH') todayCashFromDonations += parseFloat(d.amount || 0);
+      else if (d.payment_mode === 'UPI') todayUpiFromDonations += parseFloat(d.amount || 0);
+    }
+  }
+
   // Only actual collected donations for today (Cash + UPI):
   const todayTotalFromDonations = todayCashFromDonations + todayUpiFromDonations;
-  const todayPendingFromDonations = todayDonations.filter((d) => d.payment_mode === 'PENDING').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
   const recentDonationsList = overview?.recent_donations && overview.recent_donations.length > 0 ? overview.recent_donations : donations.slice(0, 5);
 
   // =========================================================================
@@ -903,20 +959,45 @@ export default function UnifiedDashboardPage() {
                               </div>
                             </td>
                             <td className="px-4 py-3">
-                              <span
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                                  d.payment_mode === 'CASH'
-                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                    : d.payment_mode === 'UPI'
-                                    ? 'bg-sky-50 text-sky-700 border-sky-200'
-                                    : 'bg-amber-50 text-amber-700 border-amber-200'
-                                }`}
-                              >
-                                {d.payment_mode === 'CASH' ? t.cash : d.payment_mode === 'UPI' ? t.upi : t.pending}
-                              </span>
+                              {d.payment_status === 'PARTIAL' ? (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                                  {language === Language.ENGLISH ? 'Partial' : 'अंशतः जमा'}
+                                </span>
+                              ) : d.payment_status === 'PENDING' || d.payment_mode === 'PENDING' ? (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
+                                  {t.pending}
+                                </span>
+                              ) : (
+                                <span
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                    d.payment_mode === 'CASH'
+                                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                      : 'bg-sky-50 text-sky-700 border-sky-200'
+                                  }`}
+                                >
+                                  {d.payment_mode === 'CASH' ? t.cash : t.upi}
+                                </span>
+                              )}
                             </td>
-                            <td className="px-4 py-3 text-right font-black text-[#292118] tabular-nums">
-                              ₹{parseFloat(d.amount).toLocaleString('en-IN')}
+                            <td className="px-4 py-3 text-right">
+                              <div className="font-black text-[#292118] tabular-nums">
+                                ₹{parseFloat(d.amount).toLocaleString('en-IN')}
+                              </div>
+                              {d.payment_status === 'PARTIAL' && (
+                                <div className="text-[10px] tabular-nums mt-0.5 space-y-0.5">
+                                  <div className="text-emerald-700 font-semibold">
+                                    {language === Language.ENGLISH ? 'Paid' : 'जमा'}: ₹{parseFloat(d.total_paid || 0).toLocaleString('en-IN')}
+                                  </div>
+                                  <div className="text-amber-700 font-semibold">
+                                    {language === Language.ENGLISH ? 'Rem' : 'बाकी'}: ₹{parseFloat(d.remaining_amount || 0).toLocaleString('en-IN')}
+                                  </div>
+                                </div>
+                              )}
+                              {(d.payment_status === 'PENDING' || (d.payment_mode === 'PENDING' && !d.payment_status)) && (
+                                <div className="text-[10px] text-amber-700 font-semibold tabular-nums mt-0.5">
+                                  {language === Language.ENGLISH ? 'Rem' : 'शिल्लक'}: ₹{parseFloat(d.remaining_amount || d.amount).toLocaleString('en-IN')}
+                                </div>
+                              )}
                             </td>
                             <td className="px-4 py-3 text-xs text-[#6B6459]">
                               {d.volunteer_name || t.treasurer_role}
@@ -932,7 +1013,7 @@ export default function UnifiedDashboardPage() {
                             </td>
                             <td className="px-4 py-3 text-center">
                               <div className="flex items-center justify-center gap-1.5">
-                                {d.payment_mode === 'PENDING' && !d.is_voided && (
+                                {!d.is_voided && (parseFloat(d.remaining_amount) > 0.001 || d.payment_status === 'PARTIAL' || d.payment_mode === 'PENDING') && (
                                   <button
                                     onClick={() => setCollectingDonation(d)}
                                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
@@ -1642,20 +1723,39 @@ export default function UnifiedDashboardPage() {
                         {d.flat_wing && <span className="text-xs text-[#A8A297] ml-1.5 font-normal">({d.flat_wing})</span>}
                       </td>
                       <td className="px-4 py-2.5">
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            d.payment_mode === 'CASH'
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : d.payment_mode === 'UPI'
-                              ? 'bg-sky-50 text-sky-700 border-sky-200'
-                              : 'bg-amber-50 text-amber-700 border-amber-200'
-                          }`}
-                        >
-                          {d.payment_mode === 'CASH' ? t.cash : d.payment_mode === 'UPI' ? t.upi : t.pending}
-                        </span>
+                        {d.payment_status === 'PARTIAL' ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                            {language === Language.ENGLISH ? 'Partial' : 'अंशतः जमा'}
+                          </span>
+                        ) : d.payment_status === 'PENDING' || d.payment_mode === 'PENDING' ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
+                            {t.pending}
+                          </span>
+                        ) : (
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                              d.payment_mode === 'CASH'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-sky-50 text-sky-700 border-sky-200'
+                            }`}
+                          >
+                            {d.payment_mode === 'CASH' ? t.cash : t.upi}
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-right font-black text-[#292118] tabular-nums">
-                        ₹{parseFloat(d.amount).toLocaleString('en-IN')}
+                        <div>₹{parseFloat(d.amount).toLocaleString('en-IN')}</div>
+                        {d.payment_status === 'PARTIAL' && (
+                          <div className="text-[10px] text-[#6B6459] tabular-nums mt-0.5 font-normal">
+                            <span className="text-emerald-700 font-semibold">
+                              {language === Language.ENGLISH ? 'Paid' : 'जमा'}: ₹{parseFloat(d.total_paid || 0).toLocaleString('en-IN')}
+                            </span>
+                            {' • '}
+                            <span className="text-amber-700 font-semibold">
+                              {language === Language.ENGLISH ? 'Rem' : 'बाकी'}: ₹{parseFloat(d.remaining_amount || 0).toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-4 py-2.5 text-xs text-[#6B6459] font-medium">{d.volunteer_name || '—'}</td>
                       <td className="px-4 py-2.5 text-[11px] text-[#A8A297] whitespace-nowrap">
@@ -1663,7 +1763,7 @@ export default function UnifiedDashboardPage() {
                       </td>
                       <td className="px-4 py-2.5 text-center">
                         <div className="flex items-center justify-center gap-1.5">
-                          {d.payment_mode === 'PENDING' && !d.is_voided && (
+                          {!d.is_voided && (parseFloat(d.remaining_amount) > 0.001 || d.payment_status === 'PARTIAL' || d.payment_mode === 'PENDING') && (
                             <button
                               onClick={() => setCollectingDonation(d)}
                               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"

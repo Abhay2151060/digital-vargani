@@ -227,6 +227,9 @@ export class DonationsService {
              u.full_name as volunteer_name,
              COALESCE(dp_agg.total_paid, 0)::numeric as total_paid,
              GREATEST(0, d.amount - COALESCE(dp_agg.total_paid, 0))::numeric as remaining_amount,
+             COALESCE(dp_agg.paid_cash, 0)::numeric as paid_cash,
+             COALESCE(dp_agg.paid_upi, 0)::numeric as paid_upi,
+             COALESCE(dp_agg.payments, '[]'::json) as payments,
              CASE
                WHEN COALESCE(dp_agg.total_paid, 0) >= d.amount THEN 'PAID'
                WHEN COALESCE(dp_agg.total_paid, 0) > 0 THEN 'PARTIAL'
@@ -235,9 +238,27 @@ export class DonationsService {
       FROM donations d
       JOIN users u ON u.id = d.volunteer_id
       LEFT JOIN (
-        SELECT donation_id, SUM(amount) as total_paid
-        FROM donation_payments
-        GROUP BY donation_id
+        SELECT 
+          dp.donation_id, 
+          SUM(dp.amount) as total_paid,
+          SUM(CASE WHEN dp.payment_mode = 'CASH' THEN dp.amount ELSE 0 END) as paid_cash,
+          SUM(CASE WHEN dp.payment_mode = 'UPI' THEN dp.amount ELSE 0 END) as paid_upi,
+          json_agg(
+            json_build_object(
+              'id', dp.id,
+              'donation_id', dp.donation_id,
+              'amount', dp.amount,
+              'payment_mode', dp.payment_mode,
+              'payment_reference', dp.payment_reference,
+              'collected_by', dp.collected_by,
+              'collector_name', u_coll.full_name,
+              'is_reconciled', dp.is_reconciled,
+              'created_at', dp.created_at
+            ) ORDER BY dp.created_at ASC
+          ) as payments
+        FROM donation_payments dp
+        LEFT JOIN users u_coll ON u_coll.id = dp.collected_by
+        GROUP BY dp.donation_id
       ) dp_agg ON dp_agg.donation_id = d.id
       WHERE d.mandal_id = $1
     `;

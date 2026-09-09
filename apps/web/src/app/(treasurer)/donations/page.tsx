@@ -108,51 +108,69 @@ export default function AllDonationsPage() {
     return null;
   }
 
+  // Calculation Helpers
+  const getDonationCashPaid = (d: any): number => {
+    if (d.paid_cash != null) return parseFloat(d.paid_cash);
+    if (d.payments && d.payments.length > 0) {
+      return d.payments.reduce((s: number, p: any) => p.payment_mode === 'CASH' ? s + parseFloat(p.amount || 0) : s, 0);
+    }
+    if (d.payment_mode === 'CASH') {
+      return d.total_paid != null ? parseFloat(d.total_paid) : parseFloat(d.amount || 0);
+    }
+    return 0;
+  };
+
+  const getDonationUpiPaid = (d: any): number => {
+    if (d.paid_upi != null) return parseFloat(d.paid_upi);
+    if (d.payments && d.payments.length > 0) {
+      return d.payments.reduce((s: number, p: any) => p.payment_mode === 'UPI' ? s + parseFloat(p.amount || 0) : s, 0);
+    }
+    if (d.payment_mode === 'UPI') {
+      return d.total_paid != null ? parseFloat(d.total_paid) : parseFloat(d.amount || 0);
+    }
+    return 0;
+  };
+
+  const getDonationRemaining = (d: any): number => {
+    if (d.remaining_amount != null) return parseFloat(d.remaining_amount);
+    const tot = parseFloat(d.amount || 0);
+    const paid = d.total_paid != null ? parseFloat(d.total_paid) : (d.payment_mode !== 'PENDING' ? tot : 0);
+    return Math.max(0, tot - paid);
+  };
+
+  const getDonationTotalPaid = (d: any): number => {
+    if (d.total_paid != null) return parseFloat(d.total_paid);
+    const cash = getDonationCashPaid(d);
+    const upi = getDonationUpiPaid(d);
+    if (cash > 0 || upi > 0) return cash + upi;
+    return d.payment_mode !== 'PENDING' ? parseFloat(d.amount || 0) : 0;
+  };
+
   // Aggregate Metrics
   const nonVoided = donations.filter((d) => !d.is_voided);
-  const pendingDonations = nonVoided.filter(
-    (d) => d.payment_status === 'PENDING' || (!d.payment_status && d.payment_mode === 'PENDING')
-  );
-  const partialDonations = nonVoided.filter((d) => d.payment_status === 'PARTIAL');
-  const cashDonations = nonVoided.filter(
-    (d) => d.payment_mode === 'CASH' && d.payment_status !== 'PENDING'
-  );
-  const upiDonations = nonVoided.filter(
-    (d) => d.payment_mode === 'UPI' && d.payment_status !== 'PENDING'
-  );
 
-  const totalCash = nonVoided.reduce((sum, d) => {
-    if (d.payment_mode === 'CASH') {
-      return sum + (d.total_paid != null ? parseFloat(d.total_paid) : parseFloat(d.amount || 0));
-    }
-    return sum;
-  }, 0);
-
-  const totalUpi = nonVoided.reduce((sum, d) => {
-    if (d.payment_mode === 'UPI') {
-      return sum + (d.total_paid != null ? parseFloat(d.total_paid) : parseFloat(d.amount || 0));
-    }
-    return sum;
-  }, 0);
-
-  const totalPending = nonVoided.reduce((sum, d) => {
-    const rem = d.remaining_amount != null ? parseFloat(d.remaining_amount) : (d.payment_mode === 'PENDING' ? parseFloat(d.amount || 0) : 0);
-    return sum + rem;
-  }, 0);
-
+  const totalCash = nonVoided.reduce((sum, d) => sum + getDonationCashPaid(d), 0);
+  const totalUpi = nonVoided.reduce((sum, d) => sum + getDonationUpiPaid(d), 0);
+  const totalPending = nonVoided.reduce((sum, d) => sum + getDonationRemaining(d), 0);
   const totalAmount = totalCash + totalUpi;
-  const collectedDonationsCount = cashDonations.length + upiDonations.length;
+
+  const cashDonations = nonVoided.filter((d) => getDonationCashPaid(d) > 0 || d.payment_mode === 'CASH');
+  const upiDonations = nonVoided.filter((d) => getDonationUpiPaid(d) > 0 || d.payment_mode === 'UPI');
+  const partialDonations = nonVoided.filter((d) => d.payment_status === 'PARTIAL' || (getDonationTotalPaid(d) > 0 && getDonationRemaining(d) > 0));
+  const pendingDonations = nonVoided.filter((d) => getDonationTotalPaid(d) === 0 && getDonationRemaining(d) > 0);
+  const collectedDonationsCount = nonVoided.filter((d) => getDonationTotalPaid(d) > 0).length;
 
   // Filtered List
   const filteredDonations = donations.filter((d) => {
-    if (filterMode === 'CASH' && d.payment_mode !== 'CASH') return false;
-    if (filterMode === 'UPI' && d.payment_mode !== 'UPI') return false;
+    if (filterMode === 'CASH' && !(getDonationCashPaid(d) > 0 || d.payment_mode === 'CASH')) return false;
+    if (filterMode === 'UPI' && !(getDonationUpiPaid(d) > 0 || d.payment_mode === 'UPI')) return false;
     if (filterMode === 'PENDING') {
-      const isPend = d.payment_status === 'PENDING' || (!d.payment_status && d.payment_mode === 'PENDING');
+      const isPend = getDonationTotalPaid(d) === 0 && getDonationRemaining(d) > 0;
       if (!isPend) return false;
     }
     if (filterMode === 'PARTIAL') {
-      if (d.payment_status !== 'PARTIAL') return false;
+      const isPart = d.payment_status === 'PARTIAL' || (getDonationTotalPaid(d) > 0 && getDonationRemaining(d) > 0);
+      if (!isPart) return false;
     }
     if (!searchTerm.trim()) return true;
     const term = searchTerm.toLowerCase();
@@ -337,99 +355,134 @@ export default function AllDonationsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E1D8]/60">
-                  {filteredDonations.map((d: any) => (
-                    <tr key={d.id} className="hover:bg-orange-50/20 transition-colors">
-                      <td className="px-4 py-3 font-mono font-bold text-[#7C2D12]">
-                        #{d.receipt_number}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="font-semibold text-[#292118]">{d.donor_name}</div>
-                        <div className="text-[11px] text-[#A8A297] flex items-center gap-2 mt-0.5">
-                          {d.flat_wing && <span>{t.flat_wing_short}: {d.flat_wing}</span>}
-                          {d.donor_phone && <span>{t.phone_short}: {d.donor_phone}</span>}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        {d.payment_status === 'PARTIAL' ? (
-                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
-                            {language === Language.ENGLISH ? 'Partial' : 'अंशतः जमा'}
-                          </span>
-                        ) : d.payment_status === 'PENDING' || d.payment_mode === 'PENDING' ? (
-                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
-                            {t.pending}
-                          </span>
-                        ) : (
-                          <span
-                            className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                              d.payment_mode === 'CASH'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : 'bg-sky-50 text-sky-700 border-sky-200'
-                            }`}
-                          >
-                            {d.payment_mode === 'CASH' ? t.cash : t.upi}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <div className="font-black text-[#292118] tabular-nums text-sm">
-                          ₹{parseFloat(d.amount).toLocaleString('en-IN')}
-                        </div>
-                        {d.payment_status === 'PARTIAL' && (
-                          <div className="text-[10px] text-[#6B6459] tabular-nums mt-0.5">
-                            <span className="text-emerald-700 font-semibold">
-                              {language === Language.ENGLISH ? 'Paid' : 'जमा'}: ₹{parseFloat(d.total_paid || 0).toLocaleString('en-IN')}
-                            </span>
-                            {' • '}
-                            <span className="text-amber-700 font-semibold">
-                              {language === Language.ENGLISH ? 'Rem' : 'बाकी'}: ₹{parseFloat(d.remaining_amount || 0).toLocaleString('en-IN')}
-                            </span>
+                  {filteredDonations.map((d: any) => {
+                    const totalAmountVal = parseFloat(d.amount || 0);
+                    const paidVal = getDonationTotalPaid(d);
+                    const remainingVal = getDonationRemaining(d);
+                    const cashPaidVal = getDonationCashPaid(d);
+                    const upiPaidVal = getDonationUpiPaid(d);
+                    const isPaid = remainingVal <= 0.001 && paidVal > 0;
+                    const isPartial = paidVal > 0 && remainingVal > 0.001;
+                    const isPending = paidVal === 0;
+
+                    return (
+                      <tr key={d.id} className="hover:bg-orange-50/20 transition-colors">
+                        <td className="px-4 py-3 font-mono font-bold text-[#7C2D12]">
+                          #{d.receipt_number}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-[#292118]">{d.donor_name}</div>
+                          <div className="text-[11px] text-[#A8A297] flex items-center gap-2 mt-0.5">
+                            {d.flat_wing && <span>{t.flat_wing_short}: {d.flat_wing}</span>}
+                            {d.donor_phone && <span>{t.phone_short}: {d.donor_phone}</span>}
                           </div>
-                        )}
-                        {(d.payment_status === 'PENDING' || (d.payment_mode === 'PENDING' && !d.payment_status)) && (
-                          <div className="text-[10px] text-amber-700 font-semibold tabular-nums mt-0.5">
-                            {language === Language.ENGLISH ? 'Remaining' : 'शिल्लक'}: ₹{parseFloat(d.remaining_amount || d.amount).toLocaleString('en-IN')}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-[#6B6459] font-medium">
-                        {d.volunteer_name || (role === Role.ADMIN ? t.admin_role : role === Role.TREASURER ? t.treasurer_role : t.volunteer_role)}
-                      </td>
-                      <td className="px-4 py-3 text-[11px] text-[#A8A297] whitespace-nowrap">
-                        {new Date(d.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}{' '}
-                        •{' '}
-                        {new Date(d.created_at).toLocaleTimeString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <div className="flex items-center justify-center gap-1.5">
-                          {!d.is_voided && (parseFloat(d.remaining_amount) > 0 || d.payment_mode === 'PENDING' || d.payment_status === 'PARTIAL' || d.payment_status === 'PENDING') && (
-                            <button
-                              onClick={() => setCollectingDonation(d)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
-                              title={t.collect_vargani}
-                            >
-                              <Wallet className="w-3.5 h-3.5" />
-                              <span>{t.collect_vargani}</span>
-                            </button>
+                        </td>
+                        <td className="px-4 py-3">
+                          {isPartial ? (
+                            <div>
+                              <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200">
+                                {language === Language.ENGLISH ? 'Partial' : 'अंशतः जमा'}
+                              </span>
+                              <div className="text-[10px] text-[#6B6459] font-medium mt-0.5">
+                                {cashPaidVal > 0 && upiPaidVal > 0
+                                  ? 'रोख + UPI'
+                                  : cashPaidVal > 0
+                                  ? t.cash
+                                  : t.upi}
+                              </div>
+                            </div>
+                          ) : isPending ? (
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
+                              {t.pending}
+                            </span>
+                          ) : (
+                            <div>
+                              <span
+                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                                  cashPaidVal > 0 && upiPaidVal > 0
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                    : cashPaidVal > 0 || d.payment_mode === 'CASH'
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : 'bg-sky-50 text-sky-700 border-sky-200'
+                                }`}
+                              >
+                                {cashPaidVal > 0 && upiPaidVal > 0
+                                  ? 'रोख + UPI'
+                                  : cashPaidVal > 0 || d.payment_mode === 'CASH'
+                                  ? t.cash
+                                  : t.upi}
+                              </span>
+                            </div>
                           )}
-                          <button
-                            onClick={() => openReceipt(d)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100/70 border border-orange-200/60 transition cursor-pointer shadow-2xs"
-                            title={t.view_receipt}
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            <span>{t.view}</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="font-black text-[#292118] tabular-nums text-sm">
+                            ₹{totalAmountVal.toLocaleString('en-IN')}
+                          </div>
+                          {isPartial && (
+                            <div className="text-[11px] tabular-nums mt-0.5 space-y-0.5">
+                              <div className="text-emerald-700 font-bold flex items-center justify-end gap-1">
+                                <span>{language === Language.ENGLISH ? 'Collected' : 'जमा'}:</span>
+                                <span>₹{paidVal.toLocaleString('en-IN')}</span>
+                              </div>
+                              <div className="text-amber-700 font-bold flex items-center justify-end gap-1">
+                                <span>{language === Language.ENGLISH ? 'Remaining' : 'बाकी'}:</span>
+                                <span>₹{remainingVal.toLocaleString('en-IN')}</span>
+                              </div>
+                            </div>
+                          )}
+                          {isPending && (
+                            <div className="text-[11px] text-amber-700 font-bold tabular-nums mt-0.5 flex items-center justify-end gap-1">
+                              <span>{language === Language.ENGLISH ? 'Remaining' : 'शिल्लक'}:</span>
+                              <span>₹{remainingVal.toLocaleString('en-IN')}</span>
+                            </div>
+                          )}
+                          {isPaid && (
+                            <div className="text-[10px] text-emerald-700 font-semibold tabular-nums mt-0.5 flex items-center justify-end gap-1">
+                              <span>✓ {language === Language.ENGLISH ? 'Fully Paid' : 'पूर्ण जमा'}</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-[#6B6459] font-medium">
+                          {d.volunteer_name || (role === Role.ADMIN ? t.admin_role : role === Role.TREASURER ? t.treasurer_role : t.volunteer_role)}
+                        </td>
+                        <td className="px-4 py-3 text-[11px] text-[#A8A297] whitespace-nowrap">
+                          {new Date(d.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}{' '}
+                          •{' '}
+                          {new Date(d.created_at).toLocaleTimeString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            {!d.is_voided && remainingVal > 0.001 && (
+                              <button
+                                onClick={() => setCollectingDonation(d)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 transition cursor-pointer shadow-2xs"
+                                title={t.collect_vargani}
+                              >
+                                <Wallet className="w-3.5 h-3.5" />
+                                <span>{t.collect_vargani}</span>
+                              </button>
+                            )}
+                            <button
+                              onClick={() => openReceipt(d)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-[#C2410C] bg-orange-50 hover:bg-orange-100/70 border border-orange-200/60 transition cursor-pointer shadow-2xs"
+                              title={t.view_receipt}
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>{t.view}</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (

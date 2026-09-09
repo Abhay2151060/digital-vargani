@@ -24,15 +24,16 @@ export class TransparencyService {
 
     const mandal = mandalRes.rows[0];
 
-    // 2. Fetch approved collections totals & breakdown
+    // 2. Fetch approved collections totals & breakdown from actual payments
     const collectionsRes = await this.db.query(
       `SELECT 
-         payment_mode,
-         COALESCE(SUM(amount), 0) as total_amount,
-         COUNT(*) as count
-       FROM donations
-       WHERE mandal_id = $1 AND is_voided = FALSE
-       GROUP BY payment_mode`,
+         dp.payment_mode,
+         COALESCE(SUM(dp.amount), 0) as total_amount,
+         COUNT(DISTINCT dp.donation_id) as count
+       FROM donation_payments dp
+       JOIN donations d ON d.id = dp.donation_id
+       WHERE dp.mandal_id = $1 AND d.is_voided = FALSE
+       GROUP BY dp.payment_mode`,
       [mandal.id]
     );
 
@@ -48,12 +49,26 @@ export class TransparencyService {
       [mandal.id]
     );
 
-    // 4. Fetch donor roll (latest 100 donations)
+    // 4. Fetch donor roll (donors with contributions)
     const donorRollRes = await this.db.query(
-      `SELECT receipt_number, donor_name, donor_phone, amount, payment_mode, created_at
-       FROM donations
-       WHERE mandal_id = $1 AND is_voided = FALSE
-       ORDER BY created_at DESC
+      `SELECT d.receipt_number, d.donor_name, d.donor_phone, d.amount, d.created_at,
+              COALESCE(dp_agg.total_paid, 0) as total_paid,
+              COALESCE(dp_agg.primary_mode, d.payment_mode) as payment_mode
+       FROM donations d
+       JOIN (
+         SELECT 
+           dp.donation_id, 
+           SUM(dp.amount) as total_paid,
+           CASE 
+             WHEN COUNT(DISTINCT dp.payment_mode) > 1 THEN 'UPI' 
+             ELSE MAX(dp.payment_mode) 
+           END as primary_mode
+         FROM donation_payments dp
+         GROUP BY dp.donation_id
+         HAVING SUM(dp.amount) > 0
+       ) dp_agg ON dp_agg.donation_id = d.id
+       WHERE d.mandal_id = $1 AND d.is_voided = FALSE
+       ORDER BY d.created_at DESC
        LIMIT 100`,
       [mandal.id]
     );
@@ -67,16 +82,20 @@ export class TransparencyService {
       [mandal.id]
     );
 
-    const totalCollected = collectionsRes.rows
-      .filter((row) => row.payment_mode !== 'PENDING')
-      .reduce((sum, row) => sum + parseFloat(row.total_amount), 0);
+    const donorsCountRes = await this.db.query(
+      `SELECT COUNT(DISTINCT d.id) as count
+       FROM donations d
+       JOIN donation_payments dp ON dp.donation_id = d.id
+       WHERE d.mandal_id = $1 AND d.is_voided = FALSE`,
+      [mandal.id]
+    );
+
+    const totalCollected = collectionsRes.rows.reduce((sum, row) => sum + parseFloat(row.total_amount), 0);
     const totalExpenses = expensesRes.rows.reduce(
       (sum, row) => sum + parseFloat(row.total_amount),
       0
     );
-    const totalDonorsCount = collectionsRes.rows
-      .filter((row) => row.payment_mode !== 'PENDING')
-      .reduce((sum, row) => sum + parseInt(row.count, 10), 0);
+    const totalDonorsCount = parseInt(donorsCountRes.rows[0]?.count || 0, 10);
 
     return {
       mandal: {

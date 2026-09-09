@@ -151,21 +151,36 @@ export class ReconciliationService {
   }
 
   async getTreasurerOverview(mandalId: string): Promise<TreasurerOverview> {
-    // 1. Collections totals (Only actually collected CASH and UPI are counted in total_collected and today_collected; PENDING is kept separate)
+    // 1. Collections totals from actual payments
     const totalsRes = await this.db.query(
       `SELECT 
-         COALESCE(SUM(CASE WHEN payment_mode IN ('CASH', 'UPI') THEN amount ELSE 0 END), 0) as total_collected,
-         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode IN ('CASH', 'UPI') THEN amount ELSE 0 END), 0) as today_collected,
-         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'CASH' THEN amount ELSE 0 END), 0) as today_cash_collected,
-         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'UPI' THEN amount ELSE 0 END), 0) as today_upi_collected,
-         COALESCE(SUM(CASE WHEN created_at::DATE = CURRENT_DATE AND payment_mode = 'PENDING' THEN amount ELSE 0 END), 0) as today_pending_collected,
-         COALESCE(SUM(CASE WHEN payment_mode = 'CASH' THEN amount ELSE 0 END), 0) as cash_collected,
-         COALESCE(SUM(CASE WHEN payment_mode = 'UPI' THEN amount ELSE 0 END), 0) as upi_collected,
-         COALESCE(SUM(CASE WHEN payment_mode = 'PENDING' THEN amount ELSE 0 END), 0) as pending_collected,
-         COALESCE(SUM(CASE WHEN payment_mode = 'CASH' AND is_reconciled = FALSE THEN amount ELSE 0 END), 0) as cash_in_hand_volunteers,
-         COALESCE(SUM(CASE WHEN payment_mode = 'CASH' AND is_reconciled = TRUE THEN amount ELSE 0 END), 0) as cash_reconciled
-       FROM donations
-       WHERE mandal_id = $1 AND is_voided = FALSE`,
+         COALESCE(SUM(dp.amount), 0) as total_collected,
+         COALESCE(SUM(CASE WHEN dp.created_at::DATE = CURRENT_DATE THEN dp.amount ELSE 0 END), 0) as today_collected,
+         COALESCE(SUM(CASE WHEN dp.created_at::DATE = CURRENT_DATE AND dp.payment_mode = 'CASH' THEN dp.amount ELSE 0 END), 0) as today_cash_collected,
+         COALESCE(SUM(CASE WHEN dp.created_at::DATE = CURRENT_DATE AND dp.payment_mode = 'UPI' THEN dp.amount ELSE 0 END), 0) as today_upi_collected,
+         COALESCE(SUM(CASE WHEN dp.payment_mode = 'CASH' THEN dp.amount ELSE 0 END), 0) as cash_collected,
+         COALESCE(SUM(CASE WHEN dp.payment_mode = 'UPI' THEN dp.amount ELSE 0 END), 0) as upi_collected,
+         COALESCE(SUM(CASE WHEN dp.payment_mode = 'CASH' AND dp.is_reconciled = FALSE THEN dp.amount ELSE 0 END), 0) as cash_in_hand_volunteers,
+         COALESCE(SUM(CASE WHEN dp.payment_mode = 'CASH' AND dp.is_reconciled = TRUE THEN dp.amount ELSE 0 END), 0) as cash_reconciled
+       FROM donation_payments dp
+       JOIN donations d ON d.id = dp.donation_id
+       WHERE dp.mandal_id = $1 AND d.is_voided = FALSE`,
+      [mandalId],
+      [mandalId]
+    );
+
+    // 1b. Pending totals from donations remaining balances
+    const pendingTotalsRes = await this.db.query(
+      `SELECT 
+         COALESCE(SUM(GREATEST(0, d.amount - COALESCE(dp_agg.total_paid, 0))), 0) as pending_collected,
+         COALESCE(SUM(CASE WHEN d.created_at::DATE = CURRENT_DATE THEN GREATEST(0, d.amount - COALESCE(dp_agg.total_paid, 0)) ELSE 0 END), 0) as today_pending_collected
+       FROM donations d
+       LEFT JOIN (
+         SELECT donation_id, SUM(amount) as total_paid
+         FROM donation_payments
+         GROUP BY donation_id
+       ) dp_agg ON dp_agg.donation_id = d.id
+       WHERE d.mandal_id = $1 AND d.is_voided = FALSE`,
       [mandalId],
       [mandalId]
     );
@@ -183,21 +198,46 @@ export class ReconciliationService {
       [mandalId]
     );
 
-    // 3. Volunteer tallies
+    // 3. Volunteer tallies: accurately computed from payments & donations
     const volunteerTalliesRes = await this.db.query(
-      `SELECT 
+      `WITH user_payments AS (
+         SELECT 
+           dp.collected_by as user_id,
+           COALESCE(SUM(CASE WHEN dp.payment_mode = 'CASH' AND dp.created_at::DATE = CURRENT_DATE THEN dp.amount ELSE 0 END), 0) as today_cash_collected,
+           COALESCE(SUM(CASE WHEN dp.payment_mode = 'UPI' AND dp.created_at::DATE = CURRENT_DATE THEN dp.amount ELSE 0 END), 0) as today_upi_collected,
+           COALESCE(SUM(CASE WHEN dp.payment_mode = 'CASH' AND dp.is_reconciled = FALSE THEN dp.amount ELSE 0 END), 0) as total_cash_unreconciled
+         FROM donation_payments dp
+         JOIN donations d ON d.id = dp.donation_id
+         WHERE dp.mandal_id = $1 AND d.is_voided = FALSE
+         GROUP BY dp.collected_by
+       ),
+       user_donations AS (
+         SELECT 
+           d.volunteer_id as user_id,
+           COUNT(d.id) as total_donations_count,
+           COALESCE(SUM(CASE WHEN d.created_at::DATE = CURRENT_DATE THEN GREATEST(0, d.amount - COALESCE(dp_agg.total_paid, 0)) ELSE 0 END), 0) as today_pending_collected
+         FROM donations d
+         LEFT JOIN (
+           SELECT donation_id, SUM(amount) as total_paid
+           FROM donation_payments
+           GROUP BY donation_id
+         ) dp_agg ON dp_agg.donation_id = d.id
+         WHERE d.mandal_id = $1 AND d.is_voided = FALSE
+         GROUP BY d.volunteer_id
+       )
+       SELECT 
          u.id as volunteer_id,
          u.full_name as volunteer_name,
-         COALESCE(SUM(CASE WHEN d.payment_mode = 'CASH' AND d.created_at::DATE = CURRENT_DATE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as today_cash_collected,
-         COALESCE(SUM(CASE WHEN d.payment_mode = 'UPI' AND d.created_at::DATE = CURRENT_DATE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as today_upi_collected,
-         COALESCE(SUM(CASE WHEN d.payment_mode = 'PENDING' AND d.created_at::DATE = CURRENT_DATE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as today_pending_collected,
-         COALESCE(SUM(CASE WHEN d.payment_mode = 'CASH' AND d.is_reconciled = FALSE AND d.is_voided = FALSE THEN d.amount ELSE 0 END), 0) as total_cash_unreconciled,
-         COUNT(d.id) FILTER (WHERE d.is_voided = FALSE) as total_donations_count
+         COALESCE(up.today_cash_collected, 0) as today_cash_collected,
+         COALESCE(up.today_upi_collected, 0) as today_upi_collected,
+         COALESCE(ud.today_pending_collected, 0) as today_pending_collected,
+         COALESCE(up.total_cash_unreconciled, 0) as total_cash_unreconciled,
+         COALESCE(ud.total_donations_count, 0) as total_donations_count
        FROM mandal_members mm
        JOIN users u ON u.id = mm.user_id
-       LEFT JOIN donations d ON d.volunteer_id = u.id AND d.mandal_id = mm.mandal_id
+       LEFT JOIN user_payments up ON up.user_id = u.id
+       LEFT JOIN user_donations ud ON ud.user_id = u.id
        WHERE mm.mandal_id = $1 AND mm.status = 'ACTIVE'
-       GROUP BY u.id, u.full_name
        ORDER BY total_cash_unreconciled DESC, u.full_name ASC`,
       [mandalId],
       [mandalId]
@@ -206,11 +246,30 @@ export class ReconciliationService {
     // 4. Recent reconciliations
     const recList = await this.listReconciliations(mandalId);
 
-    // 5. Recent donations
+    // 5. Recent donations with live totals and payment status
     const recentDonationsRes = await this.db.query(
-      `SELECT d.*, u.full_name as volunteer_name
+      `SELECT d.*, 
+              u.full_name as volunteer_name,
+              COALESCE(dp_agg.total_paid, 0)::numeric as total_paid,
+              GREATEST(0, d.amount - COALESCE(dp_agg.total_paid, 0))::numeric as remaining_amount,
+              COALESCE(dp_agg.paid_cash, 0)::numeric as paid_cash,
+              COALESCE(dp_agg.paid_upi, 0)::numeric as paid_upi,
+              CASE
+                WHEN COALESCE(dp_agg.total_paid, 0) >= d.amount THEN 'PAID'
+                WHEN COALESCE(dp_agg.total_paid, 0) > 0 THEN 'PARTIAL'
+                ELSE 'PENDING'
+              END as payment_status
        FROM donations d
        JOIN users u ON u.id = d.volunteer_id
+       LEFT JOIN (
+         SELECT 
+           dp.donation_id, 
+           SUM(dp.amount) as total_paid,
+           SUM(CASE WHEN dp.payment_mode = 'CASH' THEN dp.amount ELSE 0 END) as paid_cash,
+           SUM(CASE WHEN dp.payment_mode = 'UPI' THEN dp.amount ELSE 0 END) as paid_upi
+         FROM donation_payments dp
+         GROUP BY dp.donation_id
+       ) dp_agg ON dp_agg.donation_id = d.id
        WHERE d.mandal_id = $1 AND d.is_voided = FALSE
        ORDER BY d.created_at DESC
        LIMIT 10`,
@@ -219,6 +278,7 @@ export class ReconciliationService {
     );
 
     const totals = totalsRes.rows[0];
+    const pendingTotals = pendingTotalsRes.rows[0];
     const expenses = expensesRes.rows[0];
 
     const totalCollected = parseFloat(totals.total_collected);
@@ -230,10 +290,10 @@ export class ReconciliationService {
       today_total_collected: parseFloat(totals.today_collected),
       today_cash_collected: parseFloat(totals.today_cash_collected),
       today_upi_collected: parseFloat(totals.today_upi_collected),
-      today_pending_collected: parseFloat(totals.today_pending_collected),
+      today_pending_collected: parseFloat(pendingTotals.today_pending_collected),
       total_cash_collected: parseFloat(totals.cash_collected),
       total_upi_collected: parseFloat(totals.upi_collected),
-      total_pending_collected: parseFloat(totals.pending_collected),
+      total_pending_collected: parseFloat(pendingTotals.pending_collected),
       total_cash_in_hand_volunteers: parseFloat(totals.cash_in_hand_volunteers),
       total_cash_reconciled: parseFloat(totals.cash_reconciled),
       total_approved_expenses: approvedExpenses,
