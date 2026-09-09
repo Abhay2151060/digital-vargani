@@ -291,6 +291,7 @@ export default function CollectDonationPage() {
               <Input
                 label={t.custom_amount}
                 type="number"
+                placeholder={language === Language.ENGLISH ? 'e.g. 501' : 'उदा. ५०१'}
                 value={customAmount}
                 onChange={(e) => handleCustomAmountChange(e.target.value)}
                 leftIcon={<IndianRupee className="w-4 h-4" />}

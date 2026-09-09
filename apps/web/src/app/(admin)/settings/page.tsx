@@ -721,7 +721,7 @@ export default function SettingsPage() {
 
               <Input
                 label={language === Language.ENGLISH ? 'Portal URL Slug' : 'वेब स्लग (Portal Slug)'}
-                placeholder="shree-samarth-mitra-mandal"
+                placeholder={language === Language.ENGLISH ? 'e.g. shree-samarth-mitra-mandal' : 'उदा. shree-samarth-mitra-mandal'}
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 helperText={
@@ -766,7 +766,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label={t.reg_no_label || (language === Language.ENGLISH ? 'Registration / Trust No.' : 'नोंदणी क्रमांक')}
-                placeholder="MH/2024/PUN/00912"
+                placeholder={language === Language.ENGLISH ? 'e.g. MH/2024/PUN/00912' : 'उदा. MH/2024/PUN/00912'}
                 value={regNo}
                 onChange={(e) => setRegNo(e.target.value)}
               />
@@ -806,7 +806,7 @@ export default function SettingsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label={t.receipt_prefix_label || (language === Language.ENGLISH ? 'Receipt Prefix' : 'पावती प्रिफिक्स')}
-                placeholder="SSMM"
+                placeholder={language === Language.ENGLISH ? 'e.g. SSMM' : 'उदा. SSMM'}
                 value={receiptPrefix}
                 onChange={(e) => setReceiptPrefix(e.target.value.toUpperCase())}
                 helperText={language === Language.ENGLISH ? 'e.g. Entering SSMM will generate receipts like SSMM-001.' : 'उदा. SSMM टाकल्यास पावती क्रमांक SSMM-001 असा बनेल.'}
@@ -814,7 +814,7 @@ export default function SettingsPage() {
               />
               <Input
                 label={language === Language.ENGLISH ? 'UPI ID / VPA (Optional)' : 'UPI ID / VPA (पर्यायी)'}
-                placeholder="mandal@upi"
+                placeholder={language === Language.ENGLISH ? 'e.g. mandal@upi' : 'उदा. mandal@upi'}
                 value={upiId}
                 onChange={(e) => setUpiId(e.target.value)}
               />
@@ -822,7 +822,7 @@ export default function SettingsPage() {
 
             <Input
               label={t.preset_amounts_label || (language === Language.ENGLISH ? 'Preset Amount Chips (₹)' : 'क्विक-अमाऊंट चिप्स (₹)')}
-              placeholder="101, 251, 501, 1001, 2101, 5001"
+              placeholder={language === Language.ENGLISH ? 'e.g. 101, 251, 501, 1001, 2101, 5001' : 'उदा. १०१, २५१, ५०१, १००१, २१०१, ५००१'}
               value={presetAmountsStr}
               onChange={(e) => setPresetAmountsStr(e.target.value)}
               helperText={language === Language.ENGLISH ? 'Enter comma-separated amounts. These will appear on volunteers receipt screens.' : 'स्वल्पविराम देऊन रक्कम टाका, हे कार्यकर्त्यांच्या स्क्रीनवर दिसतील.'}
@@ -951,7 +951,7 @@ export default function SettingsPage() {
               <Input
                 label={t.current_password_label || (language === Language.ENGLISH ? 'Current Password' : 'सध्याचा पासवर्ड')}
                 type="password"
-                placeholder={language === Language.ENGLISH ? 'Enter current password' : 'सध्याचा पासवर्ड टाका'}
+                placeholder={language === Language.ENGLISH ? 'Enter current password' : 'चालू पासवर्ड प्रविष्ट करा'}
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
@@ -960,7 +960,7 @@ export default function SettingsPage() {
               <Input
                 label={t.new_password_label || (language === Language.ENGLISH ? 'New Password (min 6 characters)' : 'नवीन पासवर्ड (किमान ६ अक्षरे)')}
                 type="password"
-                placeholder={language === Language.ENGLISH ? 'Enter new password' : 'नवीन पासवर्ड टाका'}
+                placeholder={language === Language.ENGLISH ? 'Enter new password (min. 6 chars)' : 'नवीन पासवर्ड प्रविष्ट करा (किमान ६ अक्षरे)'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required

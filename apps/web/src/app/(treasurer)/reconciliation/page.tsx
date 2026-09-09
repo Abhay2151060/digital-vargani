@@ -240,6 +240,7 @@ function ReconciliationContent() {
                   <Input
                     label={t.actual_received_cash}
                     type="number"
+                    placeholder={language === Language.ENGLISH ? 'e.g. 5000' : 'उदा. ५०००'}
                     value={receivedAmount}
                     onChange={(e) => setReceivedAmount(e.target.value)}
                     required

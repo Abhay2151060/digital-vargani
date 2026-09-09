@@ -310,7 +310,7 @@ export default function MembersPage() {
             label={language === Language.ENGLISH ? 'Mobile Number (Optional - for WhatsApp)' : 'मोबाईल नंबर (ऐच्छिक - व्हॉट्सॲपसाठी)'}
             type="tel"
             maxLength={10}
-            placeholder={language === Language.ENGLISH ? 'e.g. 9822012345' : 'उदा. 9822012345 (ऐच्छिक)'}
+            placeholder={language === Language.ENGLISH ? 'e.g. 9822012345' : 'उदा. ९८२२०१२३४५'}
             value={phone}
             onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
             leftIcon={<Phone className="w-4 h-4" />}

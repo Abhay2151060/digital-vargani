@@ -392,7 +392,7 @@ export default function ExpensesPage() {
           <Input
             label={t.amount}
             type="number"
-            placeholder="5000"
+            placeholder={language === Language.ENGLISH ? 'e.g. 5000' : 'उदा. ५०००'}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             required
@@ -408,7 +408,7 @@ export default function ExpensesPage() {
 
           <Input
             label={language === Language.ENGLISH ? 'Bill / Receipt Photo URL (Optional)' : 'बिल पावती फोटो URL (ऐच्छिक)'}
-            placeholder="https://example.com/bill.jpg"
+            placeholder={language === Language.ENGLISH ? 'e.g. https://example.com/bill.jpg' : 'उदा. https://example.com/bill.jpg'}
             value={billUrl}
             onChange={(e) => setBillUrl(e.target.value)}
           />

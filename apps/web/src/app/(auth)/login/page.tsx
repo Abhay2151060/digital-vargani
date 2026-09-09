@@ -2,10 +2,11 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '../../../context/AuthContext';
 import { Input, Button, Card, Modal } from '@vargani/ui';
 import { Role, Language } from '@vargani/types';
-import { User, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, KeyRound } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, ShieldCheck, KeyRound } from 'lucide-react';
 import { getT } from '../../../lib/i18n';
 
 export default function LoginPage() {
@@ -104,6 +105,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-[#FAF9F6] relative">
       <div className="w-full max-w-md">
+        {/* Back Button */}
+        <div className="mb-4 flex items-center justify-start">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs font-bold text-[#6B6459] hover:text-[#C2410C] bg-white/90 hover:bg-white px-3.5 py-2 rounded-xl border border-[#E5E1D8] shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+          >
+            <ArrowLeft className="w-4 h-4 text-[#8C827A] group-hover:text-[#C2410C] group-hover:-translate-x-0.5 transition-transform" />
+            <span>{language === Language.ENGLISH ? 'Back to Home' : 'मागे जा (मुख्य पृष्ठ)'}</span>
+          </Link>
+        </div>
+
         {/* Brand Header */}
         <div className="text-center mb-6" suppressHydrationWarning>
           <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#C2410C] to-[#F97316] items-center justify-center text-white text-2xl font-bold shadow-lg shadow-orange-500/25 mb-3">
@@ -153,7 +165,7 @@ export default function LoginPage() {
                 <Input
                   label={mounted ? t.password_label : 'पासवर्ड'}
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={mounted ? t.password_placeholder : 'आपला पासवर्ड टाका'}
+                  placeholder={mounted ? t.password_placeholder : (language === Language.ENGLISH ? 'Enter your password' : 'आपला पासवर्ड प्रविष्ट करा')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   leftIcon={<Lock className="w-4 h-4" />}
@@ -219,6 +231,7 @@ export default function LoginPage() {
             <Input
               label={mounted ? t.current_password : 'चालू पासवर्ड'}
               type="password"
+              placeholder={language === Language.ENGLISH ? 'Enter current password' : 'चालू पासवर्ड प्रविष्ट करा'}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               leftIcon={<Lock className="w-4 h-4" />}
@@ -229,7 +242,7 @@ export default function LoginPage() {
               <Input
                 label={mounted ? t.new_password : 'नवीन पासवर्ड (किमान ६ अक्षरे)'}
                 type={showNewPassword ? 'text' : 'password'}
-                placeholder="उदा. MyPass@2026"
+                placeholder={language === Language.ENGLISH ? 'Enter new password (min. 6 chars)' : 'नवीन पासवर्ड प्रविष्ट करा (किमान ६ अक्षरे)'}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 leftIcon={<KeyRound className="w-4 h-4" />}
@@ -248,7 +261,7 @@ export default function LoginPage() {
             <Input
               label={mounted ? t.confirm_new_password : 'नवीन पासवर्ड पुन्हा टाका'}
               type="password"
-              placeholder={language === Language.ENGLISH ? 'Confirm new password' : 'नवीन पासवर्ड पुन्हा टाका'}
+              placeholder={language === Language.ENGLISH ? 'Re-enter new password' : 'नवीन पासवर्ड पुन्हा प्रविष्ट करा'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               leftIcon={<KeyRound className="w-4 h-4" />}

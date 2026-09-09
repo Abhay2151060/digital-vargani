@@ -24,7 +24,7 @@ export const translations = {
     name_or_phone_label: 'पूर्ण नाव किंवा मोबाईल नंबर',
     name_or_phone_placeholder: 'उदा. धीरज कांबळे किंवा 9822012345',
     password_label: 'पासवर्ड',
-    password_placeholder: 'आपला पासवर्ड टाका',
+    password_placeholder: 'आपला पासवर्ड प्रविष्ट करा',
     default_password_hint: 'नवीन युझर्ससाठी डिफॉल्ट पासवर्ड: user123',
     change_password_title: 'पहिल्या लॉगिनसाठी पासवर्ड बदला',
     change_password_desc: 'सुरक्षेसाठी कृपया आपला डिफॉल्ट पासवर्ड बदलून नवीन पासवर्ड सेट करा.',

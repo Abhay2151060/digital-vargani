@@ -180,7 +180,7 @@ export default function ProfilePage() {
             <Input
               label={t.current_password_label}
               type="password"
-              placeholder={language === Language.ENGLISH ? 'Enter current password' : 'सध्याचा पासवर्ड टाका'}
+              placeholder={language === Language.ENGLISH ? 'Enter current password' : 'चालू पासवर्ड प्रविष्ट करा'}
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               required
@@ -189,7 +189,7 @@ export default function ProfilePage() {
             <Input
               label={t.new_password_label}
               type="password"
-              placeholder={language === Language.ENGLISH ? 'Enter new password' : 'नवीन पासवर्ड टाका'}
+              placeholder={language === Language.ENGLISH ? 'Enter new password (min. 6 chars)' : 'नवीन पासवर्ड प्रविष्ट करा (किमान ६ अक्षरे)'}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               required

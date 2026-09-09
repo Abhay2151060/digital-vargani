@@ -252,7 +252,7 @@ export function CollectPendingModal({
                 setCollectAmount(e.target.value);
                 setError('');
               }}
-              placeholder={remainingAmount.toString()}
+              placeholder={language === Language.ENGLISH ? `e.g. ${remainingAmount}` : `उदा. ${remainingAmount}`}
               className={`w-full pl-8 pr-4 py-2.5 bg-white border-2 rounded-xl text-base font-black tabular-nums transition focus:outline-none ${
                 payAmountNum > remainingAmount
                   ? 'border-rose-400 text-rose-700 focus:border-rose-500'
