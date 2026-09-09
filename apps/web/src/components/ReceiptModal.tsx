@@ -24,6 +24,10 @@ export interface ReceiptModalProps {
     date: string;
     volunteerName: string;
     language?: Language;
+    totalPaid?: number;
+    remainingAmount?: number;
+    paymentStatus?: string;
+    payments?: any[];
   } | null;
   mandal: {
     name: string;
@@ -81,6 +85,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       amountInWords,
       receiptUrl: verificationUrl,
       language: selectedLang,
+      totalPaid: donation.totalPaid,
+      remainingAmount: donation.remainingAmount,
+      paymentStatus: donation.paymentStatus,
     });
     window.open(url, '_blank');
   };
@@ -95,6 +102,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       amountInWords,
       receiptUrl: verificationUrl,
       language: selectedLang,
+      totalPaid: donation.totalPaid,
+      remainingAmount: donation.remainingAmount,
+      paymentStatus: donation.paymentStatus,
     });
 
     try {
@@ -121,6 +131,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       registrationNumber: mandal.registration_number || undefined,
       language: selectedLang as Language,
       logoUrl: mandal.logo_url,
+      totalPaid: donation.totalPaid,
+      remainingAmount: donation.remainingAmount,
+      paymentStatus: donation.paymentStatus,
+      payments: donation.payments,
     });
 
     const url = URL.createObjectURL(blob);
@@ -154,6 +168,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             qrCodeDataUrl: qrUrl,
             verificationUrl,
             language: selectedLang,
+            totalPaid: donation.totalPaid,
+            remainingAmount: donation.remainingAmount,
+            paymentStatus: donation.paymentStatus,
+            payments: donation.payments,
           }}
         />
 

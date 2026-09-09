@@ -122,7 +122,32 @@ export class DonationsService {
         ]
       );
 
-      return donationRes.rows[0];
+      const donation = donationRes.rows[0];
+
+      // If immediate payment (CASH or UPI), record the initial payment transaction
+      if (donation.payment_mode === PaymentMode.CASH || donation.payment_mode === PaymentMode.UPI) {
+        const paymentCheck = await client.query(
+          `SELECT 1 FROM donation_payments WHERE donation_id = $1`,
+          [donation.id]
+        );
+        if (paymentCheck.rowCount === 0) {
+          await client.query(
+            `INSERT INTO donation_payments (
+              donation_id, mandal_id, amount, payment_mode, payment_reference, collected_by, created_at
+            ) VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+            [
+              donation.id,
+              donation.mandal_id,
+              donation.amount,
+              donation.payment_mode,
+              donation.payment_reference || null,
+              volunteerId,
+            ]
+          );
+        }
+      }
+
+      return donation;
     }, [input.mandal_id]);
   }
 
@@ -198,9 +223,22 @@ export class DonationsService {
     const offset = filters.offset || 0;
 
     let queryStr = `
-      SELECT d.*, u.full_name as volunteer_name
+      SELECT d.*, 
+             u.full_name as volunteer_name,
+             COALESCE(dp_agg.total_paid, 0)::numeric as total_paid,
+             GREATEST(0, d.amount - COALESCE(dp_agg.total_paid, 0))::numeric as remaining_amount,
+             CASE
+               WHEN COALESCE(dp_agg.total_paid, 0) >= d.amount THEN 'PAID'
+               WHEN COALESCE(dp_agg.total_paid, 0) > 0 THEN 'PARTIAL'
+               ELSE 'PENDING'
+             END as payment_status
       FROM donations d
       JOIN users u ON u.id = d.volunteer_id
+      LEFT JOIN (
+        SELECT donation_id, SUM(amount) as total_paid
+        FROM donation_payments
+        GROUP BY donation_id
+      ) dp_agg ON dp_agg.donation_id = d.id
       WHERE d.mandal_id = $1
     `;
     const params: any[] = [mandalId];
@@ -232,6 +270,27 @@ export class DonationsService {
       throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation record not found' });
     }
 
+    // Fetch payments
+    const paymentsRes = await this.db.query(
+      `SELECT dp.*, u.full_name as collector_name
+       FROM donation_payments dp
+       JOIN users u ON u.id = dp.collected_by
+       WHERE dp.donation_id = $1
+       ORDER BY dp.created_at ASC`,
+      [donationId],
+      [mandalId]
+    );
+
+    const payments = paymentsRes.rows;
+    const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    const remainingAmount = Math.max(0, parseFloat(res.rows[0].amount) - totalPaid);
+    const paymentStatus =
+      totalPaid >= parseFloat(res.rows[0].amount)
+        ? 'PAID'
+        : totalPaid > 0
+        ? 'PARTIAL'
+        : 'PENDING';
+
     // Fetch any corrections
     const correctionsRes = await this.db.query(
       `SELECT dc.*, u.full_name as corrected_by_name
@@ -245,6 +304,10 @@ export class DonationsService {
 
     return {
       ...res.rows[0],
+      total_paid: totalPaid,
+      remaining_amount: remainingAmount,
+      payment_status: paymentStatus,
+      payments,
       corrections: correctionsRes.rows,
     };
   }
@@ -272,9 +335,33 @@ export class DonationsService {
         : row.donor_phone
       : null;
 
+    // Fetch child payment transactions
+    const paymentsRes = await this.db.query(
+      `SELECT dp.id, dp.amount, dp.payment_mode, dp.payment_reference, dp.created_at, u.full_name as collector_name
+       FROM donation_payments dp
+       JOIN users u ON u.id = dp.collected_by
+       WHERE dp.donation_id = $1
+       ORDER BY dp.created_at ASC`,
+      [row.id]
+    );
+
+    const payments = paymentsRes.rows;
+    const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    const remainingAmount = Math.max(0, parseFloat(row.amount) - totalPaid);
+    const paymentStatus =
+      totalPaid >= parseFloat(row.amount)
+        ? 'PAID'
+        : totalPaid > 0
+        ? 'PARTIAL'
+        : 'PENDING';
+
     return {
       ...row,
       donor_phone: maskedPhone,
+      total_paid: totalPaid,
+      remaining_amount: remainingAmount,
+      payment_status: paymentStatus,
+      payments,
     };
   }
 
@@ -309,9 +396,33 @@ export class DonationsService {
         : row.donor_phone
       : null;
 
+    // Fetch child payment transactions
+    const paymentsRes = await this.db.query(
+      `SELECT dp.id, dp.amount, dp.payment_mode, dp.payment_reference, dp.created_at, u.full_name as collector_name
+       FROM donation_payments dp
+       JOIN users u ON u.id = dp.collected_by
+       WHERE dp.donation_id = $1
+       ORDER BY dp.created_at ASC`,
+      [row.id]
+    );
+
+    const payments = paymentsRes.rows;
+    const totalPaid = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+    const remainingAmount = Math.max(0, parseFloat(row.amount) - totalPaid);
+    const paymentStatus =
+      totalPaid >= parseFloat(row.amount)
+        ? 'PAID'
+        : totalPaid > 0
+        ? 'PARTIAL'
+        : 'PENDING';
+
     return {
       ...row,
       donor_phone: maskedPhone,
+      total_paid: totalPaid,
+      remaining_amount: remainingAmount,
+      payment_status: paymentStatus,
+      payments,
     };
   }
 
@@ -398,10 +509,15 @@ export class DonationsService {
   }
 
   async collectPendingDonation(userId: string, mandalId: string, input: CollectPendingDonationInput) {
-    const findRes = await this.db.query(`SELECT mandal_id FROM donations WHERE id = $1 AND mandal_id = $2`, [input.donation_id, mandalId], [mandalId]);
+    const findRes = await this.db.query(
+      `SELECT mandal_id FROM donations WHERE id = $1 AND mandal_id = $2`,
+      [input.donation_id, mandalId],
+      [mandalId]
+    );
     if (findRes.rowCount === 0) {
       throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation not found' });
     }
+
     return await this.db.withTransaction(async (client) => {
       const donRes = await client.query(
         `SELECT * FROM donations WHERE id = $1 FOR UPDATE`,
@@ -416,8 +532,47 @@ export class DonationsService {
         throw new BadRequestException({ code: 'DONATION_VOIDED', message: 'Cannot collect a voided donation' });
       }
 
-      if (donation.payment_mode !== PaymentMode.PENDING) {
-        throw new BadRequestException({ code: 'NOT_PENDING', message: 'Donation is not pending collection' });
+      // Calculate total already paid from donation_payments
+      const paymentsRes = await client.query(
+        `SELECT COALESCE(SUM(amount), 0) as total_paid FROM donation_payments WHERE donation_id = $1`,
+        [donation.id]
+      );
+      const totalPaidAlready = parseFloat(paymentsRes.rows[0].total_paid);
+      const remainingBefore = Math.max(0, parseFloat(donation.amount) - totalPaidAlready);
+
+      if (remainingBefore <= 0) {
+        throw new BadRequestException({ code: 'ALREADY_FULLY_PAID', message: 'This contribution is already fully paid.' });
+      }
+
+      // If amount not specified, collect full remaining
+      const payAmount = input.amount ? parseFloat(input.amount.toString()) : remainingBefore;
+
+      if (payAmount <= 0) {
+        throw new BadRequestException({ code: 'INVALID_AMOUNT', message: 'Payment amount must be greater than zero.' });
+      }
+
+      if (payAmount > remainingBefore + 0.001) {
+        throw new BadRequestException({
+          code: 'AMOUNT_EXCEEDS_REMAINING',
+          message: `Payment amount (₹${payAmount}) cannot exceed remaining balance (₹${remainingBefore}).`,
+        });
+      }
+
+      // Insert new payment installment transaction
+      await client.query(
+        `INSERT INTO donation_payments (
+          donation_id, mandal_id, amount, payment_mode, payment_reference, collected_by, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+        [donation.id, donation.mandal_id, payAmount, input.payment_mode, input.payment_reference || null, userId]
+      );
+
+      const newTotalPaid = totalPaidAlready + payAmount;
+      const newRemaining = Math.max(0, parseFloat(donation.amount) - newTotalPaid);
+
+      // If fully paid, update the donation's payment_mode
+      let updatedDonationMode = donation.payment_mode;
+      if (newRemaining <= 0.001) {
+        updatedDonationMode = input.payment_mode;
       }
 
       const verificationStatus =
@@ -427,18 +582,17 @@ export class DonationsService {
           ? PaymentVerificationStatus.VERIFIED
           : PaymentVerificationStatus.PENDING_VERIFICATION;
 
-      const res = await client.query(
+      await client.query(
         `UPDATE donations 
          SET payment_mode = $1, 
              payment_reference = COALESCE($2, payment_reference), 
              payment_verification_status = $3, 
              updated_at = NOW()
-         WHERE id = $4
-         RETURNING *`,
-        [input.payment_mode, input.payment_reference || null, verificationStatus, donation.id]
+         WHERE id = $4`,
+        [updatedDonationMode, input.payment_reference || null, verificationStatus, donation.id]
       );
 
-      return res.rows[0];
+      return await this.getDonationById(mandalId, donation.id);
     }, [mandalId]);
   }
 }

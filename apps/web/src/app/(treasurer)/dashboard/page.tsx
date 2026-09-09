@@ -128,11 +128,20 @@ export default function UnifiedDashboardPage() {
   };
 
   const openReceipt = (d: any) => {
+    const tot = parseFloat(d.amount);
+    const paid = d.total_paid != null ? parseFloat(d.total_paid) : (d.payment_mode !== 'PENDING' ? tot : 0);
+    const rem = d.remaining_amount != null ? parseFloat(d.remaining_amount) : (d.payment_mode === 'PENDING' ? tot : 0);
+    const status = d.payment_status || (rem <= 0 ? 'PAID' : paid > 0 ? 'PARTIAL' : 'PENDING');
+
     setSelectedDonation({
       receiptNumber: d.receipt_number || d.receiptNumber,
       donorName: d.donor_name || d.donorName,
       donorPhone: d.donor_phone || d.donorPhone,
-      amount: parseFloat(d.amount),
+      amount: tot,
+      totalPaid: paid,
+      remainingAmount: rem,
+      paymentStatus: status,
+      payments: d.payments || [],
       paymentMode: d.payment_mode || d.paymentMode,
       flatWing: d.flat_wing || d.flatWing,
       date: d.created_at ? new Date(d.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],

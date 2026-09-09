@@ -143,11 +143,20 @@ export default function CollectDonationPage() {
           }),
         });
 
+        const tot = parseFloat(donation.amount);
+        const paid = donation.total_paid != null ? parseFloat(donation.total_paid) : (donation.payment_mode !== 'PENDING' ? tot : 0);
+        const rem = donation.remaining_amount != null ? parseFloat(donation.remaining_amount) : (donation.payment_mode === 'PENDING' ? tot : 0);
+        const pStatus = donation.payment_status || (rem <= 0 ? 'PAID' : paid > 0 ? 'PARTIAL' : 'PENDING');
+
         setGeneratedDonation({
           receiptNumber: donation.receipt_number,
           donorName: donation.donor_name,
           donorPhone: donation.donor_phone,
-          amount: parseFloat(donation.amount),
+          amount: tot,
+          totalPaid: paid,
+          remainingAmount: rem,
+          paymentStatus: pStatus,
+          payments: donation.payments || [],
           paymentMode: donation.payment_mode,
           flatWing: donation.flat_wing,
           date: dateFormatted,
@@ -181,11 +190,16 @@ export default function CollectDonationPage() {
           setAllocation({ ...allocation, current_number: nextNum + 1 });
         }
 
+        const isPending = paymentMode === PaymentMode.PENDING;
         setGeneratedDonation({
           receiptNumber: offlineReceiptNo,
           donorName: donorName.trim(),
           donorPhone: donorPhone.trim(),
           amount: amount,
+          totalPaid: isPending ? 0 : amount,
+          remainingAmount: isPending ? amount : 0,
+          paymentStatus: isPending ? 'PENDING' : 'PAID',
+          payments: isPending ? [] : [{ amount, payment_mode: paymentMode, created_at: new Date().toISOString(), collector_name: formatDisplayName(user?.full_name) || 'कार्यकर्ता' }],
           paymentMode: paymentMode,
           flatWing: flatWing.trim(),
           date: dateFormatted,

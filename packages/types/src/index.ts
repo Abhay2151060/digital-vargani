@@ -22,6 +22,12 @@ export enum PaymentMode {
   PENDING = 'PENDING',
 }
 
+export enum PaymentStatus {
+  PENDING = 'PENDING',
+  PARTIAL = 'PARTIAL',
+  PAID = 'PAID',
+}
+
 export enum PaymentVerificationStatus {
   NOT_REQUIRED = 'NOT_REQUIRED',
   PENDING_VERIFICATION = 'PENDING_VERIFICATION',
@@ -149,7 +155,26 @@ export interface Donation {
   updated_at: string;
   // Joined fields
   volunteer_name?: string;
+  total_paid?: number;
+  remaining_amount?: number;
+  payment_status?: PaymentStatus;
+  payments?: DonationPayment[];
   corrections?: DonationCorrection[];
+}
+
+export interface DonationPayment {
+  id: string;
+  donation_id: string;
+  mandal_id: string;
+  amount: number;
+  payment_mode: PaymentMode;
+  payment_reference?: string | null;
+  collected_by: string;
+  is_reconciled: boolean;
+  reconciliation_id?: string | null;
+  created_at: string;
+  // Joined fields
+  collector_name?: string;
 }
 
 export interface DonationCorrection {
@@ -392,6 +417,7 @@ export type VoidDonationInput = z.infer<typeof voidDonationSchema>;
 
 export const collectPendingDonationSchema = z.object({
   donation_id: z.string().uuid(),
+  amount: z.number().positive('Payment amount must be greater than zero').optional(),
   payment_mode: z.enum([PaymentMode.CASH, PaymentMode.UPI]),
   payment_reference: z.string().optional(),
 });

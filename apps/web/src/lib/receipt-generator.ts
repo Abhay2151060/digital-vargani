@@ -54,6 +54,18 @@ export interface ReceiptData {
   registrationNumber?: string;
   language?: Language;
   logoUrl?: string | null;
+  totalPaid?: number;
+  remainingAmount?: number;
+  paymentStatus?: string;
+  payments?: Array<{
+    amount: number;
+    payment_mode?: string;
+    paymentMode?: string;
+    created_at?: string;
+    createdAt?: string;
+    collector_name?: string;
+    collected_by?: string;
+  }>;
 }
 
 export async function generateReceiptPdf(data: ReceiptData): Promise<Blob> {
@@ -65,6 +77,16 @@ export async function generateReceiptPdf(data: ReceiptData): Promise<Blob> {
 
   const verificationUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/r/${encodeURIComponent(data.mandalSlug)}/${encodeURIComponent(data.receiptNumber)}`;
   const qrDataUrl = await QRCode.toDataURL(verificationUrl, { margin: 1, width: 120 });
+
+  const totalAmount = data.amount;
+  const totalPaid = typeof data.totalPaid === 'number'
+    ? data.totalPaid
+    : (data.paymentMode === PaymentMode.PENDING ? 0 : totalAmount);
+  const remaining = typeof data.remainingAmount === 'number'
+    ? data.remainingAmount
+    : Math.max(0, totalAmount - totalPaid);
+  const status = (data.paymentStatus || (totalPaid === 0 ? 'PENDING' : remaining <= 0.01 ? 'PAID' : 'PARTIAL')).toUpperCase();
+  const isPartialFlow = totalPaid < totalAmount || (data.payments && data.payments.length > 0) || status !== 'PAID';
 
   // Deep Maroon / Saffron header banner
   doc.setFillColor(124, 45, 18);
@@ -111,45 +133,87 @@ export async function generateReceiptPdf(data: ReceiptData): Promise<Blob> {
 
   // Donor Details
   doc.setFontSize(9);
-  doc.text('Received with thanks from:', 8, 41);
+  doc.text('Received with thanks from:', 8, 40);
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.text(data.donorName, 8, 47);
+  doc.text(data.donorName, 8, 46);
 
   if (data.flatWing || data.donorPhone) {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     const subText = [data.flatWing ? `Flat/Wing: ${data.flatWing}` : '', data.donorPhone ? `Phone: ${data.donorPhone}` : ''].filter(Boolean).join(' | ');
-    doc.text(subText, 8, 52);
+    doc.text(subText, 8, 51);
   }
 
   // Amount Box
+  const amountBoxY = 54;
+  const amountBoxH = isPartialFlow ? 22 : 18;
   doc.setFillColor(254, 243, 199);
-  doc.roundedRect(8, 56, 89, 18, 3, 3, 'F');
+  doc.roundedRect(8, amountBoxY, 89, amountBoxH, 3, 3, 'F');
 
   doc.setTextColor(124, 45, 18);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Amount: Rs. ${data.amount.toLocaleString('en-IN')}/-`, 12, 64);
 
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Mode: ${data.paymentMode} | ${numberToWordsIndian(data.amount, data.language)}`, 12, 70);
+  if (isPartialFlow) {
+    doc.text(`Total Contribution: Rs. ${totalAmount.toLocaleString('en-IN')}/- [${status}]`, 12, amountBoxY + 6);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(16, 120, 60);
+    doc.text(`Paid: Rs. ${totalPaid.toLocaleString('en-IN')}`, 12, amountBoxY + 12);
+    doc.setTextColor(180, 83, 9);
+    doc.text(`Remaining: Rs. ${remaining.toLocaleString('en-IN')}`, 50, amountBoxY + 12);
 
-  // QR Code for verification
-  doc.addImage(qrDataUrl, 'PNG', 37.5, 80, 30, 30);
+    doc.setTextColor(124, 45, 18);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Mode: ${data.paymentMode} | ${numberToWordsIndian(totalAmount, data.language)}`, 12, amountBoxY + 18);
+  } else {
+    doc.text(`Amount: Rs. ${totalAmount.toLocaleString('en-IN')}/-`, 12, amountBoxY + 8);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Mode: ${data.paymentMode} | ${numberToWordsIndian(totalAmount, data.language)}`, 12, amountBoxY + 14);
+  }
 
-  doc.setTextColor(107, 100, 89);
-  doc.setFontSize(7);
-  doc.text('Scan QR to verify digital authenticity', 52.5, 114, { align: 'center' });
+  // Payments / Installments history + QR
+  const qrY = amountBoxY + amountBoxH + 5;
+  const hasPaymentsList = data.payments && data.payments.length > 0;
+
+  if (hasPaymentsList) {
+    doc.addImage(qrDataUrl, 'PNG', 8, qrY, 26, 26);
+    doc.setTextColor(107, 100, 89);
+    doc.setFontSize(6.5);
+    doc.text('Scan to verify online', 21, qrY + 29, { align: 'center' });
+
+    // Installment history list on right
+    doc.setTextColor(124, 45, 18);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Payment History (Installments):', 38, qrY + 4);
+
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(41, 33, 24);
+    data.payments!.slice(0, 4).forEach((p, i) => {
+      const pMode = p.payment_mode || p.paymentMode || 'CASH';
+      const pDate = p.created_at || p.createdAt ? new Date(p.created_at || p.createdAt!).toLocaleDateString('en-IN') : '';
+      const pLine = `${i + 1}. Rs. ${Number(p.amount).toLocaleString('en-IN')} (${pMode})${pDate ? ` - ${pDate}` : ''}`;
+      doc.text(pLine, 38, qrY + 9 + (i * 4.5));
+    });
+  } else {
+    doc.addImage(qrDataUrl, 'PNG', 38.5, qrY + 1, 28, 28);
+    doc.setTextColor(107, 100, 89);
+    doc.setFontSize(7);
+    doc.text('Scan QR to verify digital authenticity', 52.5, qrY + 32, { align: 'center' });
+  }
 
   // Footer
   doc.setFontSize(8);
   doc.setTextColor(41, 33, 24);
-  doc.text(`Collected by: ${data.volunteerName}`, 8, 128);
+  doc.text(`Collected by: ${data.volunteerName}`, 8, 131);
   doc.setFontSize(7);
   doc.setTextColor(107, 100, 89);
-  doc.text('Thank you for your generous devotion and support!', 52.5, 138, { align: 'center' });
+  doc.text('Thank you for your generous devotion and support!', 52.5, 140, { align: 'center' });
 
   return doc.output('blob');
 }

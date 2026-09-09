@@ -113,6 +113,10 @@ function ReceiptVerificationContent() {
   const origin = typeof window !== 'undefined' ? window.location.origin : 'https://digitalvargani.in';
   const verificationUrl = `${origin}/r/${encodeURIComponent(receipt.mandal_slug)}/${encodeURIComponent(receipt.receipt_number)}`;
   const amountVal = parseFloat(receipt.amount);
+  const totalPaidVal = receipt.total_paid != null ? parseFloat(receipt.total_paid) : (receipt.payment_mode !== 'PENDING' ? amountVal : 0);
+  const remainingVal = receipt.remaining_amount != null ? parseFloat(receipt.remaining_amount) : Math.max(0, amountVal - totalPaidVal);
+  const paymentStatusVal = receipt.payment_status || (remainingVal <= 0 ? 'PAID' : totalPaidVal > 0 ? 'PARTIAL' : 'PENDING');
+  const paymentsVal = receipt.payments || [];
   const amountInWords = numberToWordsIndian(amountVal, selectedLang as Language);
 
   const formattedDate = new Date(receipt.created_at).toLocaleString(selectedLang === 'en' ? 'en-IN' : 'mr-IN', {
@@ -141,6 +145,9 @@ function ReceiptVerificationContent() {
       amountInWords,
       receiptUrl: verificationUrl,
       language: selectedLang,
+      totalPaid: totalPaidVal,
+      remainingAmount: remainingVal,
+      paymentStatus: paymentStatusVal,
     });
     window.open(url, '_blank');
   };
@@ -162,6 +169,10 @@ function ReceiptVerificationContent() {
         registrationNumber: receipt.registration_number,
         language: selectedLang as Language,
         logoUrl: receipt.logo_url || receipt.mandal_logo_url,
+        totalPaid: totalPaidVal,
+        remainingAmount: remainingVal,
+        paymentStatus: paymentStatusVal,
+        payments: paymentsVal,
       });
 
       const url = URL.createObjectURL(blob);
@@ -268,6 +279,10 @@ function ReceiptVerificationContent() {
               qrCodeDataUrl: qrUrl,
               verificationUrl,
               language: selectedLang,
+              totalPaid: totalPaidVal,
+              remainingAmount: remainingVal,
+              paymentStatus: paymentStatusVal,
+              payments: paymentsVal,
             }}
             className="relative shadow-xl"
           />

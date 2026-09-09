@@ -63,11 +63,20 @@ export default function VolunteerHistoryPage() {
   };
 
   const handleViewReceipt = (d: any) => {
+    const tot = parseFloat(d.amount);
+    const paid = d.total_paid != null ? parseFloat(d.total_paid) : (d.payment_mode !== 'PENDING' ? tot : 0);
+    const rem = d.remaining_amount != null ? parseFloat(d.remaining_amount) : (d.payment_mode === 'PENDING' ? tot : 0);
+    const status = d.payment_status || (rem <= 0 ? 'PAID' : paid > 0 ? 'PARTIAL' : 'PENDING');
+
     setSelectedDonation({
       receiptNumber: d.receipt_number,
       donorName: d.donor_name,
       donorPhone: d.donor_phone,
-      amount: parseFloat(d.amount),
+      amount: tot,
+      totalPaid: paid,
+      remainingAmount: rem,
+      paymentStatus: status,
+      payments: d.payments || [],
       paymentMode: d.payment_mode,
       flatWing: d.flat_wing,
       date: new Date(d.created_at).toLocaleDateString(language === Language.ENGLISH ? 'en-IN' : 'mr-IN'),
@@ -77,17 +86,29 @@ export default function VolunteerHistoryPage() {
     setIsModalOpen(true);
   };
 
-  const [filterTab, setFilterTab] = useState<'ALL' | 'CASH' | 'UPI' | 'PENDING'>('ALL');
+  const [filterTab, setFilterTab] = useState<'ALL' | 'CASH' | 'UPI' | 'PARTIAL' | 'PENDING'>('ALL');
 
   const totalCollected = donations.reduce(
-    (sum, d) => sum + (d.is_voided || d.payment_mode === 'PENDING' ? 0 : parseFloat(d.amount || 0)),
+    (sum, d) => sum + (d.is_voided || d.payment_mode === 'PENDING' ? 0 : parseFloat(d.total_paid ?? d.amount ?? 0)),
     0
   );
-  const pendingDonations = donations.filter((d) => d.payment_mode === 'PENDING' && !d.is_voided);
-  const totalPending = pendingDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+  const pendingDonations = donations.filter((d) => (d.payment_mode === 'PENDING' || d.payment_status === 'PENDING') && !d.is_voided);
+  const partialDonations = donations.filter((d) => (d.payment_status === 'PARTIAL' || (d.remaining_amount != null && parseFloat(d.remaining_amount) > 0 && parseFloat(d.remaining_amount) < parseFloat(d.amount))) && !d.is_voided);
+  const totalPending = donations.reduce((sum, d) => {
+    if (d.is_voided) return sum;
+    if (d.remaining_amount != null) return sum + parseFloat(d.remaining_amount);
+    if (d.payment_mode === 'PENDING') return sum + parseFloat(d.amount || 0);
+    return sum;
+  }, 0);
 
   const filteredDonations = donations.filter((d) => {
     if (filterTab === 'ALL') return true;
+    if (filterTab === 'PARTIAL') {
+      return d.payment_status === 'PARTIAL' || (d.remaining_amount != null && parseFloat(d.remaining_amount) > 0 && parseFloat(d.remaining_amount) < parseFloat(d.amount));
+    }
+    if (filterTab === 'PENDING') {
+      return d.payment_mode === 'PENDING' || d.payment_status === 'PENDING';
+    }
     return d.payment_mode === filterTab;
   });
 
@@ -115,7 +136,7 @@ export default function VolunteerHistoryPage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#E5E1D8]/60">
+          <div className="grid grid-cols-2 gap-2 text-left pt-1">
             <div className="bg-[#FAF9F6] p-2.5 rounded-xl border border-[#E5E1D8]/80">
               <span className="text-[#6B6459] font-medium text-[11px] block">{t.total_received}</span>
               <span className="text-base font-black text-[#7C2D12] mt-0.5 block tabular-nums">
@@ -126,7 +147,7 @@ export default function VolunteerHistoryPage() {
               <span className="text-[#6B6459] font-medium text-[11px] block">{t.pending_collection}</span>
               <span className="text-base font-black text-amber-700 mt-0.5 block tabular-nums">
                 ₹{totalPending.toLocaleString('en-IN')}
-                <span className="text-[10px] font-semibold text-[#8C857B] ml-1">({pendingDonations.length})</span>
+                <span className="text-[10px] font-semibold text-[#8C857B] ml-1">({pendingDonations.length + partialDonations.length})</span>
               </span>
             </div>
           </div>
@@ -138,6 +159,7 @@ export default function VolunteerHistoryPage() {
             { id: 'ALL', label: `${t.all} (${donations.length})` },
             { id: 'CASH', label: `${t.cash} (${donations.filter((d) => d.payment_mode === 'CASH').length})` },
             { id: 'UPI', label: `${t.upi} (${donations.filter((d) => d.payment_mode === 'UPI').length})` },
+            { id: 'PARTIAL', label: `अंशतः (${partialDonations.length})` },
             { id: 'PENDING', label: `${t.pending} (${pendingDonations.length})` },
           ].map((tab) => (
             <button
@@ -164,6 +186,12 @@ export default function VolunteerHistoryPage() {
           <div className="space-y-3">
             {filteredDonations.map((d) => {
               const isCash = d.payment_mode === 'CASH';
+              const tot = parseFloat(d.amount);
+              const paid = d.total_paid != null ? parseFloat(d.total_paid) : (d.payment_mode !== 'PENDING' ? tot : 0);
+              const rem = d.remaining_amount != null ? parseFloat(d.remaining_amount) : (d.payment_mode === 'PENDING' ? tot : 0);
+              const isPartial = (d.payment_status === 'PARTIAL') || (rem > 0 && paid > 0);
+              const isPending = d.payment_mode === 'PENDING' || d.payment_status === 'PENDING';
+
               return (
                 <div
                   key={d.id}
@@ -177,15 +205,25 @@ export default function VolunteerHistoryPage() {
                         {d.receipt_number}
                       </span>
                       {d.is_voided && <StatusBadge status="error" label={t.void_status} size="sm" />}
-                      {!d.is_voided && d.payment_mode === 'PENDING' && <StatusBadge status="warning" label={t.pending} size="sm" />}
-                      {!d.is_voided && isCash && d.is_reconciled && <StatusBadge status="success" label={t.deposited} size="sm" />}
-                      {!d.is_voided && isCash && !d.is_reconciled && <StatusBadge status="warning" label={t.cash_balance} size="sm" />}
-                      {!d.is_voided && d.payment_mode === 'UPI' && <StatusBadge status="info" label={t.upi} size="sm" />}
+                      {!d.is_voided && isPending && <StatusBadge status="warning" label={t.pending} size="sm" />}
+                      {!d.is_voided && isPartial && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200">
+                          अंशतः जमा
+                        </span>
+                      )}
+                      {!d.is_voided && !isPartial && !isPending && isCash && d.is_reconciled && <StatusBadge status="success" label={t.deposited} size="sm" />}
+                      {!d.is_voided && !isPartial && !isPending && isCash && !d.is_reconciled && <StatusBadge status="warning" label={t.cash_balance} size="sm" />}
+                      {!d.is_voided && !isPartial && !isPending && d.payment_mode === 'UPI' && <StatusBadge status="info" label={t.upi} size="sm" />}
                     </div>
                     <div className="text-right">
                       <p className="text-base font-black text-[#7C2D12] tabular-nums">
-                        ₹{parseFloat(d.amount).toLocaleString('en-IN')}
+                        ₹{tot.toLocaleString('en-IN')}
                       </p>
+                      {isPartial && (
+                        <p className="text-[10px] font-bold text-amber-700">
+                          शिल्लक: ₹{rem.toLocaleString('en-IN')}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -193,9 +231,19 @@ export default function VolunteerHistoryPage() {
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-bold text-[#292118] text-sm">{d.donor_name}</span>
                       <span className="text-[11px] font-semibold text-[#6B6459] bg-white px-2 py-0.5 rounded border border-[#E5E1D8]">
-                        {PAYMENT_MODE_MAP[d.payment_mode] || d.payment_mode}
+                        {isPartial ? 'अंशतः (Partial)' : (PAYMENT_MODE_MAP[d.payment_mode] || d.payment_mode)}
                       </span>
                     </div>
+                    {isPartial && (
+                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-0.5">
+                        <div className="text-emerald-800 font-semibold">
+                          जमा: ₹{paid.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-amber-800 font-bold text-right">
+                          शिल्लक: ₹{rem.toLocaleString('en-IN')}
+                        </div>
+                      </div>
+                    )}
                     {d.donor_phone && (
                       <div className="flex items-center gap-1.5 text-xs text-[#6B6459]">
                         <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
@@ -222,7 +270,7 @@ export default function VolunteerHistoryPage() {
 
                   {!d.is_voided && (
                     <div className="mt-3 pt-2.5 border-t border-[#E5E1D8]/60 flex flex-wrap justify-end gap-2">
-                      {d.payment_mode === 'PENDING' && (
+                      {(isPending || isPartial || rem > 0) && (
                         <button
                           onClick={() => setCollectingDonation(d)}
                           className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600 text-white text-xs font-bold flex items-center gap-1.5 transition min-h-[36px] shadow-xs cursor-pointer"

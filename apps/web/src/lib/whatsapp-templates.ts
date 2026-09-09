@@ -17,29 +17,56 @@ export interface WhatsAppReceiptContext {
   receiptUrl: string; // e.g. https://digitalvargani.in/r/SSMM-001
   language: ReceiptLanguage | Language;
   donorPhone?: string; // 10-digit or E.164
+  totalPaid?: number;
+  remainingAmount?: number;
+  paymentStatus?: string;
 }
 
 /**
  * Localized templates for Marathi and English.
  */
 export const WHATSAPP_TEMPLATES: Record<ReceiptLanguage, (c: WhatsAppReceiptContext) => string> = {
-  mr: (c) =>
-    `🚩 *${c.mandalName}* 🚩\n` +
-    `॥ श्री गणेशाय नमः ॥\n\n` +
-    `नमस्कार *${c.donorName}* जी,\n\n` +
-    `${c.mandalName} साठी आपण दिलेल्या *₹${c.amount.toLocaleString('en-IN')}/-* (${c.amountInWords}) च्या वर्गणीबद्दल मनःपूर्वक धन्यवाद.\n\n` +
-    `📄 *पावती क्रमांक:* ${c.receiptNumber}\n` +
-    `🔍 *अधिकृत डिजिटल पावती पहा / डाउनलोड करा:*\n${c.receiptUrl}\n\n` +
-    `आपल्या सहकार्याबद्दल आम्ही आभारी आहोत. गणपती बाप्पा मोरया! 🙏🚩`,
+  mr: (c) => {
+    const rem = c.remainingAmount;
+    const isPartial = typeof rem === 'number' && rem > 0;
+    const summary = isPartial
+      ? `💰 *एकूण वर्गणी:* ₹${c.amount.toLocaleString('en-IN')}/-\n` +
+        `✅ *जमा रक्कम:* ₹${(c.totalPaid ?? 0).toLocaleString('en-IN')}/-\n` +
+        `⏳ *उर्वरित शिल्लक:* ₹${rem.toLocaleString('en-IN')}/-\n\n`
+      : '';
 
-  en: (c) =>
-    `🚩 *${c.mandalName}* 🚩\n` +
-    `|| Shree Ganeshay Namah ||\n\n` +
-    `Namaste *${c.donorName}* ji,\n\n` +
-    `Thank you for your generous donation of *₹${c.amount.toLocaleString('en-IN')}/-* (${c.amountInWords}) to *${c.mandalName}*.\n\n` +
-    `📄 *Receipt No:* ${c.receiptNumber}\n` +
-    `🔍 *View / Download Official Digital Receipt:*\n${c.receiptUrl}\n\n` +
-    `Your valuable support means a lot to us. 🙏🚩`,
+    return (
+      `🚩 *${c.mandalName}* 🚩\n` +
+      `॥ श्री गणेशाय नमः ॥\n\n` +
+      `नमस्कार *${c.donorName}* जी,\n\n` +
+      `${c.mandalName} साठी आपण दिलेल्या *₹${c.amount.toLocaleString('en-IN')}/-* (${c.amountInWords}) च्या वर्गणीबद्दल मनःपूर्वक धन्यवाद.\n\n` +
+      summary +
+      `📄 *पावती क्रमांक:* ${c.receiptNumber}\n` +
+      `🔍 *अधिकृत डिजिटल पावती पहा / डाउनलोड करा:*\n${c.receiptUrl}\n\n` +
+      `आपल्या सहकार्याबद्दल आम्ही आभारी आहोत. गणपती बाप्पा मोरया! 🙏🚩`
+    );
+  },
+
+  en: (c) => {
+    const rem = c.remainingAmount;
+    const isPartial = typeof rem === 'number' && rem > 0;
+    const summary = isPartial
+      ? `💰 *Total Contribution:* ₹${c.amount.toLocaleString('en-IN')}/-\n` +
+        `✅ *Paid So Far:* ₹${(c.totalPaid ?? 0).toLocaleString('en-IN')}/-\n` +
+        `⏳ *Remaining Balance:* ₹${rem.toLocaleString('en-IN')}/-\n\n`
+      : '';
+
+    return (
+      `🚩 *${c.mandalName}* 🚩\n` +
+      `|| Shree Ganeshay Namah ||\n\n` +
+      `Namaste *${c.donorName}* ji,\n\n` +
+      `Thank you for your generous donation of *₹${c.amount.toLocaleString('en-IN')}/-* (${c.amountInWords}) to *${c.mandalName}*.\n\n` +
+      summary +
+      `📄 *Receipt No:* ${c.receiptNumber}\n` +
+      `🔍 *View / Download Official Digital Receipt:*\n${c.receiptUrl}\n\n` +
+      `Your valuable support means a lot to us. 🙏🚩`
+    );
+  },
 };
 
 /** Strips non-digits and ensures Indian country code (+91). */

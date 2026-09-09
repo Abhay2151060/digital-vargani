@@ -5,6 +5,19 @@ import { PaymentMode } from '@vargani/types';
 
 export type ReceiptLanguage = 'mr' | 'en';
 
+export interface ReceiptPaymentItem {
+  id?: string;
+  amount: number;
+  paymentMode?: PaymentMode | string;
+  payment_mode?: PaymentMode | string;
+  date?: string;
+  createdAt?: string;
+  created_at?: string;
+  collectedBy?: string;
+  collected_by?: string;
+  collector_name?: string;
+}
+
 export interface ReceiptData {
   mandalName: string;
   mandalInitials?: string;
@@ -19,6 +32,10 @@ export interface ReceiptData {
   qrCodeDataUrl?: string;
   verificationUrl: string;
   language: ReceiptLanguage;
+  totalPaid?: number;
+  remainingAmount?: number;
+  paymentStatus?: 'PENDING' | 'PARTIAL' | 'PAID' | string;
+  payments?: ReceiptPaymentItem[];
 }
 
 const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
@@ -27,7 +44,17 @@ const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
     date: 'दिनांक',
     donor: 'देणगीदार',
     mode: 'पेमेंट पद्धत',
-    amount: 'रक्कम',
+    amount: 'एकूण देणगी रक्कम',
+    totalContribution: 'एकूण वर्गणी',
+    paidAmount: 'जमा रक्कम',
+    remainingBalance: 'उर्वरित शिल्लक',
+    paymentStatus: 'पेमेंट स्थिती',
+    statusPaid: 'पूर्ण जमा (Paid)',
+    statusPartial: 'अंशतः जमा (Partial)',
+    statusPending: 'प्रलंबित (Pending)',
+    paymentHistory: 'जमा इतिहास (Payment History)',
+    noPaymentsYet: 'अद्याप कोणतीही रक्कम जमा झालेली नाही.',
+    collectedBy: 'जमाकर्ता',
     verifyHint: 'पावती ऑनलाईन तपासण्यासाठी स्कॅन करा किंवा खालील लिंकला भेट द्या.',
     deityDefault: '॥ श्री गणेशाय नमः ॥',
     officialBadge: 'अधिकृत देणगी पावती',
@@ -37,7 +64,17 @@ const LABELS: Record<ReceiptLanguage, Record<string, string>> = {
     date: 'Date',
     donor: 'Donor',
     mode: 'Payment Mode',
-    amount: 'Amount',
+    amount: 'Total Contribution',
+    totalContribution: 'Total Contribution',
+    paidAmount: 'Paid So Far',
+    remainingBalance: 'Remaining Balance',
+    paymentStatus: 'Payment Status',
+    statusPaid: 'Fully Paid',
+    statusPartial: 'Partial',
+    statusPending: 'Pending',
+    paymentHistory: 'Payment History',
+    noPaymentsYet: 'No payments recorded yet.',
+    collectedBy: 'Collected by',
     verifyHint: 'Scan to verify this receipt online, or visit the link below.',
     deityDefault: '|| Shree Ganeshay Namah ||',
     officialBadge: 'Official Donation Receipt',
@@ -60,18 +97,25 @@ function getInitials(name: string): string {
 /**
  * Shared receipt UI — rendered on-screen (modal & verification page)
  * and captured for downloads.
- *
- * Theme colors:
- * - Maroon header: #7C2D12
- * - Saffron accent: #F97316 / #C2410C
- * - Gold/Marigold: #FACC15
- * - Warm background: #FFF7ED
  */
 export const ReceiptCard: React.FC<{ data: ReceiptData; className?: string }> = ({ data, className = '' }) => {
   const langKey: ReceiptLanguage = data.language === 'en' ? 'en' : 'mr';
   const t = LABELS[langKey];
   const modeLabel = PAYMENT_MODE_LABELS[langKey][data.paymentMode] || data.paymentMode;
   const initials = data.mandalInitials || getInitials(data.mandalName);
+
+  const totalAmount = data.amount;
+  const totalPaid = typeof data.totalPaid === 'number'
+    ? data.totalPaid
+    : (data.paymentMode === 'PENDING' ? 0 : data.amount);
+  const remaining = typeof data.remainingAmount === 'number'
+    ? data.remainingAmount
+    : Math.max(0, totalAmount - totalPaid);
+  
+  const statusRaw = data.paymentStatus || (totalPaid === 0 ? 'PENDING' : remaining <= 0.01 ? 'PAID' : 'PARTIAL');
+  const status = statusRaw.toUpperCase();
+
+  const isPartialFlow = totalPaid < totalAmount || (data.payments && data.payments.length > 0) || status !== 'PAID';
 
   return (
     <div
@@ -104,8 +148,26 @@ export const ReceiptCard: React.FC<{ data: ReceiptData; className?: string }> = 
           {data.deitySlogan || t.deityDefault}
         </p>
 
-        <div className="mt-1 inline-flex items-center gap-1 bg-white/10 text-orange-200 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-white/15">
-          <span>{t.officialBadge}</span>
+        <div className="mt-1.5 inline-flex items-center gap-1.5">
+          <span className="bg-white/10 text-orange-200 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-white/15">
+            {t.officialBadge}
+          </span>
+          {/* Status Badge in Header */}
+          {status === 'PAID' && (
+            <span className="bg-emerald-500/20 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">
+              {t.statusPaid}
+            </span>
+          )}
+          {status === 'PARTIAL' && (
+            <span className="bg-blue-500/20 text-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-400/30">
+              {t.statusPartial}
+            </span>
+          )}
+          {status === 'PENDING' && (
+            <span className="bg-amber-500/20 text-amber-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400/30">
+              {t.statusPending}
+            </span>
+          )}
         </div>
       </div>
 
@@ -133,10 +195,14 @@ export const ReceiptCard: React.FC<{ data: ReceiptData; className?: string }> = 
           </span>
         </div>
 
-        <div className="flex justify-between items-baseline text-xs pt-0.5">
+        <div className="flex justify-between items-center text-xs pt-0.5">
           <span className="text-[#6B6459] font-medium">{t.mode}</span>
-          <span className="font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded text-[11px]">
-            {modeLabel}
+          <span className={`font-semibold px-2 py-0.5 rounded text-[11px] border ${
+            status === 'PENDING'
+              ? 'text-amber-800 bg-amber-50 border-amber-200/80'
+              : 'text-emerald-800 bg-emerald-50 border-emerald-200/80'
+          }`}>
+            {status === 'PARTIAL' ? `${t.statusPartial}` : modeLabel}
           </span>
         </div>
       </div>
@@ -144,26 +210,107 @@ export const ReceiptCard: React.FC<{ data: ReceiptData; className?: string }> = 
       {/* 4. Amount Highlight Box */}
       <div className="mx-5 my-2.5 bg-gradient-to-br from-[#FFFDF9] to-[#FFF7ED] border border-[#FDBA74]/90 rounded-xl p-3 text-center shadow-2xs">
         <div className="text-[10px] font-bold text-[#C2410C] uppercase tracking-wider">
-          {t.amount}
+          {t.totalContribution}
         </div>
         <div className="text-3xl font-black text-[#7C2D12] mt-0.5 tracking-tight tabular-nums">
-          ₹{data.amount.toLocaleString('en-IN')}<span className="text-xl font-bold text-[#C2410C]">/-</span>
+          ₹{totalAmount.toLocaleString('en-IN')}<span className="text-xl font-bold text-[#C2410C]">/-</span>
         </div>
         <div className="text-xs text-[#9A3412] font-medium mt-1 leading-snug">
           {data.amountInWords}
         </div>
+
+        {/* Dynamic Payment Breakdown Card (Total, Paid, Remaining) */}
+        {isPartialFlow && (
+          <div className="mt-3 pt-2.5 border-t border-[#FDBA74]/50 grid grid-cols-2 gap-2 text-left">
+            <div className="bg-white/80 p-2 rounded-lg border border-[#FDBA74]/40">
+              <div className="text-[10px] font-medium text-[#6B6459]">{t.paidAmount}</div>
+              <div className="text-sm font-extrabold text-emerald-700 tabular-nums mt-0.5">
+                ₹{totalPaid.toLocaleString('en-IN')}
+              </div>
+            </div>
+            <div className={`p-2 rounded-lg border ${
+              remaining > 0
+                ? 'bg-amber-50/80 border-amber-300/80'
+                : 'bg-white/80 border-[#FDBA74]/40'
+            }`}>
+              <div className="text-[10px] font-medium text-[#6B6459]">{t.remainingBalance}</div>
+              <div className={`text-sm font-extrabold tabular-nums mt-0.5 ${
+                remaining > 0 ? 'text-amber-700' : 'text-emerald-700'
+              }`}>
+                ₹{remaining.toLocaleString('en-IN')}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* 5. QR Code & Verification Hint */}
-      <div className="px-5 pb-3.5 flex items-center gap-3 bg-[#FCFBF9]">
+      {/* 5. Payment History / Audit Trail (Installments) */}
+      {data.payments && data.payments.length > 0 && (
+        <div className="px-5 py-2.5 bg-white border-t border-b border-[#E5E1D8]/80">
+          <div className="text-[11px] font-bold text-[#7C2D12] uppercase tracking-wider mb-2 flex items-center justify-between">
+            <span>{t.paymentHistory}</span>
+            <span className="text-[10px] font-semibold text-[#6B6459] bg-[#F3F1EC] px-1.5 py-0.5 rounded">
+              {data.payments.length} {langKey === 'en' ? (data.payments.length === 1 ? 'installment' : 'installments') : 'नोंदी'}
+            </span>
+          </div>
+          <div className="space-y-1.5">
+            {data.payments.map((p, idx) => {
+              const pMode = (p.payment_mode || p.paymentMode || 'CASH') as PaymentMode;
+              const pDate = p.created_at || p.createdAt || p.date;
+              const formattedPDate = pDate
+                ? new Date(pDate).toLocaleDateString(langKey === 'en' ? 'en-IN' : 'mr-IN', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  })
+                : '';
+              const collector = p.collector_name || p.collected_by || p.collectedBy;
+
+              return (
+                <div
+                  key={p.id || idx}
+                  className="flex items-center justify-between text-xs bg-[#FCFBF9] p-2 rounded-lg border border-[#E5E1D8]/70"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-orange-100 text-[#C2410C] font-bold text-[10px] flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div>
+                      <div className="font-bold text-[#292118] flex items-center gap-1.5">
+                        <span>₹{Number(p.amount).toLocaleString('en-IN')}</span>
+                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          {PAYMENT_MODE_LABELS[langKey][pMode] || pMode}
+                        </span>
+                      </div>
+                      {collector && (
+                        <div className="text-[10px] text-[#6B6459] mt-0.5">
+                          {t.collectedBy}: <span className="font-medium text-[#292118]">{collector}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  {formattedPDate && (
+                    <div className="text-[10px] text-[#6B6459] font-mono tabular-nums shrink-0">
+                      {formattedPDate}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* 6. QR Code & Verification Hint */}
+      <div className="px-5 py-3 flex items-center gap-3 bg-[#FCFBF9]">
         {data.qrCodeDataUrl ? (
           <img
             src={data.qrCodeDataUrl}
             alt="Receipt Verification QR"
-            className="w-15 h-15 rounded-xl border border-[#E5E1D8] bg-white p-1 shrink-0 shadow-2xs"
+            className="w-14 h-14 rounded-xl border border-[#E5E1D8] bg-white p-1 shrink-0 shadow-2xs"
           />
         ) : (
-          <div className="w-15 h-15 rounded-xl border border-[#E5E1D8] bg-white flex items-center justify-center text-[10px] text-[#6B6459] shrink-0">
+          <div className="w-14 h-14 rounded-xl border border-[#E5E1D8] bg-white flex items-center justify-center text-[10px] text-[#6B6459] shrink-0">
             QR Code
           </div>
         )}
@@ -173,7 +320,7 @@ export const ReceiptCard: React.FC<{ data: ReceiptData; className?: string }> = 
         </div>
       </div>
 
-      {/* 6. Footer (Verification URL) */}
+      {/* 7. Footer (Verification URL) */}
       <div className="bg-[#FAF9F6] border-t border-[#E5E1D8] px-4 py-2 text-center">
         <a
           href={data.verificationUrl}

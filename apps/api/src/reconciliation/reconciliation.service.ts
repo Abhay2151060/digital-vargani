@@ -9,49 +9,52 @@ export class ReconciliationService {
   async getVolunteerCashSummary(mandalId: string, volunteerId: string) {
     const res = await this.db.query(
       `SELECT 
-         COUNT(*) as donation_count,
-         COALESCE(SUM(amount), 0) as expected_cash_amount
-       FROM donations
-       WHERE mandal_id = $1 
-         AND volunteer_id = $2 
-         AND payment_mode = 'CASH' 
-         AND is_reconciled = FALSE 
-         AND is_voided = FALSE`,
+         COUNT(DISTINCT dp.id) as payment_count,
+         COUNT(DISTINCT dp.donation_id) as donation_count,
+         COALESCE(SUM(dp.amount), 0) as expected_cash_amount
+       FROM donation_payments dp
+       JOIN donations d ON d.id = dp.donation_id
+       WHERE dp.mandal_id = $1 
+         AND dp.collected_by = $2 
+         AND dp.payment_mode = 'CASH' 
+         AND dp.is_reconciled = FALSE 
+         AND d.is_voided = FALSE`,
       [mandalId, volunteerId],
       [mandalId]
     );
 
     const row = res.rows[0];
     return {
-      donation_count: parseInt(row.donation_count, 10),
-      expected_cash_amount: parseFloat(row.expected_cash_amount),
+      donation_count: parseInt(row.donation_count || row.payment_count || 0, 10),
+      expected_cash_amount: parseFloat(row.expected_cash_amount || 0),
     };
   }
 
   async reconcileCash(treasurerId: string, input: CreateReconciliationInput) {
     return await this.db.withTransaction(async (client) => {
-      // 1. Lock and fetch all unreconciled cash donations for this volunteer
-      const donationsRes = await client.query(
-        `SELECT id, amount 
-         FROM donations
-         WHERE mandal_id = $1 
-           AND volunteer_id = $2 
-           AND payment_mode = 'CASH' 
-           AND is_reconciled = FALSE 
-           AND is_voided = FALSE
-         FOR UPDATE`,
+      // 1. Lock and fetch all unreconciled cash payments for this volunteer
+      const paymentsRes = await client.query(
+        `SELECT dp.id, dp.amount, dp.donation_id
+         FROM donation_payments dp
+         JOIN donations d ON d.id = dp.donation_id
+         WHERE dp.mandal_id = $1 
+           AND dp.collected_by = $2 
+           AND dp.payment_mode = 'CASH' 
+           AND dp.is_reconciled = FALSE 
+           AND d.is_voided = FALSE
+         FOR UPDATE OF dp`,
         [input.mandal_id, input.volunteer_id]
       );
 
-      const donations = donationsRes.rows;
-      if (donations.length === 0) {
+      const payments = paymentsRes.rows;
+      if (payments.length === 0) {
         throw new BadRequestException({
           code: 'NO_UNRECONCILED_DONATIONS',
-          message: 'No pending cash donations found for this volunteer to reconcile.',
+          message: 'No pending cash collections found for this volunteer to reconcile.',
         });
       }
 
-      const expectedAmount = donations.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+      const expectedAmount = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
       const receivedAmount = input.received_amount;
       const discrepancy = receivedAmount - expectedAmount;
 
@@ -82,8 +85,16 @@ export class ReconciliationService {
 
       const reconciliation = recRes.rows[0];
 
-      // 3. Mark donations as reconciled and link to this reconciliation
-      const donationIds = donations.map((d) => d.id);
+      // 3. Mark payments and parent donations as reconciled
+      const paymentIds = payments.map((p) => p.id);
+      await client.query(
+        `UPDATE donation_payments 
+         SET is_reconciled = TRUE, reconciliation_id = $1
+         WHERE id = ANY($2::uuid[])`,
+        [reconciliation.id, paymentIds]
+      );
+
+      const donationIds = [...new Set(payments.map((p) => p.donation_id))];
       await client.query(
         `UPDATE donations 
          SET is_reconciled = TRUE, reconciliation_id = $1, updated_at = NOW()
@@ -93,7 +104,7 @@ export class ReconciliationService {
 
       return {
         ...reconciliation,
-        reconciled_donations_count: donations.length,
+        donations_count: payments.length,
       };
     }, [input.mandal_id]);
   }

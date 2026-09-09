@@ -164,6 +164,24 @@ CREATE TABLE IF NOT EXISTS donations (
     CONSTRAINT uq_mandal_client_id UNIQUE (mandal_id, client_id)
 );
 
+-- 5B. DONATION PAYMENTS (CHILD TRANSACTIONS FOR PARTIAL / INSTALLMENT PAYMENTS)
+CREATE TABLE IF NOT EXISTS donation_payments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    donation_id UUID NOT NULL REFERENCES donations(id) ON DELETE CASCADE,
+    mandal_id UUID NOT NULL REFERENCES mandals(id) ON DELETE RESTRICT,
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
+    payment_mode payment_mode NOT NULL, -- 'CASH' or 'UPI'
+    payment_reference VARCHAR(100),
+    collected_by UUID NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+    is_reconciled BOOLEAN NOT NULL DEFAULT FALSE,
+    reconciliation_id UUID,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_donation_payments_donation ON donation_payments(donation_id);
+CREATE INDEX IF NOT EXISTS idx_donation_payments_mandal ON donation_payments(mandal_id);
+CREATE INDEX IF NOT EXISTS idx_donation_payments_collected_by ON donation_payments(collected_by);
+
 -- 6. DONATION CORRECTIONS (APPEND-ONLY AUDIT FOR CORRECTIONS)
 CREATE TABLE IF NOT EXISTS donation_corrections (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
