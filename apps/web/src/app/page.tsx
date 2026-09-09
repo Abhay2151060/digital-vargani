@@ -298,6 +298,143 @@ export default function HomePage() {
           </div>
         </div>
 
+        {/* Dedicated Public Transparency Showcase Section */}
+        <div className="mt-20">
+          <div className="bg-gradient-to-br from-[#FFFDF9] via-[#FFF7ED] to-[#FEF3C7] rounded-3xl border border-[#FDBA74]/80 p-8 sm:p-12 shadow-[0_8px_30px_rgba(194,65,12,0.06)] relative overflow-hidden text-left">
+            <div className="absolute -top-24 -right-24 w-72 h-72 bg-gradient-to-br from-orange-400/20 to-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <div className="lg:col-span-7 space-y-4">
+                <div className="inline-flex items-center gap-2 bg-white text-[#C2410C] border border-[#FDBA74] px-3.5 py-1 rounded-full text-xs font-bold shadow-2xs">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>सार्वजनिक पारदर्शकता • १००% डिजिटल ऑडिट</span>
+                </div>
+
+                <h2 className="text-2xl sm:text-4xl font-black text-[#292118] tracking-tight leading-tight">
+                  मंडळाचा जमा-खर्च आता <br className="hidden sm:inline" />
+                  <span className="bg-gradient-to-r from-[#7C2D12] via-[#C2410C] to-[#F97316] bg-clip-text text-transparent">
+                    प्रत्येक भक्तासाठी खुला व पारदर्शक!
+                  </span>
+                </h2>
+
+                <p className="text-xs sm:text-sm text-[#6B6459] leading-relaxed font-normal">
+                  सार्वजनिक पारदर्शकता पोर्टलद्वारे मंडळाच्या जमा झालेल्या प्रत्येक वर्गणीची पावती, रोख व ऑनलाईन वर्गीकरण, अधिकृत खर्च आणि स्वाक्षरी असलेला वार्षिक अहवाल थेट ऑनलाईन पाहता येतो.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="flex items-start gap-2.5 bg-white/85 border border-[#E5E1D8] p-3 rounded-2xl">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-extrabold text-[#292118]">थेट देणगीदार नामावली</h4>
+                      <p className="text-[11px] text-[#6B6459] mt-0.5">भक्तांच्या योगदानाचा आणि पावती क्रमांकाचा खुला डिजिटल अभिलेख.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5 bg-white/85 border border-[#E5E1D8] p-3 rounded-2xl">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-extrabold text-[#292118]">मंजूर खर्चाची बिले</h4>
+                      <p className="text-[11px] text-[#6B6459] mt-0.5">मंडप, मूर्ती, डेकोरेशन व साऊंड सिस्टीमच्या खर्चाचा ताळेबंद.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5 bg-white/85 border border-[#E5E1D8] p-3 rounded-2xl">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-extrabold text-[#292118]">अधिकृत वार्षिक अहवाल</h4>
+                      <p className="text-[11px] text-[#6B6459] mt-0.5">अध्यक्ष व खजिनदारांच्या स्वाक्षरीसह अहवाल डाउनलोड करा.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-2.5 bg-white/85 border border-[#E5E1D8] p-3 rounded-2xl">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-xs font-extrabold text-[#292118]">थेट UPI वर्गणी</h4>
+                      <p className="text-[11px] text-[#6B6459] mt-0.5">अधिकृत UPI QR कोड स्कॅन करून थेट मंडळाच्या खात्यात देणगी द्या.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row gap-3">
+                  <Link href="/mandal/shree-samarth-mitra-mandal/transparency" className="w-full sm:w-auto">
+                    <Button
+                      variant="primary"
+                      size="md"
+                      className="font-bold text-xs sm:text-sm px-6 py-3 gap-2 rounded-xl cursor-pointer w-full sm:w-auto"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>सार्वजनिक पारदर्शकता पोर्टल उघडा</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+
+              {/* Interactive Preview Card */}
+              <div className="lg:col-span-5 flex justify-center">
+                <div className="w-full max-w-sm bg-white rounded-3xl border border-[#E5E1D8] p-5 shadow-lg space-y-3.5">
+                  <div className="flex items-center justify-between pb-2 border-b border-[#E5E1D8]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-orange-100 text-[#C2410C] flex items-center justify-center font-bold text-sm">
+                        🚩
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-xs text-[#292118]">श्री समर्थ मित्र मंडळ</h4>
+                        <span className="text-[10px] text-[#6B6459]">पारदर्शकता अहवाल २०२६</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      ✓ प्रमाणित
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="bg-[#FFF7ED] p-2 rounded-xl border border-orange-200/60">
+                      <div className="text-[10px] text-[#9A3412] font-semibold">एकूण जमा</div>
+                      <div className="text-sm font-black text-[#7C2D12] mt-0.5">₹८,००४</div>
+                    </div>
+                    <div className="bg-red-50 p-2 rounded-xl border border-red-100">
+                      <div className="text-[10px] text-red-700 font-semibold">एकूण खर्च</div>
+                      <div className="text-sm font-black text-red-800 mt-0.5">₹०</div>
+                    </div>
+                    <div className="bg-emerald-50 p-2 rounded-xl border border-emerald-100">
+                      <div className="text-[10px] text-emerald-700 font-semibold">शिल्लक निधी</div>
+                      <div className="text-sm font-black text-emerald-800 mt-0.5">₹८,००४</div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#FAF9F6] rounded-xl border border-[#E5E1D8] text-xs space-y-1.5">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-[#6B6459]">पेमेंट वर्गीकरण</span>
+                      <span className="font-bold text-[#292118]">रोख ₹४,६०२ • UPI ₹३,४०२</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-[#6B6459]">एकूण देणगीदार</span>
+                      <span className="font-bold text-emerald-700">१० अधिकृत पावत्या</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className="text-[#6B6459]">डिजिटल ऑडिट</span>
+                      <span className="font-bold text-sky-700">१००% जुळवणी पूर्ण</span>
+                    </div>
+                  </div>
+
+                  <Link href="/mandal/shree-samarth-mitra-mandal/transparency" className="block">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      fullWidth
+                      className="text-xs font-bold text-[#C2410C] border-orange-200 hover:bg-orange-50 gap-1.5 cursor-pointer"
+                    >
+                      <span>थेट पोर्टलवर हिशोब तपासा</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Mandal Roles Section */}
         <div className="mt-20 bg-gradient-to-br from-[#2E1810] via-[#1F120C] to-[#2E1810] text-white p-8 sm:p-10 rounded-3xl shadow-xl text-left relative overflow-hidden border border-orange-950/40">
           <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>

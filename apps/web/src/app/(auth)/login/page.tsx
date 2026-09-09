@@ -151,7 +151,7 @@ export default function LoginPage() {
               <Input
                 label={mounted ? t.name_or_phone_label : 'पूर्ण नाव किंवा मोबाईल नंबर'}
                 type="text"
-                placeholder={mounted ? t.name_or_phone_placeholder : 'उदा. धीरज कांबळे किंवा 9822012345'}
+                placeholder="Enter your name or phone number."
                 value={nameOrPhone}
                 onChange={(e) => setNameOrPhone(e.target.value)}
                 leftIcon={<User className="w-4 h-4" />}
@@ -195,6 +195,22 @@ export default function LoginPage() {
               <ArrowRight className="w-4 h-4" />
             </Button>
           </form>
+
+          {/* Back Button below Login Form */}
+          <div className="mt-3">
+            <Link href="/" className="block w-full">
+              <Button
+                type="button"
+                variant="outline"
+                size="md"
+                fullWidth
+                className="font-semibold text-xs text-[#6B6459] hover:text-[#292118] gap-2 rounded-xl cursor-pointer border-[#E5E1D8] hover:bg-[#F3F1EC]"
+              >
+                <ArrowLeft className="w-4 h-4 text-[#8C827A]" />
+                <span>{language === Language.ENGLISH ? 'Back' : 'मागे जा (Back)'}</span>
+              </Button>
+            </Link>
+          </div>
 
           <div className="mt-4 pt-3 border-t border-[#E5E1D8] text-center">
             <p className="text-[11px] text-[#8C827A]">

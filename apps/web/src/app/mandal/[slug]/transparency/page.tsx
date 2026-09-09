@@ -16,6 +16,8 @@ import {
   ExternalLink,
   Download,
   CheckCircle2,
+  ArrowLeft,
+  Search,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -26,6 +28,7 @@ export default function PublicTransparencyPage() {
   const [report, setReport] = useState<PublicTransparencyReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleDownloadAhwal = (url: string, title?: string | null) => {
     try {
@@ -82,33 +85,55 @@ export default function PublicTransparencyPage() {
 
   const { mandal, total_collected, total_expenses, net_balance, total_donors_count, collections_by_mode, expenses_by_category, donor_roll, approved_expenses_list } = report;
 
+  const filteredDonorRoll = donor_roll.filter((d) => {
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase().trim();
+    return (
+      d.donor_name.toLowerCase().includes(q) ||
+      d.receipt_number.toLowerCase().includes(q) ||
+      (d.donor_phone_masked && d.donor_phone_masked.includes(q))
+    );
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF9F6]">
       {/* Top Banner */}
-      <header className="bg-gradient-to-r from-[#7C2D12] via-[#C2410C] to-[#F97316] text-white py-8 px-4 shadow-md">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 text-center sm:text-left">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-2xl font-bold shadow-inner overflow-hidden shrink-0">
-              {mandal.logo_url ? (
-                <img src={mandal.logo_url} alt={mandal.name} className="w-full h-full object-cover" />
-              ) : (
-                '🚩'
-              )}
-            </div>
-            <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
-                सार्वजनिक पारदर्शकता पोर्टल
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">{mandal.name}</h1>
-              <p className="text-xs text-orange-100 mt-0.5">
-                {mandal.city} {mandal.area ? `(${mandal.area})` : ''} {mandal.registration_number ? `• नोंदणी क्र: ${mandal.registration_number}` : ''}
-              </p>
+      <header className="bg-gradient-to-r from-[#7C2D12] via-[#C2410C] to-[#F97316] text-white py-6 sm:py-8 px-4 shadow-md">
+        <div className="max-w-4xl mx-auto space-y-4">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white/90 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl backdrop-blur-sm border border-white/20 transition-all cursor-pointer group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              <span>मुख्यपृष्ठावर जा (Home)</span>
+            </Link>
+
+            <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/30 text-xs font-bold text-amber-200">
+              <ShieldCheck className="w-4 h-4 text-emerald-300" />
+              <span>१००% प्रमाणित व डिजिटल ऑडिटेड</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/30 text-xs font-bold text-amber-200">
-            <ShieldCheck className="w-4 h-4 text-emerald-300" />
-            <span>१००% प्रमाणित व डिजिटल ऑडिटेड</span>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+            <div className="flex items-center gap-3.5 text-center sm:text-left">
+              <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-2xl font-bold shadow-inner overflow-hidden shrink-0">
+                {mandal.logo_url ? (
+                  <img src={mandal.logo_url} alt={mandal.name} className="w-full h-full object-cover" />
+                ) : (
+                  '🚩'
+                )}
+              </div>
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full">
+                  सार्वजनिक पारदर्शकता पोर्टल
+                </span>
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">{mandal.name}</h1>
+                <p className="text-xs text-orange-100 mt-0.5">
+                  {mandal.city} {mandal.area ? `(${mandal.area})` : ''} {mandal.registration_number ? `• नोंदणी क्र: ${mandal.registration_number}` : ''}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -272,7 +297,7 @@ export default function PublicTransparencyPage() {
 
         {/* Public Donor Roll */}
         <Card variant="default" padding="none" className="shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-[#E5E1D8] flex items-center justify-between">
+          <div className="p-4 border-b border-[#E5E1D8] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-base font-bold text-[#292118] flex items-center gap-2">
                 <Users className="w-4 h-4 text-[#F97316]" />
@@ -280,7 +305,22 @@ export default function PublicTransparencyPage() {
               </h3>
               <p className="text-xs text-[#6B6459] mt-0.5">भक्तांच्या योगदानाचा पारदर्शक डिजिटल अभिलेख</p>
             </div>
-            <span className="text-xs font-semibold text-[#6B6459]">{donor_roll.length} देणगीदार</span>
+
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1 sm:flex-initial">
+                <Search className="w-3.5 h-3.5 text-[#8C827A] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="नाव किंवा पावती क्र. शोधा..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 pr-3 py-1.5 text-xs rounded-xl border border-[#E5E1D8] bg-[#FAF9F6] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#F97316] w-full sm:w-56 transition"
+                />
+              </div>
+              <span className="text-xs font-semibold text-[#6B6459] bg-[#F3F1EC] px-2.5 py-1 rounded-lg border border-[#E5E1D8] shrink-0">
+                {filteredDonorRoll.length} / {donor_roll.length}
+              </span>
+            </div>
           </div>
 
           <div className="overflow-x-auto max-h-96">
@@ -295,17 +335,25 @@ export default function PublicTransparencyPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E5E1D8]">
-                {donor_roll.map((d) => (
-                  <tr key={d.receipt_number} className="hover:bg-orange-50/20 transition">
-                    <td className="px-4 py-3 font-semibold text-[#F97316]">{d.receipt_number}</td>
-                    <td className="px-4 py-3 font-bold text-[#292118]">{d.donor_name}</td>
-                    <td className="px-4 py-3 text-[#6B6459]">{d.donor_phone_masked || '—'}</td>
-                    <td className="px-4 py-3 text-xs text-[#6B6459]">{d.payment_mode}</td>
-                    <td className="px-4 py-3 text-right font-black text-[#7C2D12]">
-                      ₹{d.amount.toLocaleString('en-IN')}
+                {filteredDonorRoll.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="text-center py-6 text-xs text-[#6B6459]">
+                      '{searchQuery}' साठी कोणताही देणगीदार आढळला नाही.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredDonorRoll.map((d) => (
+                    <tr key={d.receipt_number} className="hover:bg-orange-50/20 transition">
+                      <td className="px-4 py-3 font-semibold text-[#F97316]">{d.receipt_number}</td>
+                      <td className="px-4 py-3 font-bold text-[#292118]">{d.donor_name}</td>
+                      <td className="px-4 py-3 text-[#6B6459]">{d.donor_phone_masked || '—'}</td>
+                      <td className="px-4 py-3 text-xs text-[#6B6459]">{d.payment_mode}</td>
+                      <td className="px-4 py-3 text-right font-black text-[#7C2D12]">
+                        ₹{d.amount.toLocaleString('en-IN')}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
