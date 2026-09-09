@@ -12,10 +12,29 @@ import { PaymentMode, Language, Role } from '@vargani/types';
 import { getT } from '../../../lib/i18n';
 import { apiRequest } from '../../../lib/api-client';
 import { enqueueOfflineDonation } from '../../../lib/offline-queue';
-import { PlusCircle, Wallet, QrCode, IndianRupee, User, Phone, Home, Sparkles, Receipt, ArrowLeft, Clock, Copy, Check, ShieldCheck, ExternalLink } from 'lucide-react';
+import { PlusCircle, Wallet, QrCode, IndianRupee, User, Phone, Home, Sparkles, Receipt, ArrowLeft, Clock, Copy, Check, ShieldCheck, ExternalLink, Building2, ChevronDown } from 'lucide-react';
 import QRCode from 'qrcode';
 import Link from 'next/link';
 import { formatDisplayName } from '../../../lib/format';
+
+const BUILDINGS_LIST = [
+  'निकिता हाइट्स — Nikita Heights',
+  'सीताई निवास — Sitai Nivas',
+  'अथर्व — Atharva',
+  'काजल — Kajal',
+  'साईव्हिला — Sai Villa',
+  'सुतेजा अ विंग — Suteja A Wing',
+  'सुतेजा बी विंग — Suteja B Wing',
+  'साईराम — Sairam',
+  'श्री विजय — Shri Vijay',
+  'सुयश हेरिटेज — Suyash Heritage',
+  'विजयालक्ष्मी — Vijayalakshmi',
+  'गुलमोहर — Gulmohar',
+  'श्री निधी — Shri Nidhi',
+  'प्रथमेश — Prathamesh',
+  'ऑर्किड — Orchid',
+  'सोहम — Soham',
+] as const;
 
 export default function CollectDonationPage() {
   const { user, role, activeMandal, language, token } = useAuth();
@@ -38,7 +57,8 @@ export default function CollectDonationPage() {
   const [customAmount, setCustomAmount] = useState<string>('501');
   const [paymentMode, setPaymentMode] = useState<PaymentMode>(PaymentMode.CASH);
   const [paymentRef, setPaymentRef] = useState('');
-  const [flatWing, setFlatWing] = useState('');
+  const [building, setBuilding] = useState('');
+  const [flatNo, setFlatNo] = useState('');
   const [receiptLang, setReceiptLang] = useState<Language>(language || Language.MARATHI);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -128,6 +148,12 @@ export default function CollectDonationPage() {
       year: 'numeric',
     });
 
+    const flatStr = flatNo.trim();
+    const finalFlatWing = [
+      building.trim(),
+      flatStr ? (flatStr.toLowerCase().startsWith('flat') ? flatStr : `Flat ${flatStr}`) : '',
+    ].filter(Boolean).join(', ') || undefined;
+
     try {
       if (isOnline) {
         const donation = await apiRequest<any>('/donations', {
@@ -138,7 +164,7 @@ export default function CollectDonationPage() {
             amount: amount,
             payment_mode: paymentMode,
             payment_reference: paymentRef.trim() || undefined,
-            flat_wing: flatWing.trim() || undefined,
+            flat_wing: finalFlatWing,
             language: receiptLang,
           }),
         });
@@ -158,7 +184,7 @@ export default function CollectDonationPage() {
           paymentStatus: pStatus,
           payments: donation.payments || [],
           paymentMode: donation.payment_mode,
-          flatWing: donation.flat_wing,
+          flatWing: donation.flat_wing || finalFlatWing,
           date: dateFormatted,
           volunteerName: formatDisplayName(user?.full_name) || 'कार्यकर्ता',
           language: receiptLang,
@@ -180,7 +206,7 @@ export default function CollectDonationPage() {
           amount: amount,
           payment_mode: paymentMode,
           payment_reference: paymentRef.trim() || undefined,
-          flat_wing: flatWing.trim() || undefined,
+          flat_wing: finalFlatWing,
           language: receiptLang,
           created_at: new Date().toISOString(),
           sync_status: 'PENDING_SYNC',
@@ -201,7 +227,7 @@ export default function CollectDonationPage() {
           paymentStatus: isPending ? 'PENDING' : 'PAID',
           payments: isPending ? [] : [{ amount, payment_mode: paymentMode, created_at: new Date().toISOString(), collector_name: formatDisplayName(user?.full_name) || 'कार्यकर्ता' }],
           paymentMode: paymentMode,
-          flatWing: flatWing.trim(),
+          flatWing: finalFlatWing,
           date: dateFormatted,
           volunteerName: formatDisplayName(user?.full_name) || 'कार्यकर्ता',
           language: receiptLang,
@@ -211,7 +237,8 @@ export default function CollectDonationPage() {
       // Reset form fields for next entry (target <10s)
       setDonorName('');
       setDonorPhone('');
-      setFlatWing('');
+      setBuilding('');
+      setFlatNo('');
       setPaymentRef('');
       setIsModalOpen(true);
     } catch (err: any) {
@@ -286,25 +313,51 @@ export default function CollectDonationPage() {
               />
             </div>
 
-            {/* Custom Amount / Flat Details */}
-            <div className="grid grid-cols-2 gap-3">
-              <Input
-                label={t.custom_amount}
-                type="number"
-                placeholder={language === Language.ENGLISH ? 'e.g. 501' : 'उदा. ५०१'}
-                value={customAmount}
-                onChange={(e) => handleCustomAmountChange(e.target.value)}
-                leftIcon={<IndianRupee className="w-4 h-4" />}
-                required
-              />
-              <Input
-                label={t.flat_wing}
-                placeholder={t.flat_wing_placeholder}
-                value={flatWing}
-                onChange={(e) => setFlatWing(e.target.value)}
-                leftIcon={<Home className="w-4 h-4" />}
-              />
+            {/* Building Dropdown & Flat No. Field */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5 text-left">
+                <label className="text-sm font-medium text-[#292118] flex items-center gap-1.5">
+                  <Building2 className="w-4 h-4 text-[#8C827A]" />
+                  <span>{t.building || 'Building'}</span>
+                </label>
+                <div className="relative">
+                  <select
+                    value={building}
+                    onChange={(e) => setBuilding(e.target.value)}
+                    className="w-full h-[46px] px-3.5 py-2.5 rounded-xl border border-[#E5E1D8] bg-white text-xs sm:text-sm text-[#292118] focus:outline-none focus:ring-2 focus:ring-[#F97316]/20 focus:border-[#F97316] transition shadow-2xs appearance-none cursor-pointer pr-9"
+                  >
+                    <option value="">{t.select_building || 'Select Building'}</option>
+                    {BUILDINGS_LIST.map((bName) => (
+                      <option key={bName} value={bName}>
+                        {bName}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-[#8C827A] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              <div>
+                <Input
+                  label={t.flat_wing}
+                  placeholder={t.flat_wing_placeholder}
+                  value={flatNo}
+                  onChange={(e) => setFlatNo(e.target.value)}
+                  leftIcon={<Home className="w-4 h-4" />}
+                />
+              </div>
             </div>
+
+            {/* Custom Amount */}
+            <Input
+              label={t.custom_amount}
+              type="number"
+              placeholder={language === Language.ENGLISH ? 'e.g. 501' : 'उदा. ५०१'}
+              value={customAmount}
+              onChange={(e) => handleCustomAmountChange(e.target.value)}
+              leftIcon={<IndianRupee className="w-4 h-4" />}
+              required
+            />
 
             {/* Donor Mobile for Instant WhatsApp Receipt */}
             <Input

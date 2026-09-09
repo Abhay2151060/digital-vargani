@@ -105,16 +105,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 bg-[#FAF9F6] relative">
       <div className="w-full max-w-md">
-        {/* Back Button */}
-        <div className="mb-4 flex items-center justify-start">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs font-bold text-[#6B6459] hover:text-[#C2410C] bg-white/90 hover:bg-white px-3.5 py-2 rounded-xl border border-[#E5E1D8] shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
-          >
-            <ArrowLeft className="w-4 h-4 text-[#8C827A] group-hover:text-[#C2410C] group-hover:-translate-x-0.5 transition-transform" />
-            <span>{language === Language.ENGLISH ? 'Back to Home' : 'मागे जा (मुख्य पृष्ठ)'}</span>
-          </Link>
-        </div>
 
         {/* Brand Header */}
         <div className="text-center mb-6" suppressHydrationWarning>

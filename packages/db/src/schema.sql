@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS donations (
     amount NUMERIC(12, 2) NOT NULL CHECK (amount > 0),
     payment_mode payment_mode NOT NULL DEFAULT 'CASH',
     payment_reference VARCHAR(100),
-    flat_wing VARCHAR(50),
+    flat_wing VARCHAR(150),
     language language_code NOT NULL DEFAULT 'mr',
     payment_verification_status payment_verification_status NOT NULL DEFAULT 'NOT_REQUIRED',
     client_id UUID, -- Offline idempotency key

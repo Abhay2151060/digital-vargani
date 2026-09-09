@@ -385,7 +385,7 @@ export const createDonationSchema = z.object({
   amount: z.number().positive('Donation amount must be greater than zero'),
   payment_mode: z.nativeEnum(PaymentMode),
   payment_reference: z.string().optional(),
-  flat_wing: z.string().max(50).optional(),
+  flat_wing: z.string().max(150).optional(),
   language: z.nativeEnum(Language).default(Language.MARATHI),
   client_id: z.string().uuid().optional(),
   receipt_number: z.string().optional(),
