@@ -518,7 +518,7 @@ export class DonationsService {
       throw new NotFoundException({ code: 'DONATION_NOT_FOUND', message: 'Donation not found' });
     }
 
-    return await this.db.withTransaction(async (client) => {
+    await this.db.withTransaction(async (client) => {
       const donRes = await client.query(
         `SELECT * FROM donations WHERE id = $1 FOR UPDATE`,
         [input.donation_id]
@@ -591,8 +591,8 @@ export class DonationsService {
          WHERE id = $4`,
         [updatedDonationMode, input.payment_reference || null, verificationStatus, donation.id]
       );
-
-      return await this.getDonationById(mandalId, donation.id);
     }, [mandalId]);
+
+    return await this.getDonationById(mandalId, input.donation_id);
   }
 }
