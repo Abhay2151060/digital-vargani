@@ -14,6 +14,7 @@ import { generateWhatsAppShareUrl } from '../../../lib/whatsapp';
 import { PlusCircle, Wallet, Receipt, Share2, Eye, User, Phone, Home, Calendar, Users, QrCode, CheckCircle2, X, Clock } from 'lucide-react';
 import { Language, Role, PaymentMode } from '@vargani/types';
 import { formatDisplayName } from '../../../lib/format';
+import { formatBuildingDisplay } from '../../../lib/buildings';
 
 export default function VolunteerHistoryPage() {
   const { user, role, activeMandal, language } = useAuth();
@@ -253,7 +254,7 @@ export default function VolunteerHistoryPage() {
                     {d.flat_wing && (
                       <div className="flex items-center gap-1.5 text-xs text-[#6B6459]">
                         <Home className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                        <span>{t.flat_wing_label}: <strong className="text-[#292118]">{d.flat_wing}</strong></span>
+                        <span>{t.flat_wing_label}: <strong className="text-[#292118]">{formatBuildingDisplay(d.flat_wing, language)}</strong></span>
                       </div>
                     )}
                     {d.volunteer_name && (

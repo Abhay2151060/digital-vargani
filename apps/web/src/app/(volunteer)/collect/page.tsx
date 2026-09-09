@@ -16,25 +16,7 @@ import { PlusCircle, Wallet, QrCode, IndianRupee, User, Phone, Home, Sparkles, R
 import QRCode from 'qrcode';
 import Link from 'next/link';
 import { formatDisplayName } from '../../../lib/format';
-
-const BUILDINGS_LIST = [
-  'निकिता हाइट्स — Nikita Heights',
-  'सीताई निवास — Sitai Nivas',
-  'अथर्व — Atharva',
-  'काजल — Kajal',
-  'साईव्हिला — Sai Villa',
-  'सुतेजा अ विंग — Suteja A Wing',
-  'सुतेजा बी विंग — Suteja B Wing',
-  'साईराम — Sairam',
-  'श्री विजय — Shri Vijay',
-  'सुयश हेरिटेज — Suyash Heritage',
-  'विजयालक्ष्मी — Vijayalakshmi',
-  'गुलमोहर — Gulmohar',
-  'श्री निधी — Shri Nidhi',
-  'प्रथमेश — Prathamesh',
-  'ऑर्किड — Orchid',
-  'सोहम — Soham',
-] as const;
+import { BUILDINGS } from '../../../lib/buildings';
 
 export default function CollectDonationPage() {
   const { user, role, activeMandal, language, token } = useAuth();
@@ -327,11 +309,14 @@ export default function CollectDonationPage() {
                     className="w-full h-[46px] px-3.5 py-2.5 rounded-xl border border-[#E5E1D8] bg-white text-xs sm:text-sm text-[#292118] focus:outline-none focus:ring-2 focus:ring-[#F97316]/20 focus:border-[#F97316] transition shadow-2xs appearance-none cursor-pointer pr-9"
                   >
                     <option value="">{t.select_building || 'Select Building'}</option>
-                    {BUILDINGS_LIST.map((bName) => (
-                      <option key={bName} value={bName}>
-                        {bName}
-                      </option>
-                    ))}
+                    {BUILDINGS.map((b) => {
+                      const bName = language === Language.ENGLISH ? b.en : b.mr;
+                      return (
+                        <option key={b.en} value={bName}>
+                          {bName}
+                        </option>
+                      );
+                    })}
                   </select>
                   <ChevronDown className="w-4 h-4 text-[#8C827A] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>

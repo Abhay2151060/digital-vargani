@@ -197,7 +197,7 @@ export default function LoginPage() {
                 className="font-semibold text-xs text-[#6B6459] hover:text-[#292118] gap-2 rounded-xl cursor-pointer border-[#E5E1D8] hover:bg-[#F3F1EC]"
               >
                 <ArrowLeft className="w-4 h-4 text-[#8C827A]" />
-                <span>{language === Language.ENGLISH ? 'Back' : 'मागे जा (Back)'}</span>
+                <span suppressHydrationWarning>{language === Language.ENGLISH ? 'Back to Home' : 'मागे जा (मुख्य पृष्ठ)'}</span>
               </Button>
             </Link>
           </div>

@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { apiRequest } from '../lib/api-client';
 import { getT } from '../lib/i18n';
 import { Language } from '@vargani/types';
+import { formatBuildingDisplay } from '../lib/buildings';
 
 interface CollectPendingModalProps {
   isOpen: boolean;
@@ -196,7 +197,7 @@ export function CollectPendingModal({
           {donation.flat_wing && (
             <div className="flex justify-between items-center text-xs">
               <span className="text-[#6B6459]">{t.flat_wing}:</span>
-              <span className="text-[#292118]">{donation.flat_wing}</span>
+              <span className="text-[#292118]">{formatBuildingDisplay(donation.flat_wing, language)}</span>
             </div>
           )}
 

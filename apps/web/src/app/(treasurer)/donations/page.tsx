@@ -11,6 +11,7 @@ import { Card, Button } from '@vargani/ui';
 import { apiRequest, downloadFile } from '../../../lib/api-client';
 import { getT } from '../../../lib/i18n';
 import { Role, Language } from '@vargani/types';
+import { formatBuildingDisplay } from '../../../lib/buildings';
 import Link from 'next/link';
 import {
   Receipt,
@@ -373,7 +374,7 @@ export default function AllDonationsPage() {
                         <td className="px-4 py-3">
                           <div className="font-semibold text-[#292118]">{d.donor_name}</div>
                           <div className="text-[11px] text-[#A8A297] flex items-center gap-2 mt-0.5">
-                            {d.flat_wing && <span>{t.flat_wing_short}: {d.flat_wing}</span>}
+                            {d.flat_wing && <span>{t.flat_wing_short}: {formatBuildingDisplay(d.flat_wing, language)}</span>}
                             {d.donor_phone && <span>{t.phone_short}: {d.donor_phone}</span>}
                           </div>
                         </td>
@@ -385,7 +386,7 @@ export default function AllDonationsPage() {
                               </span>
                               <div className="text-[10px] text-[#6B6459] font-medium mt-0.5">
                                 {cashPaidVal > 0 && upiPaidVal > 0
-                                  ? 'रोख + UPI'
+                                  ? (language === Language.ENGLISH ? 'Cash + UPI' : 'रोख + UPI')
                                   : cashPaidVal > 0
                                   ? t.cash
                                   : t.upi}
@@ -407,7 +408,7 @@ export default function AllDonationsPage() {
                                 }`}
                               >
                                 {cashPaidVal > 0 && upiPaidVal > 0
-                                  ? 'रोख + UPI'
+                                  ? (language === Language.ENGLISH ? 'Cash + UPI' : 'रोख + UPI')
                                   : cashPaidVal > 0 || d.payment_mode === 'CASH'
                                   ? t.cash
                                   : t.upi}
